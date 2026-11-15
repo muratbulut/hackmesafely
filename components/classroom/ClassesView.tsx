@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { CheckCheck, ChevronRight, Plus, TriangleAlert, User, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { EmptyState } from "@/components/status/EmptyState";
 import { Toast } from "@/components/status/Toast";
 import { format, getMessages } from "@/lib/i18n";
 import { paths, routes } from "@/lib/navigation";
-import { ClassCard, NewClassCard } from "./ClassCard";
+import { ClassCard } from "./ClassCard";
+import { ClassSteps } from "./ClassSteps";
 import { copyText } from "./client";
 import { CreateClassDialog } from "./CreateClassDialog";
 import { ProjectionOverlay } from "./ProjectionOverlay";
@@ -18,6 +18,10 @@ import type { AttentionView, ClassesData, ProjectionTarget } from "./types";
  * Sınıflarım (Tur 3, Murat kararı: C1 kartlar + C3 özet ve "Dikkat isteyenler"; tahtalar
  * Siniflarim-Son, -Mobil). Masaüstünde solda kartlar, sağda dikkat isteyenler; telefonda
  * özet, dikkat isteyenler, kartlar sırasıyla.
+ *
+ * Hoca öncesi kontrol 32: telefonda üç özet kutusu tek sırada; listenin sonundaki kesik çizgili
+ * "Yeni sınıf oluştur" kartı kalktı (üstteki "Yeni sınıf" düğmesi aynı işi yapıyor); sınıf yokken
+ * üç kısa adım.
  */
 export function ClassesView({ data, openCreate }: { data: ClassesData; openCreate: boolean }) {
   const t = getMessages().classroom;
@@ -59,10 +63,10 @@ export function ClassesView({ data, openCreate }: { data: ClassesData; openCreat
 
       {hasClasses ? (
         <>
-          <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3 lg:gap-4">
-            <SummaryBox Icon={Users} tone="accent" value={data.summary.classes} label={t.summary.classes} />
-            <SummaryBox Icon={User} tone="purple" value={data.summary.students} label={t.summary.students} />
-            <SummaryBox Icon={CheckCheck} tone="success" value={data.summary.week} label={t.summary.week} />
+          <div className="grid grid-cols-3 gap-2.5 lg:gap-4">
+            <SummaryBox compact Icon={Users} tone="accent" value={data.summary.classes} label={t.summary.classes} />
+            <SummaryBox compact Icon={User} tone="purple" value={data.summary.students} label={t.summary.students} />
+            <SummaryBox compact Icon={CheckCheck} tone="success" value={data.summary.week} label={t.summary.week} />
           </div>
 
           <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-5">
@@ -75,29 +79,29 @@ export function ClassesView({ data, openCreate }: { data: ClassesData; openCreat
                 {data.classes.map((card) => (
                   <ClassCard key={card.id} card={card} onCopy={() => copyCode(card.name, card.code)} onProject={() => setProjecting(card)} />
                 ))}
-                <NewClassCard onClick={() => setCreating(true)} />
               </div>
             </section>
           </div>
         </>
       ) : (
-        <EmptyState
-          Icon={Users}
-          title={t.empty.title}
-          className="bg-surface py-10"
-          action={
-            <button
-              type="button"
-              onClick={() => setCreating(true)}
-              className="mt-2 inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-accent px-[18px] text-[15px] font-bold text-on-accent"
-            >
-              <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden="true" />
-              {t.newClassCard}
-            </button>
-          }
-        >
-          {t.empty.text}
-        </EmptyState>
+        <section aria-labelledby="classes-empty-title" className="flex flex-col items-center gap-3 rounded-[20px] border border-line bg-surface px-4 py-8 text-center lg:px-10 lg:py-10">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-accent/12 text-accent-fg">
+            <Users className="size-6" strokeWidth={2} aria-hidden="true" />
+          </span>
+          <h2 id="classes-empty-title" className="m-0 text-lg font-bold">
+            {t.empty.title}
+          </h2>
+          <p className="m-0 max-w-[520px] text-sm leading-[1.55] text-fg-3">{t.empty.text}</p>
+          <ClassSteps className="mt-1 w-full max-w-[760px]" />
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="mt-2 inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-accent px-[18px] text-[15px] font-bold text-on-accent"
+          >
+            <Plus className="size-[18px]" strokeWidth={2.4} aria-hidden="true" />
+            {t.empty.first}
+          </button>
+        </section>
       )}
 
       <CreateClassDialog

@@ -22,6 +22,8 @@ const newClassHref = paths.newClass;
  * Profil > Öğretmenlik (Tur 3 ve Tur 4, ekran 17; tahtalar: Ogretmenlik-Son, -Son-Bilgi, -Onay,
  * -Ret). Talep yoksa kısa açıklama ve "Öğretmenlik talebi oluştur"; sonra sırasıyla inceleniyor,
  * bilgi istendi, onaylandı ya da onaylanmadı halleri. Doğrulanmamış e-postayla talep gönderilemez.
+ * Başlık duruma göre değişir; talep yokken açıklamanın altında üç kısa adım durur (hoca öncesi
+ * kontrol 31).
  */
 export function TeachingSection({
   data,
@@ -38,6 +40,7 @@ export function TeachingSection({
   const [round, setRound] = useState(0);
   const [focusForm, setFocusForm] = useState(false);
   const canApply = data.state === "none" || data.state === "rejected";
+  const title = data.state === "approved" ? t.titleApproved : data.state === "pending" || data.state === "info" ? t.titlePending : t.title;
 
   function openForm() {
     setRound((n) => n + 1);
@@ -74,9 +77,10 @@ export function TeachingSection({
     switch (data.state) {
       case "none":
         return (
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <p className="text-sm leading-[1.55] text-fg-2 sm:flex-[1_1_240px]">{t.intro}</p>
-            <button type="button" onClick={openForm} className={cn(secondaryButton, "self-start sm:self-auto")}>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm leading-[1.55] text-fg-2">{t.intro}</p>
+            <HowItWorks />
+            <button type="button" onClick={openForm} className={cn(secondaryButton, "self-start")}>
               {t.open}
             </button>
           </div>
@@ -112,9 +116,28 @@ export function TeachingSection({
   }
 
   return (
-    <SectionCard Icon={GraduationCap} tone="warning" title={t.title}>
+    <SectionCard Icon={GraduationCap} tone="warning" title={title}>
       {body()}
     </SectionCard>
+  );
+}
+
+/** Talep yokken: öğretmenliğin nasıl açıldığını üç kısa adımda anlatır. */
+function HowItWorks() {
+  const s = getMessages().teaching.steps;
+  return (
+    <ol aria-label={s.label} className="grid gap-2 sm:grid-cols-3">
+      {[s.send, s.review, s.classes].map((text, index) => (
+        <li key={text} className="flex items-start gap-2.5 rounded-xl border border-line bg-surface-deep px-3 py-2.5">
+          <span className="flex size-6 flex-none items-center justify-center rounded-full bg-warning/16 text-xs font-bold text-warning-fg">
+            {index + 1}
+          </span>
+          <span className="pt-0.5 text-[13px] leading-[1.45] text-fg-2">
+            {rich(text, { nb: (chunk) => <span className="whitespace-nowrap">{chunk}</span> })}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

@@ -8,11 +8,13 @@ import { getCityView, getLabStats, getNeighborhoods, getPublishedLabs, getReport
 import { allLabs, labHref, routeOf, type CityView, type LabView } from "@/lib/lab/route";
 import { paths, routes } from "@/lib/navigation";
 import { assignmentViews, getHomeClasses } from "@/lib/classroom/student";
+import { getTeacherClasses } from "@/lib/classroom/teacher";
 import { getLatestArticles } from "@/lib/news/data";
 import { badgeCodes } from "@/lib/progress/badges";
 import { cardBackgroundOf } from "@/lib/progress/frames";
 import { getPendingLevelUp } from "@/lib/progress/level-up";
 import { getProgressSummary } from "@/lib/progress/summary";
+import { getTeacherAccess } from "@/lib/teacher/access";
 import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
 import { ClassCard, type HomeClassData } from "./ClassCard";
 import { LastSignInStrip } from "./LastSignInStrip";
@@ -20,6 +22,7 @@ import { LabStatsTabs, type StatRow, type StatTab } from "./LabStatsTabs";
 import { NewsCard, type NewsCardData } from "./NewsCard";
 import { ProfileCard } from "./ProfileCard";
 import { RecentReports, type ReportItem } from "./RecentReports";
+import { TeacherClassCard } from "./TeacherClassCard";
 import { TodayTip } from "./TodayTip";
 
 /** "En zorlu" sekmesine girmek için labı bitirmiş olması gereken en az öğrenci (az veride oran yanıltır). */
@@ -54,6 +57,9 @@ export async function StudentHome({ userId }: { userId: string }) {
   ]);
   const startHref = city.continueHref ?? routes.roadmap;
   const levelUp = await getPendingLevelUp(userId, summary.level.level);
+  // Öğretmen "Sınıfına katıl" yerine kendi sınıflarını görür (hoca öncesi kontrol 32).
+  const teacher = await getTeacherAccess();
+  const teacherClasses = teacher?.userId === userId ? await getTeacherClasses(userId) : null;
 
   const views = allLabs(city.districts);
   const idOf = new Map(labs.map((lab) => [lab.slug, lab.id]));
@@ -84,6 +90,16 @@ export async function StudentHome({ userId }: { userId: string }) {
   const continueLab = city.continueHref ? views.find((lab) => labHref(lab) === city.continueHref) : undefined;
   const sameAsHomework = !!city.continueHref && classData.assignments.some((a) => !a.finished && a.next?.href === city.continueHref);
 
+  // Öğretmen bir sınıfa öğrenci olarak da katıldıysa o kutu da görünür.
+  const classBox = teacherClasses ? (
+    <>
+      <TeacherClassCard data={teacherClasses} />
+      {classData.classes.length > 0 ? <ClassCard data={classData} verified={row.emailVerified} /> : null}
+    </>
+  ) : (
+    <ClassCard data={classData} verified={row.emailVerified} />
+  );
+
   return (
     <div className="relative mx-auto flex max-w-[1200px] flex-col gap-3.5 px-4 pt-4 pb-10 lg:gap-8 lg:px-6 lg:pt-10 lg:pb-[72px]">
       {/* Girişten sonra bir kez: önceki girişin zamanı (hoca öncesi kontrol, 23). */}
@@ -113,13 +129,13 @@ export async function StudentHome({ userId }: { userId: string }) {
         />
         <section aria-label={t.today} className="hidden flex-col gap-5 lg:flex lg:max-w-[380px] lg:flex-[1_1_320px]">
           <TodayTip userId={userId} fallback={tip} />
-          <ClassCard data={classData} verified={row.emailVerified} />
+          {classBox}
         </section>
       </div>
 
       {/* Telefon: sınıf ve ödev, sonra günün ipucu (masaüstünde sağ sütunda). */}
       <section aria-label={t.today} className="order-2 flex flex-col gap-3.5 lg:hidden">
-        <ClassCard data={classData} verified={row.emailVerified} />
+        {classBox}
         <TodayTip userId={userId} fallback={tip} />
       </section>
 

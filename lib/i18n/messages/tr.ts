@@ -2542,9 +2542,19 @@ export const tr = {
   // Faz 4: profil > Öğretmenlik (talep formu, inceleniyor, bilgi istendi, onaylandı, onaylanmadı).
   // -----------------------------------------------------------------------------------------
   teaching: {
+    // Başlık duruma göre: talep yokken ya da onaylanmadıysa soru, talep varken talep, onaylanınca bölümün adı.
     title: "Öğretmen misin?",
+    titlePending: "Öğretmenlik talebin",
+    titleApproved: "Öğretmenlik",
     intro: "Sınıf açıp öğrencilerinin hangi odaları bitirdiğini görmek için öğretmen hesabı gerekir. Kendin oda çözmek için gerekmez.",
     open: "Öğretmenlik talebi oluştur",
+    steps: {
+      label: "Öğretmenlik nasıl açılır",
+      send: "Talebini gönder",
+      // <nb>: satır kısa gelince "e-" tek başına kalmasın.
+      review: "Yönetici inceler, sonucu <nb>e-postayla</nb> bildiririz",
+      classes: "Onaylanınca Sınıflarım açılır",
+    },
     verifyFirst: "Öğretmenlik talebi göndermek için önce e-posta adresini doğrulaman gerekiyor.",
     verifyNow: "E-postanı doğrula",
     today: "Bugün",
@@ -2567,7 +2577,10 @@ export const tr = {
       newSchoolHint: "Okulun tabelasındaki resmî adı yaz. İl ve ilçe yukarıdan geliyor.",
       newSchoolNote: "Kısaltma kullanma. Yönetici okulunu kontrol eder, gerekirse adını düzeltir, sonra talebine bakar.",
       subject: "Branşın",
-      subjectPlaceholder: "Örn. Bilişim Teknolojileri",
+      chooseSubject: "Branşını seç",
+      otherSubject: "Başka bir branş",
+      otherSubjectName: "Branşının adı",
+      otherSubjectPlaceholder: "Branşını yaz",
       email: "Kurumsal e-posta",
       optional: "(isteğe bağlı)",
       emailPlaceholder: "Okulunun verdiği e-posta adresi",
@@ -2578,6 +2591,29 @@ export const tr = {
       submit: "Talebi gönder",
       cancel: "Vazgeç",
     },
+    // Talep formundaki branş listesi (ortaokul ve lise). Listede olmayan "Başka bir branş" ile yazılır.
+    subjects: [
+      "Almanca",
+      "Beden Eğitimi ve Spor",
+      "Bilişim Teknolojileri",
+      "Biyoloji",
+      "Coğrafya",
+      "Din Kültürü ve Ahlak Bilgisi",
+      "Felsefe",
+      "Fen Bilimleri",
+      "Fizik",
+      "Görsel Sanatlar",
+      "İngilizce",
+      "Kimya",
+      "Matematik",
+      "Müzik",
+      "Rehberlik ve Psikolojik Danışmanlık",
+      "Sosyal Bilgiler",
+      "Tarih",
+      "Teknoloji ve Tasarım",
+      "Türk Dili ve Edebiyatı",
+      "Türkçe",
+    ],
     document: {
       add: "Belge ekle",
       types: "PDF, JPG ya da PNG · en fazla 5 MB",
@@ -2597,7 +2633,7 @@ export const tr = {
       place: "İlini ve ilçeni seç.",
       school: "Okulunu seç ya da başka bir okulun adını yaz.",
       newSchoolName: "Okulunun tam adını yaz.",
-      subject: "Branşını yaz (2-60 karakter).",
+      subject: "Branşını seç; listede yoksa adını yaz (2-60 karakter).",
       institutionalEmail: "Bu e-posta adresi eksik görünüyor.",
       answer: "Bir cevap yaz ya da belge ekle.",
       alreadyOpen: "İncelenen bir talebin zaten var.",
@@ -2684,7 +2720,6 @@ export const tr = {
     title: "Sınıflarım",
     intro: "Sınıf kodunu ya da davet bağlantısını paylaş, öğrencilerin katılsın. Ödev ver, kimin hangi odayı bitirdiğini buradan izle.",
     newClass: "Yeni sınıf",
-    newClassCard: "Yeni sınıf oluştur",
     summary: {
       classes: "sınıf",
       students: "öğrenci",
@@ -2729,6 +2764,25 @@ export const tr = {
     empty: {
       title: "Henüz sınıfın yok",
       text: "İlk sınıfını oluştur ve kodu paylaş. Öğrencilerin katılınca kimin hangi odayı bitirdiğini buradan izlersin.",
+      first: "İlk sınıfını oluştur",
+    },
+    // Sınıfı olmayan öğretmene üç kısa adım (Sınıflarım ve ana sayfadaki "Sınıfların" kutusu).
+    steps: {
+      label: "Sınıf nasıl başlar",
+      create: "Sınıfını oluştur",
+      share: "Kodu öğrencilerinle paylaş",
+      homework: "Ödev ver, kimin bitirdiğini gör",
+    },
+    // Öğretmenin ana sayfasındaki kutu (öğrencinin "Sınıfına katıl" kutusu yerine).
+    home: {
+      title: "Sınıfların",
+      lead: "{classes} sınıf · {students} öğrenci",
+      emptyLead: "Henüz sınıfın yok",
+      homework: "Açık ödevler",
+      homeworkOf: "{class}, {name} ödevi: {done}/{total} öğrenci bitirdi",
+      noHomework: "Açık ödev yok. Sınıfına bir mahalleyi ödev olarak verebilirsin.",
+      moreAttention: "Dikkat isteyen {count} sınıf daha var",
+      go: "Sınıflarım'a git",
     },
     create: {
       title: "Yeni sınıf",

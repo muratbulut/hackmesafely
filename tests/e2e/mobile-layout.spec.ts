@@ -479,14 +479,15 @@ const studentScreens: Screen<StudentData>[] = [
       const box = page.getByRole("region", { name: "Öğretmen misin?" });
       await box.getByLabel("Okulunun tam adı").fill(longSchool);
       await box.getByRole("button", { name: "Talebi gönder" }).click();
-      await expect(box.getByText(/Branşını yaz \(/)).toBeVisible();
+      await expect(box.getByText(/Branşını seç; listede yoksa/)).toBeVisible();
     },
   },
   {
     name: "Profil, öğretmenlik talebi inceleniyor",
     open: async (page) => {
       const box = page.getByRole("region", { name: "Öğretmen misin?" });
-      await box.getByLabel("Branşın").fill("Bilişim Teknolojileri ve Yazılım");
+      await box.getByLabel("Branşın", { exact: true }).selectOption("Başka bir branş");
+      await box.getByLabel("Branşının adı").fill("Bilişim Teknolojileri ve Yazılım");
       await box.getByRole("button", { name: "Talebi gönder" }).click();
       await expect(page.getByText("Talebin inceleniyor")).toBeVisible();
     },
@@ -519,6 +520,7 @@ async function insertApplication(userId: string, school: { id: string; province:
 const newClassDialog = (page: Page) => page.getByRole("dialog", { name: "Yeni sınıf" });
 
 const teacherNewScreens: Screen<TeacherData>[] = [
+  { name: "Ana sayfa (öğretmen, sınıfsız)", path: "/" },
   { name: "Sınıflarım, boş", path: "/siniflarim" },
   { name: "Yeni sınıf penceresi", path: "/siniflarim", open: (page) => page.getByRole("button", { name: "Yeni sınıf", exact: true }).click() },
   {

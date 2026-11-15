@@ -17,13 +17,17 @@ import type { ApplicationDraft } from "./types";
 
 type FieldName = ApplicationField | "document";
 
+/** Branş listesindeki "Başka bir branş" seçeneğinin değeri (forma gitmez). */
+const otherSubjectChoice = "__other";
+
 /**
  * Öğretmenlik talep formu (Tur 4, 17 son hali; tahta: Ogretmenlik-Son). Öğretmen il ve ilçeyi
  * seçip okulunun adını yazar; okul listesi gösterilmez (sabah soruları 26b: kimse ilçedeki
  * okulları göremez). Yazılan ad sistemdeki bir okulla aynıysa sunucu talebi ona bağlar, değilse
  * yönetici eşler ya da adı düzeltip ekler. Davet bağlantısından ya da önceki talebinden gelen
- * okul seçili gelir; "Başka bir okul" ile ad yazılabilir. Branş zorunlu, kurumsal e-posta ve
- * belge isteğe bağlı.
+ * okul seçili gelir; "Başka bir okul" ile ad yazılabilir. Branş zorunlu: listeden seçilir, listede
+ * yoksa "Başka bir branş" ile yazılır (hoca öncesi kontrol 31). Kurumsal e-posta ve belge isteğe
+ * bağlı.
  */
 export function ApplicationForm({
   draft,
@@ -49,6 +53,10 @@ export function ApplicationForm({
   const [school, setSchool] = useState(draft?.school && !draft.newSchoolName ? draft.school.id : newSchoolChoice);
   const [newSchoolName, setNewSchoolName] = useState(draft?.newSchoolName ?? "");
   const [subject, setSubject] = useState(draft?.subject ?? "");
+  // Önceki talepteki branş listede yoksa "Başka bir branş" açık gelir.
+  const [otherSubject, setOtherSubject] = useState(!!draft?.subject && !t.subjects.includes(draft.subject));
+  const otherSubjectInput = useRef<HTMLInputElement>(null);
+  const [focusOtherSubject, setFocusOtherSubject] = useState(false);
   const [email, setEmail] = useState(draft?.institutionalEmail ?? "");
   const [attachment, setAttachment] = useState<PreparedDocument | null>(null);
   // Gönder'e bir kez basılınca eksikler alanların altında yazar ve düzeltildikçe kalkar.
@@ -61,6 +69,10 @@ export function ApplicationForm({
   useEffect(() => {
     if (autoFocus) firstField.current?.focus();
   }, [autoFocus]);
+
+  useEffect(() => {
+    if (focusOtherSubject && otherSubject) otherSubjectInput.current?.focus();
+  }, [focusOtherSubject, otherSubject]);
 
   const values = { province, district, school, newSchoolName, subject, institutionalEmail: email };
   const check = parseApplication(values);
@@ -211,19 +223,47 @@ export function ApplicationForm({
         </div>
       ) : null}
 
-      <Field id={`${id}-subject`} label={f.subject} error={subjectError}>
-        <input
-          id={`${id}-subject`}
-          name="subject"
-          autoComplete="off"
-          maxLength={applicationLimits.subject.max}
-          placeholder={f.subjectPlaceholder}
-          value={subject}
-          onChange={(e) => edit(setSubject, "subject")(e.target.value)}
-          className={inputClass}
-          {...describedBy(`${id}-subject`, { error: subjectError })}
-        />
-      </Field>
+      <div className="flex flex-col gap-3">
+        <Field id={`${id}-subject`} label={f.subject} error={otherSubject ? undefined : subjectError}>
+          <select
+            id={`${id}-subject`}
+            value={otherSubject ? otherSubjectChoice : t.subjects.includes(subject) ? subject : ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              const other = value === otherSubjectChoice;
+              setOtherSubject(other);
+              setFocusOtherSubject(other);
+              edit(setSubject, "subject")(other ? "" : value);
+            }}
+            className={selectClass}
+            {...describedBy(`${id}-subject`, { error: otherSubject ? undefined : subjectError })}
+          >
+            <option value="">{f.chooseSubject}</option>
+            {t.subjects.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+            <option value={otherSubjectChoice}>{f.otherSubject}</option>
+          </select>
+        </Field>
+        {otherSubject ? (
+          <Field id={`${id}-other-subject`} label={f.otherSubjectName} error={subjectError}>
+            <input
+              ref={otherSubjectInput}
+              id={`${id}-other-subject`}
+              autoComplete="off"
+              maxLength={applicationLimits.subject.max}
+              placeholder={f.otherSubjectPlaceholder}
+              value={subject}
+              onChange={(e) => edit(setSubject, "subject")(e.target.value)}
+              className={inputClass}
+              {...describedBy(`${id}-other-subject`, { error: subjectError })}
+            />
+          </Field>
+        ) : null}
+        <input type="hidden" name="subject" value={subject} />
+      </div>
 
       <Field
         id={`${id}-email`}
