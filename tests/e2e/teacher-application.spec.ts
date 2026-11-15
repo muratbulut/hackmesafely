@@ -9,7 +9,8 @@ import { createSchool, makeTeacher, userIdOf } from "./support/teacher";
 // onaylanmadı. Yönetimin kararı (Faz 5) burada veritabanına doğrudan yazılır.
 
 const toast = (page: Page, text: string | RegExp) => page.getByRole("status").filter({ hasText: text, visible: true });
-const section = (page: Page) => page.getByRole("region", { name: "Öğretmen misin?" });
+// Bölümün başlığı duruma göre değişir: talep yokken soru, talep varken talep, onaylanınca bölümün adı.
+const section = (page: Page) => page.getByRole("region", { name: /^(Öğretmen misin\?|Öğretmenlik talebin|Öğretmenlik)$/ });
 
 /** Her test başka bir ilçede çalışır: ilçenin okul listesinde yalnızca testin okulları olur. */
 function randomPlace() {
@@ -112,12 +113,19 @@ test.describe("öğretmenlik talebi", () => {
 
     await openTeaching(page);
     const box = section(page);
+    // Talep yokken başlık soru, altında üç kısa adım.
+    await expect(page.getByRole("heading", { name: "Öğretmen misin?" })).toBeVisible();
+    await expect(box.getByRole("list", { name: "Öğretmenlik nasıl açılır" }).getByRole("listitem")).toHaveText([
+      /Talebini gönder/,
+      /Yönetici inceler, sonucu e-postayla bildiririz/,
+      /Onaylanınca Sınıflarım açılır/,
+    ]);
     await box.getByRole("button", { name: "Öğretmenlik talebi oluştur" }).click();
 
     // Eksik formda gönder, neyin eksik olduğunu yazar.
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(box.getByText("İlini ve ilçeni seç.")).toBeVisible();
-    await expect(box.getByText("Branşını yaz (2-60 karakter).")).toBeVisible();
+    await expect(box.getByText("Branşını seç; listede yoksa adını yaz (2-60 karakter).")).toBeVisible();
 
     // Okul listesi yok (sabah soruları 26b): ilçede okul olsa da gösterilmez, ad yazılır.
     await choosePlace(page, place);
@@ -126,7 +134,10 @@ test.describe("öğretmenlik talebi", () => {
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(box.getByText("Okulunun tam adını yaz.")).toBeVisible();
     await box.getByLabel("Okulunun tam adı").fill(school.name.toLocaleUpperCase("tr"));
-    await box.getByLabel("Branşın").fill("  Bilişim   Teknolojileri ");
+    // Listede olmayan branş "Başka bir branş" ile yazılır.
+    await box.getByLabel("Branşın", { exact: true }).selectOption("Başka bir branş");
+    await expect(box.getByLabel("Branşının adı")).toBeFocused();
+    await box.getByLabel("Branşının adı").fill("  Bilgisayar   Bilimi ");
     await box.getByLabel("Kurumsal e-posta").fill("ayse.kaya@");
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(box.getByText("Bu e-posta adresi eksik görünüyor.")).toBeVisible();
@@ -137,10 +148,11 @@ test.describe("öğretmenlik talebi", () => {
     await expect(box.getByText("Talebin inceleniyor")).toBeVisible();
     await expect(box.getByRole("list", { name: "Talebin adımları" }).getByRole("listitem")).toHaveCount(3);
     await expect(box.getByText(school.name)).toBeVisible();
-    await expect(box.getByText("Bilişim Teknolojileri")).toBeVisible();
+    await expect(box.getByText("Bilgisayar Bilimi")).toBeVisible();
     await expect(box.getByText("ayse.kaya@okul.k12.tr")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Öğretmenlik talebin" })).toBeVisible();
     expect(await applicationsOf(email)).toMatchObject([
-      { status: "PENDING", schoolId: school.id, newSchoolName: null, subject: "Bilişim Teknolojileri", documentName: null },
+      { status: "PENDING", schoolId: school.id, newSchoolName: null, subject: "Bilgisayar Bilimi", documentName: null },
     ]);
 
     // Yenileyince de inceleniyor.
@@ -168,7 +180,7 @@ test.describe("öğretmenlik talebi", () => {
     await choosePlace(page, place);
     await expect(box.getByText("Kısaltma kullanma. Yönetici okulunu kontrol eder, gerekirse adını düzeltir, sonra talebine bakar.")).toBeVisible();
     await box.getByLabel("Okulunun tam adı").fill("Ok");
-    await box.getByLabel("Branşın").fill("Matematik");
+    await box.getByLabel("Branşın", { exact: true }).selectOption("Matematik");
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(box.getByText("Okulunun tam adını yaz.")).toBeVisible();
     await box.getByLabel("Okulunun tam adı").fill(`  ${newName}  `);
@@ -196,7 +208,7 @@ test.describe("öğretmenlik talebi", () => {
     await box.getByRole("radio", { name: /Başka bir okul/ }).check();
     await expect(box.getByLabel("Okulunun tam adı")).toBeVisible();
     await box.getByRole("radio", { name: new RegExp(school.name) }).check();
-    await box.getByLabel("Branşın").fill("Türkçe");
+    await box.getByLabel("Branşın", { exact: true }).selectOption("Türkçe");
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(toast(page, "Talebin gönderildi")).toBeVisible();
     expect(await applicationsOf(email)).toMatchObject([{ status: "PENDING", schoolId: school.id }]);
@@ -232,7 +244,7 @@ test.describe("öğretmenlik talebi", () => {
     await input.setInputFiles(pngFile);
     await expect(box.getByText("kucuk-gorsel.jpg")).toBeVisible();
 
-    await box.getByLabel("Branşın").fill("Bilişim Teknolojileri");
+    await box.getByLabel("Branşın", { exact: true }).selectOption("Bilişim Teknolojileri");
     await box.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(toast(page, "Talebin gönderildi")).toBeVisible();
     await expect(box.getByText(/^kucuk-gorsel\.jpg · \d+ KB$/)).toBeVisible();
@@ -297,8 +309,11 @@ test.describe("öğretmenlik talebi", () => {
     await box.getByRole("button", { name: "Bilgileri düzeltip yeniden gönder" }).click();
     await expect(box.getByLabel("İl", { exact: true })).toHaveValue(place.province);
     await expect(box.getByRole("radio", { name: new RegExp(school.name) })).toBeChecked();
-    await expect(box.getByLabel("Branşın")).toHaveValue("Matematk");
-    await box.getByLabel("Branşın").fill("Matematik");
+    // Önceki branş listede yoksa "Başka bir branş" açık gelir; listeden seçilince kutu kapanır.
+    await expect(box.getByLabel("Branşın", { exact: true })).toHaveValue("__other");
+    await expect(box.getByLabel("Branşının adı")).toHaveValue("Matematk");
+    await box.getByLabel("Branşın", { exact: true }).selectOption("Matematik");
+    await expect(box.getByLabel("Branşının adı")).toHaveCount(0);
     await box.getByLabel("Kurumsal e-posta").fill("ogretmen@okul.k12.tr");
     await box.getByRole("button", { name: "Talebi gönder" }).click();
 

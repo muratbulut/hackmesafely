@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Copy, Plus, Presentation } from "lucide-react";
+import { ArrowRight, CalendarDays, Copy, Presentation } from "lucide-react";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
 import { format, getMessages } from "@/lib/i18n";
 import { paths } from "@/lib/navigation";
@@ -117,22 +117,5 @@ export function ClassCard({
         </div>
       )}
     </article>
-  );
-}
-
-/** "Yeni sınıf oluştur" kartı: kesikli çerçeve, ortada artı. */
-export function NewClassCard({ onClick }: { onClick: () => void }) {
-  const t = getMessages().classroom;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2.5 rounded-[20px] border-2 border-dashed border-line bg-transparent text-[15px] font-bold text-fg-3 hover:border-accent hover:text-fg lg:min-h-[260px]"
-    >
-      <span className="flex size-12 items-center justify-center rounded-full bg-card">
-        <Plus className="size-[22px] text-accent-fg" strokeWidth={2.4} aria-hidden="true" />
-      </span>
-      {t.newClassCard}
-    </button>
   );
 }

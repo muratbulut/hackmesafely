@@ -139,11 +139,35 @@ test.describe("öğretmenin sınıfları", () => {
     await expect(page).toHaveURL(/\/profil\?bolum=ogretmenlik$/);
   });
 
+  test("öğretmenin ana sayfasında Sınıfına katıl yerine Sınıfların kutusu: sınıf yokken üç adım, sonra sınıflar", async ({ page }) => {
+    await signUpTeacher(page, "ogretmen-ana");
+    await page.goto("/");
+    const box = page.getByRole("region", { name: "Sınıfların", exact: true }).filter({ visible: true });
+    await expect(box.getByText("Henüz sınıfın yok")).toBeVisible();
+    await expect(box.getByRole("list", { name: "Sınıf nasıl başlar" }).getByRole("listitem")).toHaveCount(3);
+    await expect(box.getByRole("link", { name: "İlk sınıfını oluştur" })).toHaveAttribute("href", "/siniflarim?yeni=1");
+    await expect(page.getByRole("region", { name: "Sınıfın", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Sınıfına katıl" })).toHaveCount(0);
+
+    await createClass(page, "7-A Ana Sayfa");
+    await page.goto("/");
+    await expect(box.getByText("1 sınıf · 0 öğrenci")).toBeVisible();
+    await expect(box.getByText("Açık ödev yok. Sınıfına bir mahalleyi ödev olarak verebilirsin.")).toBeVisible();
+    // Yeni sınıf ilk günlerde "dikkat isteyenler"e düşmez (öğrencisiz sınıfa süre tanınır).
+    await expect(box.getByRole("link", { name: /7-A Ana Sayfa/ })).toHaveCount(0);
+    await expect(box.getByRole("link", { name: "Sınıflarım'a git" })).toHaveAttribute("href", "/siniflarim");
+  });
+
   test("öğretmen sınıf açar, kodu görür, tahtaya yansıtır; katılan öğrenci görünür", async ({ page }) => {
     await signUpTeacher(page, "ogretmen-sinif");
     await page.goto("/siniflarim");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sınıflarım");
     await expect(page.getByText("Henüz sınıfın yok", { exact: true })).toBeVisible();
+    await expect(page.getByRole("list", { name: "Sınıf nasıl başlar" }).getByRole("listitem")).toHaveText([
+      /Sınıfını oluştur/,
+      /Kodu öğrencilerinle paylaş/,
+      /Ödev ver, kimin bitirdiğini gör/,
+    ]);
 
     await page.getByRole("button", { name: "Yeni sınıf", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Yeni sınıf" });
