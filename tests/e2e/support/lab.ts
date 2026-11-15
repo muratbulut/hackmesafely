@@ -73,3 +73,23 @@ export async function reportStep(page: Page, step: "steps" | "signs" | "tips") {
   }
   await expect(journey).toHaveAttribute("data-step", step);
 }
+
+const levelUpDialog = (page: Page) => page.getByRole("dialog", { name: "Seviye atladın" });
+
+/** Seviye atlama kutlaması çıkar (yeni seviyeyle) ve "Harika" ile kapanır. */
+export async function closeLevelUp(page: Page, level: number) {
+  const dialog = levelUpDialog(page);
+  await expect(dialog.getByRole("heading", { name: `SEVİYE ${level}` })).toBeVisible();
+  await dialog.getByRole("button", { name: "Harika" }).click();
+  await expect(dialog).toBeHidden();
+}
+
+/**
+ * Kutlamanın kendisini denetlemeyen uzun akışlarda (CSP, ekran düzeni) kutlama çıkınca kapatılır;
+ * açık pencere arkadaki sayfayı kapattığı için akış takılmasın.
+ */
+export async function dismissLevelUps(page: Page) {
+  await page.addLocatorHandler(levelUpDialog(page), async (dialog) => {
+    await dialog.getByRole("button", { name: "Harika" }).click();
+  });
+}

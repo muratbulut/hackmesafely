@@ -14,3 +14,15 @@ export async function completeTraining(email: string, labSlug: string, cards = 4
     ),
   );
 }
+
+/** Testteki öğrencinin bir senaryo odasını verilen rapor puanıyla bitirmiş sayılması (raporsuz). */
+export async function finishScenario(email: string, labSlug: string, score: number) {
+  await withDb((client) =>
+    client.query(
+      `INSERT INTO "LabAttempt" ("id", "userId", "labId", "labVersion", "status", "reportScore", "startedAt", "endedAt", "resultReport")
+       SELECT gen_random_uuid()::text, u.id, l.id, l."publishedVersion", 'COMPLETED', $3, now(), now(), '{}'::jsonb
+       FROM "User" u, "Lab" l WHERE u.email = $1 AND l.slug = $2`,
+      [email, labSlug, score],
+    ),
+  );
+}

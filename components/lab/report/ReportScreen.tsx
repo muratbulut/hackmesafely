@@ -9,6 +9,7 @@ import type { ReportStatus } from "@/lib/lab/scoring";
 import { format, getMessages, rich } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { BadgeToast } from "@/components/status/BadgeToast";
+import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
 import type { BadgeCode } from "@/lib/progress/badges";
 import { Mascot, type MascotMood } from "@/components/mascot/Mascot";
 import { ReportSteps } from "./ReportSteps";
@@ -28,6 +29,8 @@ export type ReportScreenProps = {
   onRetry?: () => void;
   /** Bu denemeyle yeni kazanılan rozetler; rapor ilk açıldığında sağ üstte bildirim olarak çıkar. */
   newBadges?: BadgeCode[];
+  /** Gösterilmemiş seviye atlama ve öğrencinin avatarı: rapor açılınca kutlama çıkar (29). */
+  levelUp?: { from: number; to: number; emoji: string } | null;
 };
 
 const reportMood: Record<ReportStatus, MascotMood> = { safe: "happy", risky: "suspicious", hacked: "hacked" };
@@ -124,9 +127,10 @@ function Stepper({ steps, current, caught }: { steps: JourneyStep[]; current: nu
  * öğrenciye hiçbir şey yaptırılmaz (dokun, bul, çevir yok), her şey açık gelir. Öğrencinin raporu
  * ve yönetimdeki "Öğrenci gibi dene" aynı ekranı kullanır.
  */
-export function ReportScreen({ view, lab, backHref, crumbs, facts, history, actions, onRetry, newBadges }: ReportScreenProps) {
+export function ReportScreen({ view, lab, backHref, crumbs, facts, history, actions, onRetry, newBadges, levelUp: pendingLevelUp = null }: ReportScreenProps) {
   const t = getMessages().lab.report;
   const [badges, setBadges] = useState<BadgeCode[]>(() => newBadges ?? []);
+  const [levelUp, setLevelUp] = useState(pendingLevelUp);
   const style = statusStyle[view.status];
   const diff = history && history.previous !== null ? view.score - history.previous : null;
   const bold = (chunk: string) => <b className="text-fg">{chunk}</b>;
@@ -406,7 +410,9 @@ export function ReportScreen({ view, lab, backHref, crumbs, facts, history, acti
           <Fragment key={i}>{button}</Fragment>
         ))}
       </div>
-      <BadgeToast codes={badges} onClose={() => setBadges([])} />
+      {/* Seviye atladıysa önce kutlama; rozet bildirimi kutlama kapanınca gelir. */}
+      <BadgeToast codes={levelUp ? [] : badges} onClose={() => setBadges([])} />
+      {levelUp ? <LevelUpCelebration levelUp={levelUp} emoji={levelUp.emoji} onClose={() => setLevelUp(null)} /> : null}
     </div>
   );
 }

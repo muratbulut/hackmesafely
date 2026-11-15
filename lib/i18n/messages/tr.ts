@@ -576,6 +576,15 @@ export const tr = {
       current: "Şu anki avatarın: {name}",
       currentHint: "Üst menüde ve profil kartında görünür.",
       changed: "Avatarın değişti: {name}",
+      frame: "Çerçeven: {name}",
+      frameHint: "Çerçeve seviyenle gelir; seviye arttıkça güçlenir.",
+      backgroundTitle: "Kart arka planı",
+      backgroundLead: "Profil kartının arkasında görünür. Seviye arttıkça yenisi açılır.",
+      backgroundOn: "Takılı",
+      backgroundOpen: "Açık",
+      backgroundLocked: "{n}. seviyede açılır",
+      backgroundChanged: "Kart arka planın değişti: {name}",
+      backgroundLockedError: "Bu arka plan henüz açılmadı.",
       names: {
         fox: "Tilki",
         panda: "Panda",
@@ -746,6 +755,13 @@ export const tr = {
       title: "Yeni rozet bildirimi",
       description: "Oda bitince sağ üstte çıkar: rozet döner ve parlar, kısa bir ses çalar, \"Rozetlerimi gör\" profili açar.",
       action: "Rozet bildirimini göster",
+    },
+    // Avatar çerçeveleri ve seviye atlama kutlaması (29, 16 Kasım).
+    frames: {
+      title: "Avatar çerçeveleri",
+      description: "Seviyeye göre çerçeve: 1 ince halka, 2-3 Baloncuk, 4-5 Şimşek, 6-7 Kor halka, 8-9 Dijital, 10 Kahraman. Altında kart arka planları.",
+      level: "Seviye {n}",
+      action: "Seviye atlama kutlamasını göster",
     },
   },
 
@@ -1033,6 +1049,29 @@ export const tr = {
       more: "ve {names}",
       link: "Rozetlerimi gör",
       close: "Bildirimi kapat",
+    },
+    // Avatar çerçeveleri, kart arka planları, sıradaki ödül ve seviye atlama kutlaması
+    // (29, 16 Kasım; lib/progress/frames.ts, components/profile/frame/).
+    frames: { plain: "Çerçevesiz", bubble: "Baloncuk", spark: "Şimşek", ember: "Kor halka", digital: "Dijital", hero: "Kahraman" },
+    frameName: "{name} çerçevesi",
+    cardBackgrounds: { plain: "Sade", waves: "Yumuşak dalgalar", clouds: "Süzülen bulutlar", night: "Gece gökyüzü", aurora: "Kuzey ışıkları" },
+    nextReward: {
+      kicker: "SIRADAKİ ÖDÜL",
+      frameNew: "Seviye {n}: {name} çerçevesi",
+      frameStronger: "Seviye {n}: {name} çerçeven güçlenir",
+      background: "Seviye {n}: {name} kart arka planı",
+      allFrames: "Bütün çerçeveler sende",
+    },
+    levelUp: {
+      label: "Seviye atladın",
+      title: "SEVİYE {n}",
+      frameNew: "{name} çerçevesi açıldı",
+      frameStronger: "{name} çerçeven güçlendi",
+      newTitle: "Yeni unvanın: {title}",
+      background: "{name} kart arka planı da açıldı",
+      backgrounds: "{names} kart arka planları da açıldı",
+      ok: "Harika",
+      profile: "Profilimde gör",
     },
     // Profildeki Rozetler bölümü ve vitrin (tahta: Profil-Son).
     showcase: {

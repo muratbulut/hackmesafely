@@ -11,7 +11,10 @@ import { reduceEvents, rowToEvent, taskProgress } from "@/lib/lab/events";
 import { buildReportView } from "@/lib/lab/report";
 import type { ScenarioReport } from "@/lib/lab/scoring";
 import { paths, routes } from "@/lib/navigation";
+import { avatarOf } from "@/lib/avatars";
 import { isBadgeCode } from "@/lib/progress/badges";
+import { getPendingLevelUp } from "@/lib/progress/level-up";
+import { getProgressSummary } from "@/lib/progress/summary";
 import { requireUser } from "@/lib/session";
 import { siteTimeZone } from "@/lib/site";
 
@@ -97,6 +100,9 @@ async function Report({ params }: Pick<PageProps<"/oda/[oda]/sonuc/[deneme]">, "
   const gate = district?.scenarios.find((s) => s.lab.id === attempt.labId)?.gate ?? null;
 
   const newBadges = await badgesEarnedWith(user.id, attempt.startedAt, ended);
+  // Bu odayla (ya da daha önce gösterilemeyen) seviye atlama: rapor açılınca kutlama (29).
+  const pendingLevelUp = await getPendingLevelUp(user.id, (await getProgressSummary(user.id)).level.level);
+  const levelUp = pendingLevelUp ? { ...pendingLevelUp, emoji: avatarOf({ id: user.id, avatar: user.image }).emoji } : null;
 
   const title = content.meta.title || content.meta.name;
   return (
@@ -113,6 +119,7 @@ async function Report({ params }: Pick<PageProps<"/oda/[oda]/sonuc/[deneme]">, "
       facts={facts}
       history={history}
       newBadges={newBadges}
+      levelUp={levelUp}
       actions={{
         next: nextLab ? { href: paths.lab(nextLab.lab.slug), label: r.actions.next } : { href: routes.roadmap, label: r.actions.roadmap },
         retry: paths.labPlay(slug),

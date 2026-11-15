@@ -146,6 +146,10 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Profil ve bölümleri: hesap bilgileri, avatar, görünüm, güvenlik, hesabı sil | `ProfileView` (`components/profile/`, `lib/account/profile-actions.ts`): `account`, `avatar`, `appearance`, `security`, `delete` |
 | Hesap menüsü (üst menüdeki avatar) | `AccountMenu` |
 | Avatar (hazır liste) | `avatars`, `avatarOf` (`lib/avatars.ts`), `User.avatar` |
+| Avatar çerçevesi (seviyeye göre: Baloncuk, Şimşek, Kor halka, Dijital, Kahraman; sakin / canlı) | frame (`frameTierOf`, `frameStepOf`, `lib/progress/frames.ts`; `AvatarFrame`, `components/profile/frame/`) |
+| Kart arka planı (profil kartı; seviyeyle açılır) | card background (`cardBackgrounds`, `User.cardBackground`, `CardBackdrop`) |
+| Sıradaki ödül | next reward (`nextRewards`, `NextReward`) |
+| Seviye atlama kutlaması | level up (`LevelUpCelebration`, `getPendingLevelUp`, `User.levelSeen`, `lib/progress/level-up.ts`) |
 | Açık oturumlar, "Bu cihaz" | `Session`, `parseUserAgent` (`lib/account/user-agent.ts`) |
 | Hesap silme isteği (7 gün bekler) | `User.deletionScheduledAt`, `deletionGraceDays`, `scheduleDeletion`, `cancelDeletion` |
 | Anonimleştirme ("Silinmiş kullanıcı"; kalıcı kayıtlarda izi olan hesap silinmez) | `Role.DELETED`, `deleteAccount`, `lastingTraces`, `anonymize` (`lib/cleanup.ts`) |

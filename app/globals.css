@@ -315,6 +315,47 @@
   --scene-map-block: #1c2547;
   --scene-map-road: #2a3459;
   --scene-map-label: #7a85a6;
+
+  /* Avatar çerçeveleri ve profil kartı arka planları (29, 16 Kasım; components/profile/frame/).
+     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez (kartlar gri temada da koyu). */
+  --frame-bubble: #7dd3fc;
+  --frame-spark: #22d3ee;
+  --frame-spark-core: #f0fdff;
+  --frame-spark-branch: #a5f3fc;
+  --frame-ember-dark: #450a0a;
+  --frame-ember-deep: #7f1d1d;
+  --frame-ember-red: #b91c1c;
+  --frame-ember-orange: #f97316;
+  --frame-ember-glow: #fdba74;
+  --frame-ember-spark: #fde68a;
+  --frame-flame-red: #dc2626;
+  --frame-flame-core: #fff7ce;
+  --frame-flame-yellow: #fde047;
+  --frame-flame-tip: #fb923c;
+  --frame-digital-pink: #e879f9;
+  --frame-digital-white: #f0fdff;
+  --frame-gold: #facc15;
+  --frame-gold-light: #fff7d6;
+  --frame-hero-purple: #a78bfa;
+  --frame-outline: #0b1020;
+  --card-bg-waves-top: #0b1a33;
+  --card-bg-waves-bottom: #0d2231;
+  --card-bg-wave-1: #134e4a;
+  --card-bg-wave-2: #155e75;
+  --card-bg-wave-3: #1e3a5f;
+  --card-bg-clouds-top: #101a3d;
+  --card-bg-clouds-bottom: #182448;
+  --card-bg-cloud: #9db4e8;
+  --card-bg-night-top: #070b1f;
+  --card-bg-night-bottom: #0e1636;
+  --card-bg-star: #ffffff;
+  --card-bg-moon: #fef9c3;
+  --card-bg-aurora-top: #06101f;
+  --card-bg-aurora-bottom: #0b1a2e;
+  --card-bg-aurora-1: #10b981;
+  --card-bg-aurora-2: #8b5cf6;
+  --card-bg-aurora-3: #22d3ee;
+  --level-up-scrim: rgb(6 9 20 / 0.9);
 }
 
 [data-theme="gray"] {
@@ -561,6 +602,47 @@
   --scene-map-block: #b3bccb;
   --scene-map-road: #e6e9ef;
   --scene-map-label: #5b6683;
+
+  /* Avatar çerçeveleri ve profil kartı arka planları (29, 16 Kasım; components/profile/frame/).
+     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez (kartlar gri temada da koyu). */
+  --frame-bubble: #7dd3fc;
+  --frame-spark: #22d3ee;
+  --frame-spark-core: #f0fdff;
+  --frame-spark-branch: #a5f3fc;
+  --frame-ember-dark: #450a0a;
+  --frame-ember-deep: #7f1d1d;
+  --frame-ember-red: #b91c1c;
+  --frame-ember-orange: #f97316;
+  --frame-ember-glow: #fdba74;
+  --frame-ember-spark: #fde68a;
+  --frame-flame-red: #dc2626;
+  --frame-flame-core: #fff7ce;
+  --frame-flame-yellow: #fde047;
+  --frame-flame-tip: #fb923c;
+  --frame-digital-pink: #e879f9;
+  --frame-digital-white: #f0fdff;
+  --frame-gold: #facc15;
+  --frame-gold-light: #fff7d6;
+  --frame-hero-purple: #a78bfa;
+  --frame-outline: #0b1020;
+  --card-bg-waves-top: #0b1a33;
+  --card-bg-waves-bottom: #0d2231;
+  --card-bg-wave-1: #134e4a;
+  --card-bg-wave-2: #155e75;
+  --card-bg-wave-3: #1e3a5f;
+  --card-bg-clouds-top: #101a3d;
+  --card-bg-clouds-bottom: #182448;
+  --card-bg-cloud: #9db4e8;
+  --card-bg-night-top: #070b1f;
+  --card-bg-night-bottom: #0e1636;
+  --card-bg-star: #ffffff;
+  --card-bg-moon: #fef9c3;
+  --card-bg-aurora-top: #06101f;
+  --card-bg-aurora-bottom: #0b1a2e;
+  --card-bg-aurora-1: #10b981;
+  --card-bg-aurora-2: #8b5cf6;
+  --card-bg-aurora-3: #22d3ee;
+  --level-up-scrim: rgb(6 9 20 / 0.9);
 }
 
 /*

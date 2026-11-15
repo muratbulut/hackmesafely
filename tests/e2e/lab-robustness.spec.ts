@@ -278,7 +278,7 @@ test("B1: eğitim, soruları cevaplanmadan 'son kart' kaydedilerek bitirilemez",
   expect(answered.ok).toBe(true);
   const finished = (await callAction(page.request, "saveTrainingProgress", ["oltalama-egitimi", training.cards.length])) as Result;
   // Bitiş, bu bitişle kazanılan rozetleri de söyler (oynatıcı bildirim gösterir).
-  expect(finished).toEqual({ ok: true, badges: ["kart-kurdu"] });
+  expect(finished).toEqual({ ok: true, badges: ["kart-kurdu"], levelUp: null });
   expect((await progressOf(email))?.completedAt).not.toBeNull();
 });
 

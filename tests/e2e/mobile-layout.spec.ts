@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { isLive, signUp, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
+import { dismissLevelUps } from "./support/lab";
 import { layoutProblems, smallTargets } from "./support/layout";
 import { createSchool, makeCoordinator, makeTeacher } from "./support/teacher";
 
@@ -157,6 +158,7 @@ const visitorScreens: Screen<VisitorData>[] = [
   { name: "404", path: "/boyle-bir-sayfa-yok" },
   { name: "Durum ekranları", path: "/onizleme" },
   { name: "Yeni rozet bildirimi", path: "/onizleme", open: (page) => page.getByRole("button", { name: "Rozet bildirimini göster" }).click() },
+  { name: "Seviye atlama kutlaması", path: "/onizleme", open: (page) => page.getByRole("button", { name: "Seviye atlama kutlamasını göster" }).click() },
   { name: "Kayıt ol", path: "/kayit" },
   { name: "Giriş yap", path: "/giris" },
   { name: "Şifre sıfırlama", path: "/sifre-sifirla" },
@@ -818,6 +820,8 @@ test.describe("telefon düzeni", () => {
 
   test("öğrenci ekranları", async ({ page }) => {
     test.setTimeout(300_000);
+    // Kutlamanın kendi düzeni "Seviye atlama kutlaması" ekranında (/onizleme) denetlenir.
+    await dismissLevelUps(page);
     const email = uniqueEmail("mobil-ogrenci");
     await signUpVerified(page, email);
     await query(`UPDATE "User" SET "displayName" = $2 WHERE "email" = $1`, [email, longName]);

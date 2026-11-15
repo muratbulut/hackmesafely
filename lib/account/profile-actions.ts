@@ -13,6 +13,8 @@ import { db } from "@/lib/db";
 import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { evaluatePassword, personalTokens } from "@/lib/password-strength";
+import { cardBackgroundLevel, isCardBackgroundCode } from "@/lib/progress/frames";
+import { getProgressSummary } from "@/lib/progress/summary";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
 import { getSession } from "@/lib/session";
@@ -132,6 +134,18 @@ export async function setAvatar(code: string): Promise<FormState> {
   await db.user.update({ where: { id: user.id }, data: { avatar: code } });
   refresh();
   return { status: "ok", message: format(m.profile.avatar.changed, { name: m.profile.avatar.names[code] }) };
+}
+
+/** Profil kartının arka planı (29): yalnızca seviyesi açılmış olan takılır; seviye sunucuda hesaplanır. */
+export async function setCardBackground(code: string): Promise<FormState> {
+  const m = messages();
+  const { user } = await requireSession();
+  if (!isCardBackgroundCode(code)) return { status: "error", message: m.auth.errors.generic };
+  const { level } = await getProgressSummary(user.id);
+  if (cardBackgroundLevel(code) > level.level) return { status: "error", message: m.profile.avatar.backgroundLockedError };
+  await db.user.update({ where: { id: user.id }, data: { cardBackground: code } });
+  refresh();
+  return { status: "ok", message: format(m.profile.avatar.backgroundChanged, { name: m.progress.cardBackgrounds[code] }) };
 }
 
 // ---------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import type { HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
 import type { BadgeCode } from "@/lib/progress/badges";
+import type { LevelUp } from "@/lib/progress/level-up";
 
 export type FailReason = "auth" | "unverified" | "not_found" | "locked" | "ended" | "rate_limited" | "invalid";
 export type Fail = { ok: false; reason: FailReason };
@@ -61,7 +62,8 @@ export type TrainingDriver = {
    * Kaldığı kart; kart sayısı verilince eğitim tamamlanır. Cevaplanmamış soru varsa tamamlanmaz:
    * "unanswered" ve o soru kartının sırası döner.
    */
-  save(cardIndex: number): Promise<{ ok: true; badges?: BadgeCode[] } | Fail | Unanswered>;
+  /** Bitişte kazanılan rozetler ve gösterilmemiş seviye atlama (önizlemede ikisi de yok). */
+  save(cardIndex: number): Promise<{ ok: true; badges?: BadgeCode[]; levelUp?: LevelUp | null } | Fail | Unanswered>;
 };
 
 /** Eğitim bitirilmek istendi ama bu sıradaki soru kartı cevaplanmadı. */

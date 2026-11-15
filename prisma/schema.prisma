@@ -128,6 +128,11 @@ model User {
   // Öğretmenin okulu.
   schoolId            String?
   avatar              String?
+  // Profil kartının arka planı (lib/progress/frames.ts, cardBackgrounds); seviyeyle açılır.
+  cardBackground      String?
+  // Seviye atlama kutlamasının en son gösterildiği seviye. Boşsa ilk bakışta sessizce o anki
+  // seviye yazılır (bu alan gelmeden önce açılmış hesaplar eski seviyeleri için kutlama görmez).
+  levelSeen           Int?             @default(1) @db.SmallInt
   theme               Theme            @default(DARK)
   kvkkConsentAt       DateTime?
   createdAt           DateTime         @default(now())

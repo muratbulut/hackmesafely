@@ -6,6 +6,7 @@ import { Toast } from "@/components/status/Toast";
 import { avatars } from "@/lib/avatars";
 import { brand } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
+import type { LevelUp } from "@/lib/progress/level-up";
 import { cn } from "@/lib/utils";
 import { AccountSection } from "./AccountSection";
 import { AppearanceSection } from "./AppearanceSection";
@@ -13,6 +14,10 @@ import { AvatarSection } from "./AvatarSection";
 import { BadgesSection } from "./BadgesSection";
 import { ClassroomSection, type ClassroomSectionData } from "./ClassroomSection";
 import { DeleteSection } from "./DeleteSection";
+import { AvatarFrame } from "./frame/AvatarFrame";
+import { CardBackdrop } from "./frame/CardBackdrop";
+import { LevelUpCelebration } from "./frame/LevelUpCelebration";
+import { NextReward } from "./frame/NextReward";
 import { LevelBar, LevelPill, PointsPill } from "./LevelSummary";
 import { SecuritySection } from "./SecuritySection";
 import { TeachingSection, type TeachingSectionData } from "./TeachingSection";
@@ -46,6 +51,7 @@ export function ProfileView({
   initialSection,
   openSection = false,
   notice,
+  levelUp = null,
 }: {
   user: ProfileUser;
   progress: ProfileProgress;
@@ -56,6 +62,8 @@ export function ProfileView({
   /** Adreste bölüm istendiyse (/profil?bolum=...) telefonda da o bölümün sayfası açık gelir. */
   openSection?: boolean;
   notice: string | null;
+  /** Gösterilmemiş seviye atlama kutlaması (lib/progress/level-up.ts). */
+  levelUp?: LevelUp | null;
 }) {
   const t = getMessages().profile;
   const m = getMessages().progress;
@@ -125,7 +133,7 @@ export function ProfileView({
       case "badges":
         return <BadgesSection badges={progress.badges} showcase={progress.showcase} onDone={setToast} />;
       case "avatar":
-        return <AvatarSection current={user.avatar} onDone={setToast} />;
+        return <AvatarSection current={user.avatar} level={progress.level.level} background={user.cardBackground} onDone={setToast} />;
       case "appearance":
         return <AppearanceSection onDone={setToast} />;
       case "security":
@@ -143,10 +151,14 @@ export function ProfileView({
     <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-28 lg:gap-5 lg:px-6 lg:pt-8 lg:pb-16">
       {/* Profil kartı */}
       <section className="relative overflow-hidden rounded-3xl border border-line bg-surface-raised p-4 lg:p-7">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgb(34_211_238/0.10),transparent_60%)]" />
+        {user.cardBackground === "plain" ? (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgb(34_211_238/0.10),transparent_60%)]" />
+        ) : (
+          <CardBackdrop code={user.cardBackground} />
+        )}
         <div className="relative flex items-center gap-4 lg:gap-6">
-          <div className="relative flex-none">
-            <UserAvatar emoji={avatar.emoji} ring className="size-[84px] text-[44px] lg:size-[110px] lg:text-[58px]" />
+          <div className="relative m-2.5 flex-none lg:m-3.5">
+            <AvatarFrame level={progress.level.level} emoji={avatar.emoji} className="size-[84px] text-[44px] lg:size-[110px] lg:text-[58px]" />
             {/* Kalem rozeti 32 px görünür; ::after dokunma alanını 40 px'e çıkarır. */}
             <button
               type="button"
@@ -172,6 +184,7 @@ export function ProfileView({
           <PointsPill points={progress.level.points} />
         </div>
         <LevelBar level={progress.level} className="relative mt-4" />
+        <NextReward level={progress.level.level} emoji={avatar.emoji} className="relative mt-3 max-w-[520px]" />
         <ul aria-label={getMessages().home.statsLabel} className="relative mt-4 flex list-none flex-wrap gap-x-5 gap-y-2 p-0 lg:gap-x-9">
           {(["labsDone", "cardsRead", "reports"] as const).map((key) => (
             <li key={key} className="flex flex-col">
@@ -272,6 +285,7 @@ export function ProfileView({
       ) : null}
 
       <Toast message={toast} onClose={() => setToast(null)} />
+      {levelUp ? <LevelUpCelebration levelUp={levelUp} emoji={avatar.emoji} /> : null}
     </div>
   );
 }

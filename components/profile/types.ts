@@ -2,6 +2,7 @@ import type { EducationStatus } from "@/lib/account/shared";
 import type { DeviceKind } from "@/lib/account/user-agent";
 import type { AvatarCode } from "@/lib/avatars";
 import type { BadgeCode, BadgeState } from "@/lib/progress/badges";
+import type { CardBackgroundCode } from "@/lib/progress/frames";
 import type { LevelInfo } from "@/lib/progress/levels";
 
 /** Profil sayfasına sunucudan gelen veri. Tarihler hazır metindir (lib/account/dates.ts). */
@@ -13,6 +14,8 @@ export type ProfileUser = {
   educationStatus: EducationStatus | null;
   gradeLevel: string | null;
   avatar: AvatarCode;
+  /** Profil kartının arka planı (kilitliyse sade gelir). */
+  cardBackground: CardBackgroundCode;
   memberSince: string;
   /** Silme istenmişse silineceği gün ("17 Ekim'de"). */
   deletionOn: string | null;

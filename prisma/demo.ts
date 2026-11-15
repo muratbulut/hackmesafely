@@ -248,8 +248,9 @@ async function addDemo(db: PrismaClient, password: string) {
       const schoolOf = (key: string) => demo.demoSchools.find((s) => s.key === key)!;
 
       // Kullanıcı: önceki silmede kalan (askıya alınmış) örnek hesap varsa yeniden kurulur.
+      // levelSeen boş: ilk girişte o anki seviye sessizce yazılır, eski seviyeler için kutlama çıkmaz.
       const putUser = async (data: Prisma.UserUncheckedCreateInput & { id: string }) => {
-        const row = { theme: "DARK" as const, suspended: false, deletionScheduledAt: null, ...data, emailVerified: true };
+        const row = { theme: "DARK" as const, suspended: false, deletionScheduledAt: null, levelSeen: null, ...data, emailVerified: true };
         await tx.user.upsert({ where: { id: data.id }, create: row, update: row });
       };
       const putLogin = async (userId: string, key: string) => {

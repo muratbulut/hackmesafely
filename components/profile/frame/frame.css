@@ -1,0 +1,884 @@
+/*
+ * Avatar çerçeveleri, profil kartı arka planları ve seviye atlama kutlaması (29, 16 Kasım; tuval
+ * "29+ Avatar çerçeveleri"). Sınıflar "af-" ile başlar; renkler yalnızca tema değişkenlerinden
+ * (globals.css, --frame-*, --card-bg-*). Ölçüler çerçevenin kutusuna göre yüzdedir: aynı çerçeve
+ * 46 px'lik "sıradaki ödül" önizlemesinde de 150 px'lik kutlamada da aynı görünür.
+ *
+ * "Hareketi azalt" açıksa globals.css bütün hareketleri durdurur. Bu yüzden her parçanın düz hâli
+ * durağan son hâlidir: baloncuklar yerinde durur, şimşek ve parçacıklar görünmez (flaş yok),
+ * kutlamada yeni çerçeve ve yazılar doğrudan görünür, eski çerçeve ve konfeti hiç çıkmaz.
+ */
+
+.af {
+  position: relative;
+  display: block;
+  flex: none;
+  border-radius: 9999px;
+}
+.af-core {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--surface-deep);
+  box-shadow: inset 0 0 0 2px var(--frame-outline);
+  line-height: 1;
+  user-select: none;
+}
+.af-deco {
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  z-index: 1;
+  width: 160%;
+  height: 160%;
+  overflow: visible;
+  pointer-events: none;
+}
+.af-deco.af-front {
+  z-index: 4;
+}
+.af-ring {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+/* 1. seviye: ince halka */
+.af-plain {
+  inset: -3%;
+  border: 2px solid var(--line-strong);
+}
+
+/* 2-3: Baloncuk */
+.af-soft {
+  inset: -5%;
+  border: 2px solid color-mix(in srgb, var(--frame-bubble) 50%, transparent);
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--frame-bubble) 22%, transparent),
+    inset 0 0 10px color-mix(in srgb, var(--frame-bubble) 14%, transparent);
+}
+.af-calm .af-soft {
+  opacity: 0.6;
+}
+.af-bub {
+  fill: color-mix(in srgb, var(--frame-bubble) 18%, transparent);
+  stroke: var(--frame-bubble);
+  stroke-width: 1.4;
+  animation: af-rise var(--d) ease-in infinite;
+}
+@keyframes af-rise {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.8;
+    transform: translateY(-34px) scale(1);
+  }
+  100% {
+    transform: translateY(-44px) scale(1.25);
+    opacity: 0;
+  }
+}
+
+/* 4-5: Şimşek */
+.af-spark-ring {
+  fill: none;
+  stroke: var(--frame-spark);
+  stroke-width: 2.5;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 4px var(--frame-spark));
+  animation: af-breath 3.4s ease-in-out infinite;
+}
+.af-lively .af-spark-ring {
+  opacity: 0.85;
+  filter: drop-shadow(0 0 5px var(--frame-spark)) drop-shadow(0 0 10px color-mix(in srgb, var(--frame-spark) 50%, transparent));
+  animation-duration: 2.2s;
+}
+@keyframes af-breath {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.af-bolt {
+  fill: none;
+  stroke-linejoin: round;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px var(--frame-spark)) drop-shadow(0 0 7px var(--frame-spark));
+  animation: af-zap var(--d) steps(1) infinite;
+}
+.af-bolt-main {
+  stroke: var(--frame-spark-core);
+  stroke-width: 2.2;
+}
+.af-bolt-branch {
+  stroke: var(--frame-spark-branch);
+  stroke-width: 1.4;
+}
+/* Çoğu zaman sönük; döngünün sonunda iki kısa çakma (sakin şimşek, 4A). */
+@keyframes af-zap {
+  0%,
+  74% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  79% {
+    opacity: 0.25;
+  }
+  82% {
+    opacity: 0.9;
+  }
+  88%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 6-7: Kor halka */
+.af-kor-a {
+  stop-color: var(--frame-ember-dark);
+  stop-opacity: 0;
+}
+.af-kor-b {
+  stop-color: var(--frame-ember-red);
+}
+.af-kor-c {
+  stop-color: var(--frame-ember-orange);
+}
+.af-kor-d {
+  stop-color: var(--frame-ember-deep);
+}
+.af-flame-a {
+  stop-color: var(--frame-ember-deep);
+}
+.af-flame-b {
+  stop-color: var(--frame-flame-red);
+}
+.af-flame-c {
+  stop-color: var(--frame-ember-orange);
+}
+.af-flame-d {
+  stop-color: var(--frame-ember-orange);
+  stop-opacity: 0;
+}
+.af-flame-in-a {
+  stop-color: var(--frame-flame-core);
+}
+.af-flame-in-b {
+  stop-color: var(--frame-flame-yellow);
+}
+.af-flame-in-c {
+  stop-color: var(--frame-flame-tip);
+  stop-opacity: 0;
+}
+.af-kor {
+  opacity: 0.62;
+  animation: af-glow var(--d) ease-in-out infinite alternate;
+}
+.af-lively .af-kor {
+  opacity: 1;
+}
+.af-ember-dot {
+  fill: var(--frame-ember-glow);
+  animation: af-glow var(--d) ease-in-out infinite alternate;
+}
+@keyframes af-glow {
+  from {
+    opacity: 0.45;
+  }
+}
+.af-tongue {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: af-flicker var(--d) ease-in-out infinite alternate;
+}
+@keyframes af-flicker {
+  0% {
+    transform: scaleY(0.86) scaleX(1.04) skewX(-3deg);
+  }
+  45% {
+    transform: scaleY(1.1) scaleX(0.94) skewX(2.5deg);
+  }
+  100% {
+    transform: scaleY(0.94) scaleX(1) skewX(-1.5deg);
+  }
+}
+.af-tongue-in {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: af-lick 0.55s ease-in-out infinite alternate;
+}
+@keyframes af-lick {
+  0% {
+    transform: scaleY(0.8) translateY(1px);
+  }
+  100% {
+    transform: scaleY(1.08) translateY(-2px);
+  }
+}
+.af-ember {
+  fill: var(--frame-ember-spark);
+  opacity: 0;
+  animation: af-fly var(--d) ease-out infinite;
+}
+@keyframes af-fly {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), var(--y));
+    opacity: 0;
+  }
+}
+
+/* 8-9: Dijital */
+.af-glitch-a,
+.af-glitch-b {
+  fill: none;
+  stroke-width: 3;
+}
+.af-glitch-a {
+  stroke: var(--frame-digital-pink);
+  opacity: 0.8;
+  animation: af-glitch-a 2.6s steps(1) infinite;
+}
+.af-glitch-b {
+  stroke: var(--frame-spark);
+  animation: af-glitch-b 2.6s steps(1) infinite;
+}
+.af-dots-ring {
+  fill: none;
+  stroke: var(--frame-spark);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+  opacity: 0.6;
+}
+@keyframes af-glitch-a {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0);
+  }
+  88% {
+    transform: translate(-4px, 1px);
+  }
+  91% {
+    transform: translate(3px, -2px);
+  }
+  94% {
+    transform: translate(-2px, 0);
+  }
+}
+@keyframes af-glitch-b {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0);
+  }
+  88% {
+    transform: translate(4px, -1px);
+  }
+  91% {
+    transform: translate(-3px, 2px);
+  }
+  94% {
+    transform: translate(2px, 0);
+  }
+}
+.af-px {
+  animation: af-blink var(--d) steps(1) infinite;
+}
+.af-px-0 {
+  fill: var(--frame-spark);
+}
+.af-px-1 {
+  fill: var(--frame-digital-pink);
+}
+.af-px-2 {
+  fill: var(--frame-digital-white);
+}
+.af-glyph {
+  fill: var(--frame-spark);
+  font: 700 11px var(--font-mono, monospace);
+  animation: af-blink var(--d) steps(1) infinite;
+}
+@keyframes af-blink {
+  0% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.15;
+  }
+  55% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.4;
+  }
+}
+.af-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.af-scan::after {
+  content: "";
+  position: absolute;
+  top: -25%;
+  right: 0;
+  left: 0;
+  height: 22%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--frame-digital-pink) 28%, transparent),
+    color-mix(in srgb, var(--frame-spark) 35%, transparent),
+    transparent
+  );
+  animation: af-scan 2.4s linear infinite;
+}
+@keyframes af-scan {
+  to {
+    top: 110%;
+  }
+}
+
+/* 10: Kahraman */
+@property --af-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.af-hero {
+  inset: -8%;
+  background: conic-gradient(
+    from var(--af-a),
+    var(--frame-gold),
+    var(--frame-spark),
+    var(--frame-gold),
+    var(--frame-hero-purple),
+    var(--frame-gold)
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent 89%, black 90%);
+  mask: radial-gradient(farthest-side, transparent 89%, black 90%);
+  animation: af-turn 3.5s linear infinite;
+}
+@keyframes af-turn {
+  to {
+    --af-a: 360deg;
+  }
+}
+.af-hero-outer {
+  inset: -16%;
+  border: 1px solid color-mix(in srgb, var(--frame-gold) 45%, transparent);
+  animation: af-spin 20s linear infinite;
+}
+.af-hero-outer::before,
+.af-hero-outer::after {
+  content: "";
+  position: absolute;
+  top: -3%;
+  left: 47%;
+  width: 6%;
+  height: 6%;
+  background: var(--frame-gold);
+  transform: rotate(45deg);
+}
+.af-hero-outer::after {
+  top: auto;
+  bottom: -3%;
+}
+.af-orbit {
+  inset: -10%;
+  animation: af-spin 4s linear infinite;
+}
+.af-orbit.af-rev {
+  animation-duration: 9s;
+  animation-direction: reverse;
+}
+.af-orbit::before {
+  content: "";
+  position: absolute;
+  top: -2%;
+  left: 48%;
+  width: 5%;
+  height: 5%;
+  border-radius: 9999px;
+  background: var(--frame-gold-light);
+  box-shadow: 0 0 10px 3px var(--frame-gold);
+}
+@keyframes af-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.af-crown {
+  position: absolute;
+  top: -24%;
+  left: 37.5%;
+  z-index: 4;
+  width: 25%;
+  animation: af-bob 2.4s ease-in-out infinite;
+}
+.af-crown path {
+  fill: var(--frame-gold);
+  stroke: var(--frame-outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+@keyframes af-bob {
+  50% {
+    transform: translateY(-8%);
+  }
+}
+.af-eye {
+  position: absolute;
+  bottom: -12%;
+  left: 32%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 36%;
+  height: 18%;
+  padding-left: 3%;
+  border-radius: 9999px;
+  background: var(--frame-gold);
+  box-shadow: 0 0 0 3px var(--frame-outline);
+}
+.af-eye::before {
+  content: "";
+  display: block;
+  height: 80%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 55% 50%, var(--frame-outline) 0 23%, var(--frame-gold-light) 25%);
+  animation: af-wink 4s infinite;
+}
+@keyframes af-wink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Profil kartı arka planları: yavaş ve soluk, göz yormaz (Murat, 15 Kasım).
+ * ---------------------------------------------------------------------------------------- */
+.af-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.af-bg svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.af-bg-waves {
+  background: linear-gradient(180deg, var(--card-bg-waves-top), var(--card-bg-waves-bottom));
+}
+.af-wave {
+  animation: af-wave var(--d) ease-in-out infinite alternate;
+}
+.af-wave-1 {
+  fill: var(--card-bg-wave-1);
+  opacity: 0.5;
+}
+.af-wave-2 {
+  fill: var(--card-bg-wave-2);
+  opacity: 0.45;
+}
+.af-wave-3 {
+  fill: var(--card-bg-wave-3);
+  opacity: 0.6;
+}
+@keyframes af-wave {
+  to {
+    transform: translateX(-70px);
+  }
+}
+.af-bg-clouds {
+  background: linear-gradient(180deg, var(--card-bg-clouds-top), var(--card-bg-clouds-bottom));
+}
+.af-cloud {
+  position: absolute;
+  border-radius: 9999px;
+  background: var(--card-bg-cloud);
+  filter: blur(26px);
+  animation: af-drift var(--d) ease-in-out infinite alternate;
+}
+@keyframes af-drift {
+  to {
+    transform: translate(var(--x), var(--y, 0));
+  }
+}
+.af-bg-night {
+  background: linear-gradient(180deg, var(--card-bg-night-top), var(--card-bg-night-bottom));
+}
+.af-star {
+  fill: var(--card-bg-star);
+  opacity: 0.6;
+  animation: af-twinkle var(--d) ease-in-out infinite;
+}
+@keyframes af-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.af-moon {
+  fill: var(--card-bg-moon);
+}
+.af-moon-cut {
+  fill: var(--card-bg-night-bottom);
+}
+.af-shoot {
+  position: absolute;
+  width: 90px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--card-bg-star), transparent);
+  opacity: 0;
+  animation: af-shoot var(--d) ease-in infinite;
+}
+@keyframes af-shoot {
+  0%,
+  86% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(24deg);
+  }
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(190px, 88px) rotate(24deg);
+  }
+}
+.af-bg-aurora {
+  background: linear-gradient(180deg, var(--card-bg-aurora-top), var(--card-bg-aurora-bottom));
+}
+.af-aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.28;
+  animation: af-drift var(--d) ease-in-out infinite alternate;
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Seviye atlama kutlaması (LevelUpCelebration). Sıra: zemin kararır, maskot zıplar, SEVİYE N
+ * yazısı gelir; altın halka dolar, beyaz parlamayla eski çerçeve kırılır, yenisi ışık
+ * huzmeleri, çift şok dalgası, konfeti ve yıldız parıltılarıyla gelir; yazının üstünden ışık süzülür.
+ * ---------------------------------------------------------------------------------------- */
+.af-lu {
+  background: var(--level-up-scrim);
+  animation: af-lu-in 0.5s ease both;
+}
+@keyframes af-lu-in {
+  from {
+    background: transparent;
+  }
+}
+.af-lu-mascot {
+  animation: af-hop 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) 0.1s both;
+}
+@keyframes af-hop {
+  0% {
+    transform: translateY(60px) scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-14px) scale(1.08, 0.94);
+    opacity: 1;
+  }
+}
+.af-lu-title {
+  /* Işık bandı ortada; düz hâlde (ve "Hareketi azalt"ta) görünen kısım bandın dışında kalır. */
+  background: linear-gradient(100deg, var(--fg) 40%, var(--frame-flame-yellow) 50%, var(--fg) 60%);
+  background-size: 300% 100%;
+  background-position: 0% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    af-pop 0.6s cubic-bezier(0.3, 1.7, 0.5, 1) 0.45s both,
+    af-shine 2.4s linear 1.6s infinite;
+}
+@keyframes af-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+@keyframes af-shine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+.af-lu-fade {
+  animation: af-fade 0.4s ease var(--delay, 0.8s) both;
+}
+@keyframes af-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.af-lu-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.af-lu-old,
+.af-lu-new {
+  position: absolute;
+}
+.af-lu-old {
+  opacity: 0;
+  animation: af-shatter 0.55s ease-in 1.05s both;
+}
+@keyframes af-shatter {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+    filter: blur(6px);
+  }
+}
+.af-lu-new {
+  animation: af-arrive 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) 1.3s both;
+}
+@keyframes af-arrive {
+  from {
+    opacity: 0;
+    transform: scale(1.6) rotate(-20deg);
+    filter: brightness(3);
+  }
+}
+.af-lu-charge {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.af-lu-charge circle {
+  fill: none;
+  stroke: var(--frame-gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 553;
+  opacity: 0;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px var(--frame-gold));
+  animation: af-charge 1.3s ease-in 0.15s both;
+}
+@keyframes af-charge {
+  0% {
+    stroke-dashoffset: 553;
+    opacity: 1;
+  }
+  68% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+.af-lu-flash {
+  position: absolute;
+  inset: -12%;
+  z-index: 7;
+  border-radius: 9999px;
+  background: radial-gradient(circle, var(--frame-gold-light), transparent 62%);
+  opacity: 0;
+  animation: af-flash 0.5s ease-out 1s both;
+}
+@keyframes af-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+.af-lu-shock {
+  position: absolute;
+  inset: 15%;
+  border: 3px solid var(--fg);
+  border-radius: 9999px;
+  opacity: 0;
+  animation: af-shock 0.7s ease-out var(--delay, 1.3s) both;
+}
+.af-lu-shock.af-gold {
+  inset: 11%;
+  border-color: var(--frame-gold);
+}
+@keyframes af-shock {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+.af-lu-rays {
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  border-radius: 9999px;
+  background: repeating-conic-gradient(color-mix(in srgb, var(--frame-gold) 20%, transparent) 0 7deg, transparent 7deg 26deg);
+  -webkit-mask: radial-gradient(circle, transparent 32%, black 34%, transparent 74%);
+  mask: radial-gradient(circle, transparent 32%, black 34%, transparent 74%);
+  opacity: 0;
+  animation:
+    af-rays 2.6s ease 1.3s both,
+    af-spin 16s linear 1.3s infinite;
+}
+@keyframes af-rays {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.af-lu-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 6;
+  width: 0;
+  height: 0;
+}
+.af-lu-burst i {
+  position: absolute;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0;
+  animation: af-boom 1.1s cubic-bezier(0.1, 0.7, 0.3, 1) 1.35s both;
+}
+@keyframes af-boom {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), var(--y)) rotate(320deg);
+    opacity: 0;
+  }
+}
+.af-lu-twinkle {
+  position: absolute;
+  z-index: 8;
+  width: 8%;
+  height: 8%;
+  opacity: 0;
+  animation: af-twinkle-pop 0.9s ease-out var(--delay) both;
+}
+.af-lu-twinkle path {
+  fill: var(--frame-gold-light);
+  filter: drop-shadow(0 0 4px var(--frame-gold));
+}
+@keyframes af-twinkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3) rotate(70deg);
+  }
+}
+
+/* Profil > Avatar'daki arka plan seçicisinin küçük örnekleri (durağan). */
+.af-swatch-plain {
+  background: linear-gradient(135deg, var(--card), var(--surface-raised));
+}
+.af-swatch-waves {
+  background:
+    linear-gradient(180deg, transparent 55%, var(--card-bg-wave-1) 55% 70%, var(--card-bg-wave-2) 70% 84%, var(--card-bg-wave-3) 84%),
+    linear-gradient(180deg, var(--card-bg-waves-top), var(--card-bg-waves-bottom));
+}
+.af-swatch-clouds {
+  background:
+    radial-gradient(ellipse 40% 22% at 30% 35%, color-mix(in srgb, var(--card-bg-cloud) 35%, transparent), transparent),
+    radial-gradient(ellipse 36% 20% at 72% 68%, color-mix(in srgb, var(--card-bg-cloud) 28%, transparent), transparent),
+    linear-gradient(180deg, var(--card-bg-clouds-top), var(--card-bg-clouds-bottom));
+}
+.af-swatch-night {
+  background:
+    radial-gradient(circle at 20% 30%, var(--card-bg-star) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 55% 60%, var(--card-bg-star) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 38% 78%, var(--card-bg-star) 0 0.8px, transparent 1.3px),
+    radial-gradient(circle at 80% 28%, var(--card-bg-moon) 0 5px, transparent 5.5px),
+    linear-gradient(180deg, var(--card-bg-night-top), var(--card-bg-night-bottom));
+}
+.af-swatch-aurora {
+  background:
+    radial-gradient(ellipse 50% 60% at 25% 30%, color-mix(in srgb, var(--card-bg-aurora-1) 55%, transparent), transparent),
+    radial-gradient(ellipse 45% 55% at 65% 55%, color-mix(in srgb, var(--card-bg-aurora-2) 50%, transparent), transparent),
+    radial-gradient(ellipse 40% 50% at 85% 25%, color-mix(in srgb, var(--card-bg-aurora-3) 45%, transparent), transparent),
+    linear-gradient(180deg, var(--card-bg-aurora-top), var(--card-bg-aurora-bottom));
+}
