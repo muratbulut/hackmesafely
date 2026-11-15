@@ -126,6 +126,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Ziyaretçi | visitor (`app/(visitor)/`, `components/visitor/`) |
 | Durum ekranları (yükleniyor, boş, hata) | status (`components/status/`) |
 | Koyu / gri tema | `dark` / `gray` (`<html data-theme>`, `theme` çerezi) |
+| Hareketi azalt (sitenin ayarı, profil > Görünüm) | reduce motion (`<html data-motion="reduce">`, `motion` çerezi, `lib/motion.ts`) |
 | Dil sözlüğü (arayüz metinleri), dil | messages (`lib/i18n/messages/tr.ts`, `getMessages()`), locale |
 | Sayfa adresleri | `routes` (`lib/navigation.ts`) |
 | Yasal sayfalar: KVKK aydınlatma metni, gizlilik politikası, kullanım koşulları | legal (`components/legal/`, `lib/content/legal.ts`): `kvkk`, `privacy`, `terms` |

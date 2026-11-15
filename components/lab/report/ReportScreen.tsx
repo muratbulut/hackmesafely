@@ -14,6 +14,7 @@ import { Mascot, type MascotMood } from "@/components/mascot/Mascot";
 import { ReportSteps } from "./ReportSteps";
 import { ReportTips } from "./ReportTips";
 import { SignsCard } from "./SignsCard";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type ReportScreenProps = {
   view: ReportView;
@@ -143,7 +144,7 @@ export function ReportScreen({ view, lab, backHref, crumbs, facts, history, acti
     requestAnimationFrame(() => {
       const box = journey.current;
       if (!box) return;
-      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const smooth = !prefersReducedMotion();
       box.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
       box.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
     });

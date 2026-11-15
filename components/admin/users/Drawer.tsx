@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /**
  * Kullanıcılar sayfasının çekmecesi (öğretmen ve öğrenci): masaüstünde sağdan 460 px, telefonda
@@ -39,7 +40,7 @@ export function Drawer({
   }, [open]);
 
   function requestClose() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       onClose();
       return;
     }

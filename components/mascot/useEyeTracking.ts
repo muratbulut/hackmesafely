@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type RefObject } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /** Bakış yönünü maskotun köküne yazar (-1 ile 1 arası). Göz bebeği CSS'te bu değişkenlerle kayar. */
 export function setGaze(el: Element | null, x: number, y: number) {
@@ -36,14 +37,13 @@ export function useEyeTracking(ref: RefObject<SVGSVGElement | null>, enabled = t
   useEffect(() => {
     if (!enabled || typeof window.matchMedia !== "function") return;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
     let last: PointerEvent | null = null;
 
     function apply() {
       frame = 0;
       const el = ref.current;
-      if (!el || !last || !fine.matches || reduced.matches) return;
+      if (!el || !last || !fine.matches || prefersReducedMotion()) return;
       const { x, y } = gazeTowards(el, last.clientX, last.clientY);
       setGaze(el, x, y);
     }

@@ -55,6 +55,8 @@ export function CityView({ city, member }: { city: City; member: boolean }) {
 function ProgressCard({ city }: { city: City }) {
   const t = getMessages();
   const p = cityProgress(city.districts);
+  // 27 (11 Kasım): düğme ana sayfadaki gibi odanın adını söyler.
+  const target = city.continueSlug ? city.districts.flatMap(routeOf).find((l) => l.slug === city.continueSlug) : null;
   return (
     <div className="flex flex-col gap-3 rounded-[20px] border border-line bg-surface p-4 lg:flex-[0_1_420px] lg:p-5">
       <div className="flex items-baseline justify-between">
@@ -74,8 +76,10 @@ function ProgressCard({ city }: { city: City }) {
         href={city.continueHref ?? routes.labs}
         className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-accent px-5 text-base font-bold text-on-accent no-underline transition-[filter] hover:brightness-110"
       >
-        {city.continueHref ? t.nav.continue : t.roadmap.browseLabs}
-        {city.continueHref ? <Play className="size-4 fill-current" strokeWidth={2.4} aria-hidden="true" /> : <ArrowRight className="size-4" strokeWidth={2.4} aria-hidden="true" />}
+        <span className="min-w-0 truncate">
+          {city.continueHref ? (target ? format(t.home.continueTo, { name: target.name }) : t.nav.continue) : t.roadmap.browseLabs}
+        </span>
+        {city.continueHref ? <Play className="size-4 flex-none fill-current" strokeWidth={2.4} aria-hidden="true" /> : <ArrowRight className="size-4" strokeWidth={2.4} aria-hidden="true" />}
       </Link>
     </div>
   );

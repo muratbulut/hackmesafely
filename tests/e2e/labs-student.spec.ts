@@ -41,6 +41,9 @@ test.describe("öğrenci", () => {
     await page.goto("/yol-haritasi");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Siber şehrin");
     await expect(visible(page, "Genel ilerlemen")).toBeVisible();
+    // 27 (11 Kasım): devam düğmesi açacağı odanın adını yazar.
+    await expect(page.getByRole("link", { name: /^Devam et: Oltalama eğitim odası/ }).filter({ visible: true })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
+    await expect(page.getByText("Mahalle sayısı arttıkça")).toHaveCount(0);
 
     await page.goto("/yol-haritasi/oltalama-limani");
     await page.getByRole("list", { name: "Oltalama Limanı rotası" }).getByRole("button", { name: /Sahte kargo maili/ }).click();
@@ -55,13 +58,16 @@ test.describe("öğrenci", () => {
 
     await page.goto("/oda/sahte-kargo-maili");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kargonuz kapıda... değil!");
-    await expect(page.getByRole("link", { name: "Önce eğitim odasını bitir" })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
+    // 28 (11 Kasım): kilitli odada ana düğme eğitimin adını söyler; adım yolunda ikinci bir düğme yok.
+    const lockedButton = page.getByRole("link", { name: "Önce eğitim: Oltalama eğitim odası" }).filter({ visible: true });
+    await expect(lockedButton).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
+    await expect(page.getByRole("link", { name: "Eğitime başla" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Odaya gir", exact: true })).toHaveCount(0);
 
     await completeTraining(email, "oltalama-egitimi");
     await page.reload();
     await expect(page.getByRole("link", { name: "Odaya gir", exact: true })).toHaveAttribute("href", "/oda/sahte-kargo-maili/oyna");
-    await expect(page.getByRole("link", { name: "Önce eğitim odasını bitir" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /^Önce eğitim:/ })).toHaveCount(0);
     await expect(visible(page, isMobile ? "Tamamlandı" : /^Tamamlandı · \d+ \S+$/)).toBeVisible();
 
     // Lablar: "Bitenler" süzgecinde eğitim labı, "Kilitli"de senaryo artık yok.
@@ -69,6 +75,16 @@ test.describe("öğrenci", () => {
     await expect(page.getByRole("list", { name: "Odalar" }).getByRole("link", { name: /Oltalama eğitim/ })).toBeVisible();
     await page.goto("/odalar?durum=kilitli");
     await expect(page.getByRole("list", { name: "Odalar" }).getByRole("link", { name: /Sahte kargo maili/ })).toHaveCount(0);
+  });
+
+  test("oda kapağı: sesli odada kulaklık notu, sessiz odada yok", async ({ page }) => {
+    await signUpVerified(page, uniqueEmail("ses"));
+    await page.goto("/oda/kulaklik-icin-veli-karti");
+    await expect(page.getByTestId("sound-note")).toHaveText("Bu odada ses var, kulaklık takabilirsin.");
+    await expect(page.getByTestId("homework-strip")).toHaveCount(0);
+    await page.goto("/oda/sahte-kargo-maili");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kargonuz kapıda... değil!");
+    await expect(page.getByTestId("sound-note")).toHaveCount(0);
   });
 
   test("eğitim labının kapağı yok; olmayan lab bulunamaz", async ({ page }) => {

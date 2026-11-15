@@ -2,6 +2,8 @@
 // fonksiyonlarla, süre duraklatılabilen bir sayaçla, ikisi birlikte HeroScenes'in okuduğu küçük bir
 // depoyla yürür (tests/unit/hero-scenes.test.ts).
 
+import { onReducedMotionChange, prefersReducedMotion } from "@/lib/motion";
+
 /** Bir sahnenin ekranda kalma süresi. */
 export const SCENE_MS = 10_000;
 /** Çapraz solma süresi; giden sahne bu kadar sonra kaldırılır. */
@@ -113,8 +115,6 @@ export type SceneStoreOptions = {
   now?: () => number;
 };
 
-const REDUCE_QUERY = "(prefers-reduced-motion: reduce)";
-
 /**
  * Sahne deposu (useSyncExternalStore ile okunur). Sunucuda ve hidrasyonda anlık görüntü yoktur
  * (null: yedek Postam görünür); ilk abone gelince, yani yalnızca tarayıcıda, sıra karıştırılır ve
@@ -159,8 +159,7 @@ export class SceneStore {
 
   private start() {
     const { count, random = Math.random, now } = this.options;
-    const media = typeof window.matchMedia === "function" ? window.matchMedia(REDUCE_QUERY) : null;
-    this.reduced = media?.matches ?? false;
+    this.reduced = prefersReducedMotion();
 
     // Geliştirmedeki çift abonelikte (StrictMode) sıra ve gösterilen sahne korunur.
     this.rotation ??= startRotation(count, random);
@@ -176,15 +175,15 @@ export class SceneStore {
     countdown.hold("hidden", document.hidden);
 
     const onVisibility = () => countdown.hold("hidden", document.hidden);
-    const onMotion = (event: MediaQueryListEvent) => {
-      this.reduced = event.matches;
-      countdown.hold("reduce", event.matches);
-    };
+    // Cihazın ya da sitenin "Hareketi azalt" ayarı (lib/motion.ts).
+    const stopMotion = onReducedMotionChange(() => {
+      this.reduced = prefersReducedMotion();
+      countdown.hold("reduce", this.reduced);
+    });
     document.addEventListener("visibilitychange", onVisibility);
-    media?.addEventListener("change", onMotion);
     this.cleanup = () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      media?.removeEventListener("change", onMotion);
+      stopMotion();
     };
   }
 

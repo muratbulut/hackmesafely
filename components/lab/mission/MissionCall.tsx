@@ -9,6 +9,7 @@ import type { CallerLook, CardIcon } from "@/lib/lab/content";
 import { CallerAvatar } from "./CallerAvatar";
 import { afterPointsMs, MissionPoints } from "./MissionPoints";
 import { startRing } from "./tones";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /** Bir altyazı satırının ekranda kalma süresi: kelime başına 120 ms belirme, sonra 1,6 sn okuma. */
 const wordMs = 120;
@@ -33,9 +34,7 @@ export type CallSheet = {
   busy?: boolean;
 };
 
-function reducedMotion() {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
+const reducedMotion = prefersReducedMotion;
 
 /**
  * Görevli odanın görüntülü araması (Para Çarşısı, 2 Kasım): oynatıcı kararır, telefonun arkasında

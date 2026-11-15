@@ -76,13 +76,13 @@ const tr: Record<LegalDocumentKey, LegalDocument> = {
   },
 
   privacy: {
-    version: "1.2",
-    updated: "4 Kasım 2026",
+    version: "1.3",
+    updated: "11 Kasım 2026",
     sections: [
       {
         title: "Çerezler",
-        short: "Sadece sitenin çalışması için gereken çerezler: giriş ve tema. Reklam, takip ve istatistik çerezi yok.",
-        full: "Yalnızca hizmetin çalışması için zorunlu çerezler kullanılır: oturum çerezi (giriş yaptığınızı hatırlar; çıkış yapınca ya da oturum bitince silinir) ve tema çerezi (koyu ya da gri temayı hatırlar; 1 yıl). Reklam, takip ve istatistik çerezi kullanılmaz. İleride isimsiz bir istatistik aracı eklenirse açık rızanız alınmadan çalışmaz ve bu metin güncellenir.",
+        short: "Sadece sitenin çalışması için gereken çerezler: giriş, tema ve hareket ayarı. Reklam, takip ve istatistik çerezi yok.",
+        full: "Yalnızca hizmetin çalışması için zorunlu çerezler kullanılır: oturum çerezi (giriş yaptığınızı hatırlar; çıkış yapınca ya da oturum bitince silinir) tema çerezi (koyu ya da gri temayı hatırlar; 1 yıl) ve hareket çerezi (yalnızca profilde “Hareketi azalt”ı açarsanız; 1 yıl, kapatınca silinir). Reklam, takip ve istatistik çerezi kullanılmaz. İleride isimsiz bir istatistik aracı eklenirse açık rızanız alınmadan çalışmaz ve bu metin güncellenir.",
       },
       {
         title: "Güvenlik önlemleri",

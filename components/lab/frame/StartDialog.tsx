@@ -4,6 +4,7 @@ import { Check, ChevronRight, ClipboardList, Clock, Flag, Link2, Mail, MessageCi
 import { Fragment, useEffect, useEffectEvent, useRef, useState } from "react";
 import type { ScenarioTemplate } from "@/lib/lab/content";
 import { getMessages } from "@/lib/i18n";
+import { prefersReducedMotion } from "@/lib/motion";
 
 const primary =
   "flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent text-[17px] font-bold text-on-accent transition-[filter,opacity] hover:brightness-110 disabled:cursor-default disabled:opacity-60";
@@ -58,7 +59,7 @@ export function StartDialog({
 
   useEffect(() => {
     if (!curtain) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       const skip = window.setTimeout(() => setCurtain(false), 0);
       return () => window.clearTimeout(skip);
     }
