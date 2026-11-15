@@ -8,6 +8,7 @@ import { format, getMessages, rich } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { MissionPoints } from "../mission/MissionPoints";
 import { cardIconMap } from "../training/card-icons";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type TaskPanelProps = {
   template: ScenarioTemplate;
@@ -256,7 +257,7 @@ export function TaskSheet(props: TaskPanelProps & { footer: string }) {
   }, [props.finished]);
 
   function close() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       setOpen(false);
       return;
     }

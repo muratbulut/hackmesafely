@@ -5,12 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { amountValue, type HackedStory } from "@/lib/lab/story";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /** Bakiye sahnesinde kalan para: ödemeden sonra hesapta bu kadar kalır, hizmet bedeli de düşer. */
 const leftover = 1240;
 const fee = 240;
 
-const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = prefersReducedMotion;
 const number = (value: number) => value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /**

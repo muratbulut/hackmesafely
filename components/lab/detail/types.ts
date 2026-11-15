@@ -44,6 +44,12 @@ export type LabDetailData = {
     deal: { kind: "shop"; name: string; owner: string } | { kind: "sale"; name: string; product: string } | null;
     tasks: number;
   };
+  /** Arayanın sesi çalan oda: ana düğmenin yanında "kulaklık takabilirsin" notu. */
+  sound: boolean;
+  /** Öğretmenin bu odayı içeren açık ödevi (sınıfın adı ve son tarih metni); yoksa null. */
+  homework: { classroom: string; due: string | null; overdue: boolean } | null;
+  /** Rotada bu odadan sonraki oda; kilitliyse açan eğitimin adı. */
+  after: { name: string; href: string; locked: boolean; by: string | null } | null;
 };
 
 /**

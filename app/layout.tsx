@@ -9,6 +9,7 @@ import { ConnectionBanner } from "@/components/status/ConnectionBanner";
 import { InlineScript } from "@/components/theme/InlineScript";
 import { brand } from "@/lib/brand";
 import { defaultLocale, format, getMessages } from "@/lib/i18n";
+import { MOTION_SCRIPT } from "@/lib/motion";
 import { DEFAULT_THEME, THEME_COLOR, THEME_SCRIPT } from "@/lib/theme";
 
 const t = getMessages();
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang={defaultLocale} data-theme={DEFAULT_THEME} suppressHydrationWarning>
       <head>
         <InlineScript html={THEME_SCRIPT} />
+        <InlineScript html={MOTION_SCRIPT} />
       </head>
       <body className="min-h-dvh">
         {children}

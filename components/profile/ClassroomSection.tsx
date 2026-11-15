@@ -52,7 +52,9 @@ export function ClassroomSection({
     });
   }
 
-  const join = !emailVerified ? (
+  // 29 (11 Kasım): sınıfı olmayan öğrencide kutu baştan açık (ana sayfadaki gibi); vazgeç düğmesi yalnızca
+  // "Başka bir sınıfa katıl" ile açılınca.
+  const join = (cancelable: boolean) => !emailVerified ? (
     <div className="flex flex-col gap-2.5 rounded-xl border border-warning/45 bg-warning/8 px-3.5 py-3 text-sm leading-normal text-warning-fg sm:flex-row sm:items-center sm:justify-between">
       <p className="m-0">{t.verifyFirst}</p>
       <Link href={withNext(routes.verify, paths.profileSection("classroom"))} className="flex-none font-bold">
@@ -62,16 +64,18 @@ export function ClassroomSection({
   ) : (
     <div className="flex max-w-[420px] flex-col gap-2">
       <JoinCodeForm
-        autoFocus
+        autoFocus={cancelable}
         onJoined={(_, message) => {
           setOpen(false);
           onDone(message);
         }}
       />
       {/* Dokunma alanı 40 px; eksi kenar boşluğu düzeni değiştirmez. */}
-      <button type="button" onClick={() => setOpen(false)} className="-mt-2 -mb-3 cursor-pointer self-start pt-2 pb-3 text-sm font-bold text-fg-3 hover:text-fg">
-        {p.cancel}
-      </button>
+      {cancelable ? (
+        <button type="button" onClick={() => setOpen(false)} className="-mt-2 -mb-3 cursor-pointer self-start pt-2 pb-3 text-sm font-bold text-fg-3 hover:text-fg">
+          {p.cancel}
+        </button>
+      ) : null}
     </div>
   );
 
@@ -101,15 +105,13 @@ export function ClassroomSection({
         </ul>
       ) : null}
 
-      {open ? (
-        join
-      ) : classes.length === 0 ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="flex-[1_1_200px] text-sm text-fg-2">{p.empty}</span>
-          <button type="button" onClick={() => setOpen(true)} className={`${quietButton} text-fg`}>
-            {p.enterCode}
-          </button>
+      {classes.length === 0 ? (
+        <div className="flex flex-col gap-3">
+          <span className="text-sm text-fg-2">{p.empty}</span>
+          {join(false)}
         </div>
+      ) : open ? (
+        join(true)
       ) : (
         <button type="button" onClick={() => setOpen(true)} className={`${quietButton} self-start text-fg`}>
           {p.another}

@@ -15,14 +15,15 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { format, getMessages } from "@/lib/i18n";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
+import { getCityView, getNeighborhoods, getPublishedLabs, requestTime } from "@/lib/lab/data";
 import { getUser } from "@/lib/session";
 import { isJoinCode, normalizeJoinCode } from "./rules";
-import { classroomSelect, isTeacherRole, toStudentClass, type StudentClass } from "./student";
+import { assignmentViews, classroomSelect, isTeacherRole, toStudentClass, type AssignmentView, type StudentClass } from "./student";
 
 export type JoinErrorCode = "auth" | "unverified" | "format" | "not_found" | "member" | "own" | "rate_limited" | "generic";
 
 export type JoinResult =
-  | { status: "ok"; classroom: StudentClass; message: string }
+  | { status: "ok"; classroom: StudentClass; message: string; homework: AssignmentView["next"] }
   | { status: "error"; code: JoinErrorCode; message: string; retryAfterSec?: number };
 
 export type LeaveResult = { status: "ok" | "error"; message: string };
@@ -77,7 +78,29 @@ export async function joinClassroom(code: unknown): Promise<JoinResult> {
   }
   // Sayfa yeniden çizilir: ödev kutusu dolar, "Sınıf arkadaşı" rozeti yazılır (getProgressSummary).
   refresh();
-  return { status: "ok", classroom: info, message: format(m.joined, { name: info.name }) };
+  return { status: "ok", classroom: info, message: format(m.joined, { name: info.name }), homework: await firstHomework(user.id, classroom.id, info) };
+}
+
+/**
+ * Katılınca sınıfın açık ödevinde sıradaki oda (30, 11 Kasım): /katil sayfası "Ana sayfaya git"
+ * yerine onu gösterir. Ödev yoksa ya da bittiyse null. Ana sayfadaki ödev kutusuyla aynı hesap.
+ */
+async function firstHomework(userId: string, classroomId: string, info: StudentClass): Promise<AssignmentView["next"]> {
+  const assignments = await db.assignment.findMany({
+    where: { classroomId, closed: false },
+    select: { id: true, neighborhoodId: true, labIds: true, dueDate: true, createdAt: true },
+  });
+  if (assignments.length === 0) return null;
+  const [city, neighborhoods, labs, now] = await Promise.all([getCityView(userId), getNeighborhoods(), getPublishedLabs(), requestTime()]);
+  const views = assignmentViews(
+    assignments.map((a) => ({ ...a, classroomId })),
+    [info],
+    city.districts,
+    neighborhoods,
+    labs,
+    now,
+  );
+  return views.find((v) => v.next)?.next ?? null;
 }
 
 /** Yalnızca kendi üyeliğini siler; hesap, puan ve raporlar kalır. */

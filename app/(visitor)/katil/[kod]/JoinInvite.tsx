@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, Check, Play } from "lucide-react";
 import { useState, useTransition } from "react";
 import { Spinner } from "@/components/status/Spinner";
 import { joinClassroom, type JoinResult } from "@/lib/classroom/student-actions";
-import { format, getMessages } from "@/lib/i18n";
+import { format, getMessages, rich } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { primaryLinkClass } from "./styles";
+import { primaryLinkClass, secondaryLinkClass } from "./styles";
 
 /**
  * Doğrulanmış öğrencinin "Katıl" düğmesi. Sınıfın adı ve öğretmeni yalnızca katılma başarılı
@@ -43,10 +43,27 @@ export function JoinInvite({ code }: { code: string }) {
             </span>
           </span>
         </div>
-        <p className="m-0 text-[15px] leading-normal text-fg-2">{m.page.afterJoin}</p>
-        <Link href={routes.home} className={primaryLinkClass}>
-          {m.page.home}
-        </Link>
+        {result.homework ? (
+          <>
+            <p data-testid="first-homework" className="m-0 text-[15px] leading-normal text-fg-2">
+              {rich(format(m.page.firstHomework, { name: result.homework.name }), { b: (text) => <b className="text-fg">{text}</b> })}
+            </p>
+            <Link href={result.homework.href} className={primaryLinkClass}>
+              <Play className="size-4 fill-current" strokeWidth={2.4} aria-hidden="true" />
+              {m.page.startHomework}
+            </Link>
+            <Link href={routes.home} className={secondaryLinkClass}>
+              {m.page.home}
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="m-0 text-[15px] leading-normal text-fg-2">{m.page.afterJoin}</p>
+            <Link href={routes.home} className={primaryLinkClass}>
+              {m.page.home}
+            </Link>
+          </>
+        )}
       </>
     );
   }
@@ -62,7 +79,12 @@ export function JoinInvite({ code }: { code: string }) {
             member ? "border-accent/45 bg-accent/10 text-accent-light" : "border-danger/55 bg-danger/10 text-danger-fg",
           )}
         >
-          <AlertTriangle className="mt-px size-[18px] flex-none" strokeWidth={2.2} aria-hidden="true" />
+          {/* 30 (11 Kasım): zaten üye olmak hata değil; onay işaretiyle. */}
+          {member ? (
+            <Check className="mt-px size-[18px] flex-none" strokeWidth={2.6} aria-hidden="true" />
+          ) : (
+            <AlertTriangle className="mt-px size-[18px] flex-none" strokeWidth={2.2} aria-hidden="true" />
+          )}
           {result.message}
         </p>
       ) : (

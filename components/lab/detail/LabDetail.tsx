@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowLeft, Lock, MailCheck, Play, RotateCcw, Slash, Tag } from "lucide-react";
+import { ArrowLeft, ArrowRight, ClipboardList, Headphones, Lock, MailCheck, Play, RotateCcw, Slash, Tag } from "lucide-react";
 import { DifficultyBars, DifficultyTag, DurationTag, KindTag } from "@/components/lab/LabTags";
 import { DistrictGlyph, toneOf } from "@/components/roadmap/NeighborhoodIcon";
 import { format, getMessages } from "@/lib/i18n";
@@ -32,7 +32,6 @@ export function LabDetail({ data }: { data: LabDetailData }) {
     verified: data.verified,
     trainingHref: data.training?.href ?? null,
   });
-  const secondary = action.kind === "again" && data.last ? data.last.href : null;
   const done = data.finishedCount > 0;
 
   return (
@@ -44,6 +43,7 @@ export function LabDetail({ data }: { data: LabDetailData }) {
 
         <div className="flex flex-col gap-[18px] lg:flex-row lg:flex-wrap lg:items-center lg:gap-12">
           <div className="flex flex-col gap-[18px] lg:flex-[1_1_540px] lg:gap-5">
+            <HomeworkStrip data={data} />
             <Chips data={data} />
             <div className="flex flex-col gap-2">
               <h1 className="m-0 font-heading text-[30px] leading-[1.05] font-bold tracking-[-1px] lg:text-[54px]">{data.title || data.name}</h1>
@@ -56,17 +56,11 @@ export function LabDetail({ data }: { data: LabDetailData }) {
             </div>
             <MobileStats data={data} />
             {data.story ? <p className="m-0 max-w-[560px] text-base leading-[1.6] text-fg-2 lg:text-lg">{data.story}</p> : null}
+            {/* 28 (11 Kasım): raporun bağlantısı yalnızca "Önceki denemen" kutusunda; telefonla aynı. */}
             <div className="hidden flex-wrap items-center gap-3 lg:flex">
-              <MainAction kind={action.kind} href={action.href} />
-              {secondary ? (
-                <Link
-                  href={secondary}
-                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[14px] border border-line bg-surface px-6 text-base font-bold text-fg no-underline hover:border-accent"
-                >
-                  {d.openReport}
-                </Link>
-              ) : null}
+              <MainAction kind={action.kind} href={action.href} training={data.training?.name ?? null} />
             </div>
+            <SoundNote data={data} />
             <Completions data={data} />
           </div>
           <div className="hidden justify-center pt-2.5 pb-5 lg:flex lg:flex-[1_1_440px]">
@@ -80,6 +74,7 @@ export function LabDetail({ data }: { data: LabDetailData }) {
         */}
         <div className="hidden flex-col gap-5 lg:flex">
           <StepsRoad steps={steps} />
+          <AfterLine data={data} />
           <div className={cn("grid items-start gap-5", data.learn.length > 0 && "grid-cols-2")}>
             {data.learn.length === 0 ? null : done ? (
               <section className="flex flex-col gap-4 rounded-[20px] border border-line bg-surface p-[22px]">
@@ -98,13 +93,14 @@ export function LabDetail({ data }: { data: LabDetailData }) {
           <section className="rounded-[20px] border border-line bg-surface px-3.5 py-[18px]">
             <StepsRow steps={steps} />
           </section>
+          <AfterLine data={data} />
           {data.last ? <PreviousAttempt data={data} /> : <AheadBox data={data} />}
           {data.learn.length === 0 ? null : done ? <LearnDisclosure items={data.learn} /> : <LockedLearn count={data.learn.length} />}
         </div>
 
         {/* Telefonda ana düğme alt menünün üstünde durur; sayfanın sonuna gelince yerine oturur. */}
         <div className="sticky bottom-[92px] z-10 -mx-4 mt-6 bg-linear-to-b from-transparent to-canvas to-40% px-4 pt-6 pb-2.5 lg:hidden">
-          <MainAction kind={action.kind} href={action.href} block />
+          <MainAction kind={action.kind} href={action.href} training={data.training?.name ?? null} block />
         </div>
       </div>
     </div>
@@ -115,35 +111,35 @@ const actionIcons: Record<DetailActionKind, typeof Play> = {
   start: Play,
   continue: Play,
   again: RotateCcw,
-  locked: Lock,
+  // 28 (11 Kasım): kilitli odada düğme eğitime götürür; soluk değil, oynat ikonlu.
+  locked: Play,
   verify: MailCheck,
 };
 
-function MainAction({ kind, href, block }: { kind: DetailActionKind; href: string; block?: boolean }) {
+function MainAction({ kind, href, training, block }: { kind: DetailActionKind; href: string; training: string | null; block?: boolean }) {
   const d = getMessages().lab.detail;
   const label: Record<DetailActionKind, string> = {
     start: d.start,
     continue: d.continue,
     again: d.again,
-    locked: d.lockedButton,
+    locked: training ? format(d.lockedTo, { name: training }) : d.lockedButton,
     verify: d.verify,
   };
   const Icon = actionIcons[kind];
-  const muted = kind === "locked";
   return (
     <Link
       href={href}
       data-action={kind}
       className={cn(
         "inline-flex items-center justify-center gap-2.5 rounded-[14px] text-[17px] font-bold no-underline transition-[filter]",
-        block ? "flex h-[54px] w-full px-5" : "h-14 px-7",
-        muted
-          ? "border border-line bg-card text-fg-3 hover:text-fg"
-          : cn("bg-accent text-on-accent hover:brightness-110", block && "shadow-[0_10px_24px_color-mix(in_oklab,var(--accent)_25%,transparent)]"),
+        block ? "flex min-h-[54px] w-full px-5 py-2" : "min-h-14 max-w-full px-7 py-2",
+        "bg-accent text-on-accent hover:brightness-110",
+        block && "shadow-[0_10px_24px_color-mix(in_oklab,var(--accent)_25%,transparent)]",
       )}
     >
-      <Icon className={cn("size-[18px]", (kind === "start" || kind === "continue") && "fill-current")} strokeWidth={2.4} aria-hidden="true" />
-      {label[kind]}
+      <Icon className={cn("size-[18px] flex-none", (kind === "start" || kind === "continue" || kind === "locked") && "fill-current")} strokeWidth={2.4} aria-hidden="true" />
+      {/* Uzun eğitim adı telefonda kesilmesin, iki satıra insin. */}
+      <span className="min-w-0 text-center leading-tight text-balance">{label[kind]}</span>
     </Link>
   );
 }
@@ -273,5 +269,61 @@ function MobileHero({ data }: { data: LabDetailData }) {
       </Link>
       {data.cover ? null : <AppPill template={data.template} className="absolute top-[18px] right-3 h-[30px] px-2.5 text-xs" />}
     </div>
+  );
+}
+
+/** Öğretmenin ödevi (28 ek, 11 Kasım): oda katalogdan açılsa da ödev olduğu görünür. */
+function HomeworkStrip({ data }: { data: LabDetailData }) {
+  const d = getMessages().lab.detail;
+  if (!data.homework || data.finishedCount > 0) return null;
+  const h = data.homework;
+  return (
+    <p
+      data-testid="homework-strip"
+      className="m-0 flex items-start gap-2.5 self-start rounded-2xl border border-accent/40 bg-accent/10 px-3.5 py-2.5 text-sm leading-normal"
+    >
+      <ClipboardList className="mt-px size-[18px] flex-none text-accent-light" strokeWidth={2.2} aria-hidden="true" />
+      <span className="flex flex-col gap-0.5">
+        <b className="text-fg">{d.homework}</b>
+        <span className={cn("text-fg-3", h.overdue && "text-warning-fg")}>
+          {[format(d.homeworkMeta, { classroom: h.classroom }), h.due].filter(Boolean).join(" · ")}
+        </span>
+      </span>
+    </p>
+  );
+}
+
+/** Sesli odada (görevli odada arayanın sesi) ana düğmenin yanında küçük not. */
+function SoundNote({ data }: { data: LabDetailData }) {
+  const d = getMessages().lab.detail;
+  if (!data.sound) return null;
+  return (
+    <p data-testid="sound-note" className="m-0 inline-flex items-center gap-2 text-sm text-fg-3">
+      <Headphones className="size-4 flex-none text-accent-light" strokeWidth={2.2} aria-hidden="true" />
+      {d.sound}
+    </p>
+  );
+}
+
+/** Rotada bu odadan sonraki oda; açıksa bağlantı, kilitliyse açan eğitim. */
+function AfterLine({ data }: { data: LabDetailData }) {
+  const d = getMessages().lab.detail;
+  const after = data.after;
+  if (!after) return null;
+  return (
+    <p data-testid="after-room" className="m-0 flex flex-wrap items-center justify-end gap-x-2 gap-y-1 px-1 text-sm text-fg-3">
+      <span>{d.after}</span>
+      {after.locked ? (
+        <span className="inline-flex items-center gap-1.5 font-bold text-fg-2">
+          <Lock className="size-3.5" strokeWidth={2.2} aria-hidden="true" />
+          {after.by ? format(d.afterLocked, { name: after.name }) : after.name}
+        </span>
+      ) : (
+        <Link href={after.href} className="inline-flex min-h-10 items-center gap-1.5 font-bold text-accent-light no-underline hover:underline">
+          {after.name}
+          <ArrowRight className="size-3.5" strokeWidth={2.4} aria-hidden="true" />
+        </Link>
+      )}
+    </p>
   );
 }

@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /**
  * Telefonda alttan açılan pencere (mahalle sayfasında lab önizlemesi, lablarda süzgeç). Tarayıcının
@@ -48,7 +49,7 @@ export function BottomSheet({
   }, []);
 
   function requestClose() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       onClose();
       return;
     }
