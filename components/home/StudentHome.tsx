@@ -10,7 +10,10 @@ import { paths, routes } from "@/lib/navigation";
 import { assignmentViews, getHomeClasses } from "@/lib/classroom/student";
 import { getLatestArticles } from "@/lib/news/data";
 import { badgeCodes } from "@/lib/progress/badges";
+import { cardBackgroundOf } from "@/lib/progress/frames";
+import { getPendingLevelUp } from "@/lib/progress/level-up";
 import { getProgressSummary } from "@/lib/progress/summary";
+import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
 import { ClassCard, type HomeClassData } from "./ClassCard";
 import { LastSignInStrip } from "./LastSignInStrip";
 import { LabStatsTabs, type StatRow, type StatTab } from "./LabStatsTabs";
@@ -38,7 +41,7 @@ export async function StudentHome({ userId }: { userId: string }) {
   const [row, summary, city, stats, labs, neighborhoods, reportRows, now, classes] = await Promise.all([
     db.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, displayName: true, gradeLevel: true, avatar: true, createdAt: true, emailVerified: true, previousSignInAt: true },
+      select: { id: true, displayName: true, gradeLevel: true, avatar: true, cardBackground: true, createdAt: true, emailVerified: true, previousSignInAt: true },
     }),
     getProgressSummary(userId),
     getCityView(userId),
@@ -50,6 +53,7 @@ export async function StudentHome({ userId }: { userId: string }) {
     getHomeClasses(userId),
   ]);
   const startHref = city.continueHref ?? routes.roadmap;
+  const levelUp = await getPendingLevelUp(userId, summary.level.level);
 
   const views = allLabs(city.districts);
   const idOf = new Map(labs.map((lab) => [lab.slug, lab.id]));
@@ -94,6 +98,7 @@ export async function StudentHome({ userId }: { userId: string }) {
           data={{
             name: row.displayName,
             avatar: avatarOf(row).emoji,
+            cardBackground: cardBackgroundOf(row.cardBackground, summary.level.level),
             grade: row.gradeLevel,
             since: memberSince(row.createdAt),
             level: summary.level,
@@ -134,6 +139,8 @@ export async function StudentHome({ userId }: { userId: string }) {
       <div className="order-3 mt-2 lg:order-4 lg:mt-0">
         <RecentReports reports={reports} startHref={startHref} />
       </div>
+      {/* Gösterilmemiş seviye atlama (örneğin eğitim odası bitince sayfa kapandıysa). */}
+      {levelUp ? <LevelUpCelebration levelUp={levelUp} emoji={avatarOf(row).emoji} /> : null}
     </div>
   );
 }

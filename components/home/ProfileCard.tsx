@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { CheckCircle2, FileText, Layers, Pencil, Play, Plus } from "lucide-react";
 import { BadgeMedal } from "@/components/profile/BadgeMedal";
+import { AvatarFrame } from "@/components/profile/frame/AvatarFrame";
+import { CardBackdrop } from "@/components/profile/frame/CardBackdrop";
 import { LevelBar, LevelPill, PointsPill } from "@/components/profile/LevelSummary";
 import { brand, LogoLineIcon, LogoMark } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import type { BadgeCode } from "@/lib/progress/badges";
+import type { CardBackgroundCode } from "@/lib/progress/frames";
 import { showcaseSize } from "@/lib/progress/badges";
 import type { LevelInfo } from "@/lib/progress/levels";
 import { cn } from "@/lib/utils";
@@ -14,6 +17,8 @@ import { badgesHref } from "./links";
 export type ProfileCardData = {
   name: string;
   avatar: string;
+  /** Profilde seçilen kart arka planı (29). */
+  cardBackground: CardBackgroundCode;
   grade: string | null;
   since: string;
   level: LevelInfo;
@@ -52,6 +57,7 @@ export function ProfileCard({ data, className }: { data: ProfileCardData; classN
         className,
       )}
     >
+      {data.cardBackground === "plain" ? null : <CardBackdrop code={data.cardBackground} />}
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <span className="anim-shine absolute inset-0 bg-[linear-gradient(105deg,transparent_35%,var(--shine)_50%,transparent_65%)]" />
       </span>
@@ -67,12 +73,7 @@ export function ProfileCard({ data, className }: { data: ProfileCardData; classN
       </div>
 
       <div className="relative flex items-center gap-3 lg:gap-6">
-        <span
-          aria-hidden="true"
-          className="flex size-[58px] flex-none items-center justify-center rounded-[18px] border-[3px] border-accent bg-[radial-gradient(circle_at_35%_30%,var(--line-strong),var(--card)_70%)] text-[30px] lg:size-[116px] lg:rounded-[28px] lg:text-[60px]"
-        >
-          {data.avatar}
-        </span>
+        <AvatarFrame level={data.level.level} emoji={data.avatar} className="m-2 size-[58px] text-[30px] lg:m-3.5 lg:size-[116px] lg:text-[60px]" />
         <div className="flex min-w-0 flex-1 flex-col gap-[3px] lg:gap-1.5">
           <span className="text-[13px] text-fg-3 lg:text-[15px]">{h.welcome}</span>
           <h1 id="home-name" className="m-0 font-heading text-[21px] leading-[1.1] font-bold break-words lg:text-[38px] lg:leading-[1.05]">

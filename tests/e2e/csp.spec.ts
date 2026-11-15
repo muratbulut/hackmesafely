@@ -4,7 +4,7 @@ import { test as base, expect, type Locator, type Page, type Response } from "@p
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
-import { continueFromScene, finishTraining, reportStep } from "./support/lab";
+import { continueFromScene, dismissLevelUps, finishTraining, reportStep } from "./support/lab";
 import { createSchool, makeCoordinator, makeTeacher, userIdOf } from "./support/teacher";
 
 // İçerik Güvenliği Politikası (Faz 6, güvenlik turu 5; tur 1 D2, tur 2 O2). Her HTML yanıtı aynı
@@ -153,6 +153,7 @@ test.describe("hesapla gezilen sayfalar", () => {
 
   test("öğrenci: ana sayfa, profil, eğitim labı, Postam, hacklendin, rapor ve sınıfa katılma", async ({ page }) => {
     test.slow();
+    await dismissLevelUps(page);
     const email = uniqueEmail("csp-ogrenci");
     await signUpVerified(page, email);
     await visit(page, "/");

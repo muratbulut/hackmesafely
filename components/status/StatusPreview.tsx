@@ -13,6 +13,10 @@ import { Loading } from "./Loading";
 import { StatusCard } from "./StatusCard";
 import type { BadgeCode } from "@/lib/progress/badges";
 import { BadgeToast } from "./BadgeToast";
+import { AvatarFrame } from "@/components/profile/frame/AvatarFrame";
+import { CardBackdrop } from "@/components/profile/frame/CardBackdrop";
+import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
+import { cardBackgrounds } from "@/lib/progress/frames";
 import { Toast } from "./Toast";
 
 const wait = (ms: number) => new Promise<boolean>((resolve) => setTimeout(() => resolve(true), ms));
@@ -53,6 +57,7 @@ export function StatusPreview() {
   const [cleared, setCleared] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [badges, setBadges] = useState<BadgeCode[]>([]);
+  const [celebrate, setCelebrate] = useState(false);
   return (
     <div className="grid items-start gap-x-[22px] gap-y-[26px] lg:grid-cols-2">
       <Section title={p.loading.title} description={p.loading.description}>
@@ -181,6 +186,34 @@ export function StatusPreview() {
           </button>
         </div>
         <BadgeToast codes={badges} onClose={() => setBadges([])} />
+      </Section>
+      <Section title={p.frames.title} description={p.frames.description} wide>
+        <div className="flex flex-col gap-4 rounded-[20px] border border-card bg-surface-deep p-5">
+          <ul className="m-0 grid list-none grid-cols-2 gap-x-3 gap-y-6 p-0 sm:grid-cols-5">
+            {Array.from({ length: 10 }, (_, i) => (
+              <li key={i} className="flex flex-col items-center gap-3 pt-4">
+                <AvatarFrame level={i + 1} emoji="🦊" className="size-16 text-[34px]" />
+                <span className="text-xs font-bold text-fg-3">{format(p.frames.level, { n: i + 1 })}</span>
+              </li>
+            ))}
+          </ul>
+          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-5">
+            {cardBackgrounds.map((bg) => (
+              <li key={bg.code} className="keep-dark relative h-20 overflow-hidden rounded-xl border border-line bg-surface-raised">
+                <CardBackdrop code={bg.code} />
+                <span className="absolute bottom-2 left-2.5 text-xs font-bold text-fg">{t.progress.cardBackgrounds[bg.code]}</span>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setCelebrate(true)}
+            className={`${smallButton} w-fit cursor-pointer border border-accent bg-transparent text-accent-fg`}
+          >
+            {p.frames.action}
+          </button>
+        </div>
+        {celebrate ? <LevelUpCelebration levelUp={{ from: 3, to: 4 }} emoji="🦊" preview onClose={() => setCelebrate(false)} /> : null}
       </Section>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   uniqueEmail,
   waitForCode,
 } from "./support/account";
+import { completeTraining, finishScenario } from "./support/progress";
 
 // Next önceki sayfaları gizli olarak bellekte tutar; bildirimler yalnızca görünenler arasından aranır.
 const toast = (page: Page, text: string | RegExp) => page.getByRole("status").filter({ hasText: text, visible: true });
@@ -108,6 +109,39 @@ test.describe("profil", () => {
     await expect(page.locator("html")).not.toHaveAttribute("data-motion", "reduce");
     await page.reload();
     await expect(page.locator("html")).not.toHaveAttribute("data-motion", "reduce");
+  });
+
+  test("seviye atlayınca kutlama bir kez çıkar; açılan kart arka planı takılır, kilitli olan takılmaz", async ({ page }) => {
+    const email = uniqueEmail("seviye");
+    await signUpVerified(page, email);
+    // 2 eğitim (200) + 100 puanlık senaryo (200) = 400 puan: 3. seviye.
+    await completeTraining(email, "oltalama-egitimi");
+    await completeTraining(email, "kisisel-veri-ve-para-guvenligi");
+    await finishScenario(email, "sahte-kargo-maili", 100);
+
+    await page.goto("/");
+    const dialog = page.getByTestId("level-up");
+    await expect(dialog.getByRole("heading", { name: "SEVİYE 3" })).toBeVisible();
+    await expect(dialog).toContainText("Bilinçli kullanıcı");
+    await expect(dialog).toContainText("Baloncuk çerçevesi açıldı");
+    await expect(dialog).toContainText("Yumuşak dalgalar kart arka planı da açıldı");
+    await dialog.getByRole("button", { name: "Harika" }).click();
+    await expect(dialog).toHaveCount(0);
+    // Görüldü: sayfa yenilenince tekrar çıkmaz.
+    await page.reload();
+    await expect(page.locator("#home-name")).toBeVisible();
+    await expect(page.getByTestId("level-up")).toHaveCount(0);
+
+    await page.goto("/profil?bolum=avatar");
+    await expect(page.getByTestId("next-reward").filter({ visible: true })).toContainText("Seviye 4: Şimşek çerçevesi");
+    const group = page.getByRole("group", { name: "Kart arka planı" }).filter({ visible: true });
+    await expect(group.getByRole("button", { name: /Süzülen bulutlar/ })).toBeDisabled();
+    await expect(group.getByRole("button", { name: /Süzülen bulutlar/ })).toContainText("5. seviyede açılır");
+    await group.getByRole("button", { name: /Yumuşak dalgalar/ }).click();
+    await expect(toast(page, "Kart arka planın değişti: Yumuşak dalgalar")).toBeVisible();
+    await expect(group.getByRole("button", { name: /Yumuşak dalgalar/ })).toHaveAttribute("aria-pressed", "true");
+    await page.reload();
+    await expect(page.locator('[data-backdrop="waves"]').first()).toBeAttached();
   });
 
   test("şifre değişir: yanlış şifre uyarı verir, yeni şifreyle giriş yapılır", async ({ page }) => {

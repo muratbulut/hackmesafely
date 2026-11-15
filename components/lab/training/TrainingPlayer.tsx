@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, CircleCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
 import { BadgeToast } from "@/components/status/BadgeToast";
+import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
 import { Toast } from "@/components/status/Toast";
 import { withNext } from "@/lib/account/shared";
 import type { ClientCard } from "@/lib/lab/client";
@@ -11,6 +12,7 @@ import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import type { BadgeCode } from "@/lib/progress/badges";
+import type { LevelUp } from "@/lib/progress/level-up";
 import type { Fail, TrainingDriver, Unanswered } from "../driver";
 import { ClickFindView, InfoCardView, QuizView, slotCount, VideoView, type Answer, type Placement, type Spot } from "./cards";
 import { ViewerAvatar } from "./InfoLayouts";
@@ -56,6 +58,7 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [badges, setBadges] = useState<BadgeCode[]>([]);
+  const [levelUp, setLevelUp] = useState<LevelUp | null>(null);
   const furthest = useRef(startIndex);
   const touchX = useRef<number | null>(null);
 
@@ -118,6 +121,7 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
       if (!saved) return;
       furthest.current = cards.length;
       if (saved.badges && saved.badges.length > 0) setBadges(saved.badges);
+      if (saved.levelUp) setLevelUp(saved.levelUp);
     } else if (to > furthest.current) {
       furthest.current = to;
       void call(() => driver.save(to));
@@ -269,7 +273,9 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
       </div>
 
       <Toast message={toast} onClose={() => setToast(null)} className="max-lg:bottom-[96px]" />
-      <BadgeToast codes={badges} onClose={() => setBadges([])} />
+      {/* Seviye atladıysa önce kutlama; rozet bildirimi kutlama kapanınca gelir. */}
+      <BadgeToast codes={levelUp ? [] : badges} onClose={() => setBadges([])} />
+      {levelUp ? <LevelUpCelebration levelUp={levelUp} emoji={avatar ?? ""} onClose={() => setLevelUp(null)} /> : null}
     </div>
     </ViewerAvatar>
   );

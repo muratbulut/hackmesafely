@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signOutHere, signUp, signUpVerified, uniqueEmail } from "./support/account";
-import { attemptsOf, continueFromScene, finishTraining, reportStep } from "./support/lab";
+import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep } from "./support/lab";
 
 // Faz 3 bitti ölçütünün öğrenci tarafı: eğitim labı, sahte kargo maili (hacklenme ve güvende
 // kalma yolları), sunucuda hesaplanan puan ve rapor. Doğru cevaplar örnek labdan okunur
@@ -87,6 +87,8 @@ test.describe("lab", () => {
     await page.getByRole("button", { name: "Geç", exact: true }).click();
     // Alarmdan sonra hesap sahnesi; "Adım adım ne oldu" ekranı yok (19 ve 22. revize).
     await continueFromScene(page, "account");
+    // İlk senaryo odası seviye atlatır: rapor önce kutlamayla açılır (29+).
+    await closeLevelUp(page, 2);
     const report = page.getByTestId("lab-report");
     await expect(report.getByRole("img", { name: "30/100 puan" })).toBeVisible();
     await expect(report.getByText("Hacklendin", { exact: true })).toBeVisible();
@@ -164,6 +166,7 @@ test.describe("lab", () => {
     }
     await tasks.getByRole("button", { name: "Odayı bitir, raporu gör" }).click();
 
+    await closeLevelUp(page, 2);
     const report = page.getByTestId("lab-report");
     await expect(report.getByRole("img", { name: "100/100 puan" })).toBeVisible();
     await expect(report.getByText("Güvende kaldın", { exact: true })).toBeVisible();

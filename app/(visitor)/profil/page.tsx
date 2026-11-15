@@ -11,6 +11,8 @@ import { avatarOf } from "@/lib/avatars";
 import { db } from "@/lib/db";
 import { getMessages } from "@/lib/i18n";
 import { getClassroomSection } from "@/lib/classroom/student";
+import { cardBackgroundOf } from "@/lib/progress/frames";
+import { getPendingLevelUp } from "@/lib/progress/level-up";
 import { getProgressSummary } from "@/lib/progress/summary";
 import { profileSectionParams, routes } from "@/lib/navigation";
 import { getTeachingSection } from "@/lib/teacher/application";
@@ -44,6 +46,7 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
         educationStatus: true,
         gradeLevel: true,
         avatar: true,
+        cardBackground: true,
         createdAt: true,
         deletionScheduledAt: true,
       },
@@ -67,6 +70,7 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
     educationStatus: row.educationStatus,
     gradeLevel: row.gradeLevel,
     avatar: avatarOf(row).code,
+    cardBackground: cardBackgroundOf(row.cardBackground, summary.level.level),
     memberSince: memberSince(row.createdAt),
     deletionOn: row.deletionScheduledAt ? dayOn(row.deletionScheduledAt) : null,
   };
@@ -87,6 +91,8 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
   const initialSection: SectionKey = requestedSection ?? (row.deletionScheduledAt ? "delete" : sectionKeys[0]);
   const notice = params.silme === "iptal" ? getMessages().auth.signIn.deletionCancelled : null;
 
+  const levelUp = await getPendingLevelUp(session.user.id, summary.level.level);
+
   const progress: ProfileProgress = {
     level: summary.level,
     stats: summary.stats,
@@ -104,6 +110,7 @@ async function ProfileEntry({ searchParams }: Pick<PageProps<"/profil">, "search
       initialSection={initialSection}
       openSection={requestedSection !== undefined}
       notice={notice}
+      levelUp={levelUp}
     />
   );
 }

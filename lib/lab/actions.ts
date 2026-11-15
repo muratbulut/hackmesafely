@@ -9,7 +9,8 @@ import { isDeepStrictEqual } from "node:util";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { paths } from "@/lib/navigation";
-import { awardBadges } from "@/lib/progress/summary";
+import { getPendingLevelUp } from "@/lib/progress/level-up";
+import { awardBadges, getProgressSummary } from "@/lib/progress/summary";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { getUser } from "@/lib/session";
 import { opensOrder, opensRequest, opensShop, parseScenario, usesTrapPage, type ScenarioContent } from "./content";
@@ -409,5 +410,7 @@ export async function saveTrainingProgress(slug: string, cardIndex: number) {
   });
   // Bu bitişle kazanılan rozetler oynatıcıda bildirim olarak çıkar.
   const badges = finished && !existing?.completedAt ? await awardBadges(who.user.id) : [];
-  return { ok: true as const, badges };
+  // Bu bitişle seviye atladıysa oynatıcı kutlamayı gösterir (görüldü bilgisini kutlama yazar).
+  const levelUp = finished && !existing?.completedAt ? await getPendingLevelUp(who.user.id, (await getProgressSummary(who.user.id)).level.level) : null;
+  return { ok: true as const, badges, levelUp };
 }
