@@ -201,9 +201,17 @@ test.describe("öğrencinin sınıfı", () => {
 
     await expect(main.getByRole("status")).toContainText(`${classroom.name} sınıfına katıldın`);
     await expect(main.getByRole("status")).toContainText(`Öğretmen: ${classroom.teacherName} · ${classroom.schoolName}`);
+    // 30 (11 Kasım): sınıfın açık ödevi varsa ilk odası gösterilir.
+    await expect(main.getByTestId("first-homework")).toHaveText("İlk ödevin: Oltalama eğitim odası");
+    await expect(main.getByRole("link", { name: "Ödeve başla" })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
     await main.getByRole("link", { name: "Ana sayfaya git" }).click();
     await page.waitForURL("/");
     await expect(classCard(page).getByRole("region", { name: "Ödev: Oltalama Limanı" })).toContainText("Puanlanmaz, öğretmenin sadece bitirip bitirmediğini görür");
+
+    // 28 ek (11 Kasım): ödevdeki odanın kapağında öğretmenin ödevi yazar.
+    await page.goto("/oda/sahte-kargo-maili");
+    await expect(page.getByTestId("homework-strip")).toContainText("Öğretmenin bu odayı ödev verdi");
+    await expect(page.getByTestId("homework-strip")).toContainText(`${classroom.name} sınıfı`);
 
     // Aynı bağlantı yeniden açılırsa "zaten bu sınıftasın".
     await page.goto(`/katil/${classroom.code}`);
@@ -288,7 +296,8 @@ test.describe("öğrencinin sınıfı", () => {
     let section = await openClassSection(page);
     await expect(section).toContainText("Öğretmenin bir sınıf kodu verdiyse buradan katıl.");
     await expect(section).toContainText("Henüz bir sınıfa katılmadın.");
-    await section.getByRole("button", { name: "Sınıf kodu gir" }).click();
+    // Sınıfı olmayan öğrencide kod kutusu baştan açık; vazgeç yok (29, 11 Kasım).
+    await expect(section.getByRole("button", { name: "Vazgeç" })).toHaveCount(0);
     await section.getByLabel("Sınıf kodu").fill(classroom.code);
     await section.getByRole("button", { name: "Katıl", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: `${classroom.name} sınıfına katıldın`, visible: true })).toBeVisible();
@@ -311,6 +320,7 @@ test.describe("öğrencinin sınıfı", () => {
     await page.getByRole("dialog").getByRole("button", { name: "Sınıftan ayrıl" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Sınıftan ayrıldın", visible: true })).toBeVisible();
     await expect(section).toContainText("Henüz bir sınıfa katılmadın.");
+    await expect(section.getByLabel("Sınıf kodu")).toBeVisible();
     expect(await membershipCount(email)).toBe(0);
     expect(await hasBadge(email, "sinif-arkadasi")).toBe(true);
 

@@ -5,6 +5,26 @@
  * sahne masaüstünde telefon çerçevesinin içinde açılınca (data-device="phone", satış görevli oda)
  * telefon düzeninde kalmasıdır. Sahnenin dışındaki çerçeve (görev paneli, şerit) lg/sm kullanır.
  */
+/*
+ * "Hareketi azalt" (29, 11 Kasım): cihazın ayarına ek olarak sitenin ayarı <html data-motion="reduce">
+ * (lib/motion.ts). motion-safe yalnızca ikisi de kapalıyken, motion-reduce biri açıkken çalışır.
+ */
+@custom-variant motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    &:not(:where([data-motion="reduce"] *)) {
+      @slot;
+    }
+  }
+}
+@custom-variant motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    @slot;
+  }
+  &:where([data-motion="reduce"] *) {
+    @slot;
+  }
+}
+
 @custom-variant desk {
   @media (width >= 64rem) {
     &:not(:where([data-device="phone"] *)) {
@@ -1253,12 +1273,12 @@
   }
 }
 @media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
-  .landing-band > * {
+  :root:not([data-motion="reduce"]) .landing-band > * {
     transition:
       opacity 0.6s ease-out,
       transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .landing-band[data-reveal="hidden"] > * {
+  :root:not([data-motion="reduce"]) .landing-band[data-reveal="hidden"] > * {
     opacity: 0;
     transform: translateY(32px);
   }
@@ -1324,6 +1344,17 @@
   .thread-traveler {
     display: none;
   }
+}
+/* Aynısı sitenin kendi ayarıyla (profil > Görünüm, lib/motion.ts). */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+:root[data-motion="reduce"] .thread-traveler {
+  display: none;
 }
 
 /* Profilde telefonda bölüm sayfası sağdan kayarak açılır. */

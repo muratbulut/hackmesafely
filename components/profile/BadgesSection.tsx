@@ -24,6 +24,8 @@ export function BadgesSection({ badges, showcase, onDone }: { badges: ProfileBad
   const [info, setInfo] = useState<BadgeCode | null>(null);
   const earnedCount = badges.filter((b) => b.earned).length;
   const selected = info ? badges.find((b) => b.code === info) : null;
+  // 29 (11 Kasım): kazanılanlar önce, kazanılmayanlar arkadan (liste sırası korunur).
+  const ordered = [...badges.filter((b) => b.earned), ...badges.filter((b) => !b.earned)];
 
   function press(badge: ProfileBadge) {
     setInfo(badge.code);
@@ -80,7 +82,7 @@ export function BadgesSection({ badges, showcase, onDone }: { badges: ProfileBad
       <div className="flex flex-col gap-2">
         <h3 className="sr-only">{s.grid}</h3>
         <ul className="m-0 grid list-none grid-cols-3 gap-2 p-0 sm:grid-cols-4 xl:grid-cols-6">
-          {badges.map((badge) => {
+          {ordered.map((badge) => {
             const on = shown.includes(badge.code);
             const name = t.badges[badge.code].name;
             return (

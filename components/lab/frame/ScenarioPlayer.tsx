@@ -22,6 +22,7 @@ import { LabBar } from "./LabBar";
 import { PhoneFrame } from "./PhoneFrame";
 import { ExitDialog, StartDialog } from "./StartDialog";
 import { TaskAside, TaskSheet } from "./TaskPanel";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type Resume = { attemptId: string; state: SceneState; nextSeq: number };
 
@@ -174,7 +175,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
     setMood("hacked");
     // Önce şeritteki maskot hacklenir (göz X, gövde kırmızı), sonra alarm. "Hareketi azalt" açıksa hemen.
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) setPhase("hacked");
+    if (prefersReducedMotion()) setPhase("hacked");
     else moodTimer.current = window.setTimeout(() => setPhase("hacked"), HACKED_PAUSE_MS);
   }
 

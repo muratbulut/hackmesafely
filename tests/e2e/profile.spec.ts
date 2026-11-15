@@ -90,6 +90,26 @@ test.describe("profil", () => {
     await expect(page.getByRole("button", { name: "Hesap menüsü" })).toContainText(emoji);
   });
 
+  test("Görünüm: Hareketi azalt anahtarı sayfaya yazılır ve yenileyince kalır", async ({ page }) => {
+    await signUpVerified(page, uniqueEmail("hareket"));
+    await page.goto("/profil");
+    await openSection(page, "Görünüm");
+    const toggle = page.getByRole("switch", { name: "Hareketi azalt" }).filter({ visible: true });
+    await expect(toggle).toHaveAttribute("aria-checked", "false");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-checked", "true");
+    await expect(toast(page, "Hareketler durduruldu")).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-motion", "reduce");
+
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-motion", "reduce");
+    await openSection(page, "Görünüm");
+    await toggle.click();
+    await expect(page.locator("html")).not.toHaveAttribute("data-motion", "reduce");
+    await page.reload();
+    await expect(page.locator("html")).not.toHaveAttribute("data-motion", "reduce");
+  });
+
   test("şifre değişir: yanlış şifre uyarı verir, yeni şifreyle giriş yapılır", async ({ page }) => {
     const email = uniqueEmail("sifre");
     const newPassword = "Yesil?Bulut42Kar";

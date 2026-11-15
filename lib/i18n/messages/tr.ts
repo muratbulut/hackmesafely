@@ -599,6 +599,12 @@ export const tr = {
       gray: "Gri",
       grayHint: "Göz yormayan açık tema",
       changed: "Tema değişti",
+      // 29 (11 Kasım): sitenin kendi "Hareketi azalt" ayarı (lib/motion.ts).
+      motion: "Hareketi azalt",
+      motionHint: "Kayan, sallanan ve yanıp sönen hareketler durur. Bu cihazda ve bu tarayıcıda geçerli.",
+      motionDevice: "Cihazının ayarında da açık; hareketler zaten duruyor.",
+      motionOn: "Hareketler durduruldu",
+      motionOff: "Hareketler açıldı",
     },
     security: {
       title: "Güvenlik",
@@ -787,7 +793,7 @@ export const tr = {
       text: "Ücretsiz hesap açınca bitirdiğin odalar şehirde işaretlenir, kaldığın yerden devam edersin.",
       haveAccount: "Hesabın var mı?",
     },
-    hint: "Bir mahalleye gir, içindeki odaları gör. Mahalle sayısı arttıkça kartlar alt satıra geçer.",
+    hint: "Bir mahalleye gir, içindeki odaları gör.",
     hintVisitor: "Bir mahalleye gir, içindeki odaları gör.",
     districtsLabel: "Mahalleler",
     districtMeta: "{topic} · {trainings} eğitim + {n} senaryo odası",
@@ -990,7 +996,8 @@ export const tr = {
     toNextNamed: "Seviye {n}: <b>{title}</b> için {points} puan kaldı",
     top: "Bütün seviyeleri tamamladın",
     topText: "Puan toplamaya ve rozet kazanmaya devam edebilirsin.",
-    stats: { labsDone: "oda bitti", cardsRead: "kart", reports: "rapor", badges: "rozet" },
+    // 29 (11 Kasım): "kart" ne olduğunu söylemiyordu; ana sayfadaki gibi "okunan kart".
+    stats: { labsDone: "oda bitti", cardsRead: "okunan kart", reports: "rapor", badges: "rozet" },
     badgesCount: "{n}/{total}",
     badges: {
       "sifre-ustasi": { name: "Şifre ustası", how: "Hesap Kalesi'nde temel eğitimin açtığı bütün senaryo odalarını bitir" },
@@ -1010,7 +1017,8 @@ export const tr = {
     // Kazanılmamış rozetin ilerlemesi (lib/progress/badges.ts BadgeState.progress.kind).
     badgeProgress: {
       labs: "{value}/{total} oda",
-      noLabs: "Bu mahallede henüz senaryo odası yok",
+      // Odası olmayan mahallenin rozeti (29, 11 Kasım).
+      noLabs: "Yakında",
       best: "En iyi puanın {value}/100",
       bestNone: "Henüz senaryo odası bitirmedin",
       count: "{value}/{total}",
@@ -1745,7 +1753,16 @@ export const tr = {
       continue: "Kaldığın yerden devam et",
       again: "Tekrar dene",
       lockedButton: "Önce eğitim odasını bitir",
+      // 28 (11 Kasım): kilitli senaryoda ana düğme eğitime götürür ve adını söyler.
+      lockedTo: "Önce eğitim: {name}",
       verify: "Odaya girmek için e-postanı doğrula",
+      // 28 ek (11 Kasım): öğretmenin ödevi, sesli oda ve rotadaki sıradaki oda.
+      homework: "Öğretmenin bu odayı ödev verdi",
+      homeworkMeta: "{classroom} sınıfı",
+      sound: "Bu odada ses var, kulaklık takabilirsin.",
+      after: "Bu odadan sonra",
+      afterLocked: "{name} · eğitimini bitirince açılır",
+      swipeToOpen: "Açmak için kaydır",
       completed: "öğrenci bu odayı tamamladı",
       firstOne: "Bu odayı ilk bitiren sen ol.",
       thisWeek: "Bu hafta +{n}",
@@ -2703,9 +2720,10 @@ export const tr = {
       code: "Sınıf kodu: {code}",
       qr: "Sınıfa katılma bağlantısının QR kodu",
       steps: [
-        "<b>1.</b> {brand} sitesine gir ya da QR kodu okut",
-        "<b>2.</b> Ana sayfada <b>\"Sınıfına katıl\"</b>a dokun",
-        "<b>3.</b> Bu kodu yaz",
+        // 30 (11 Kasım): ana sayfada kod kutusu artık açık; kayıtta da yazılabilir.
+        "<b>1.</b> QR kodu okut ya da {brand} sitesine gir",
+        "<b>2.</b> Ana sayfadaki <b>“Sınıfına katıl”</b> kutusuna bu kodu yaz",
+        "<b>3.</b> Hesabın yoksa kayıt olurken de yazabilirsin",
       ],
       waiting: "Öğrencilerin katılması bekleniyor…",
       joined: "{count} öğrenci katıldı",
@@ -2934,7 +2952,6 @@ export const tr = {
       title: "Sınıfın",
       lead: "Öğretmenin bir sınıf kodu verdiyse buradan katıl. Öğretmenin sadece hangi odaları bitirdiğini görür, raporların sende kalır.",
       empty: "Henüz bir sınıfa katılmadın.",
-      enterCode: "Sınıf kodu gir",
       another: "Başka bir sınıfa katıl",
       cancel: "Vazgeç",
       list: "Sınıfların",
@@ -2959,6 +2976,9 @@ export const tr = {
       ready: "Katıl'a basınca öğretmeninin sınıfına katılırsın.",
       invalid: "Bu bağlantıdaki sınıf kodu geçersiz. Kodu öğretmeninden kontrol et; ana sayfandaki “Sınıfına katıl” kartına kendin de yazabilirsin.",
       afterJoin: "Öğretmeninin verdiği ödev ana sayfanda görünür.",
+      // 30 (11 Kasım): sınıfın açık ödevi varsa katılınca ilk odası gösterilir.
+      firstHomework: "İlk ödevin: <b>{name}</b>",
+      startHomework: "Ödeve başla",
       home: "Ana sayfaya git",
     },
   },

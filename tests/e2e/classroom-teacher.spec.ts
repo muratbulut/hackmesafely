@@ -172,7 +172,7 @@ test.describe("öğretmenin sınıfları", () => {
     await expect(board.getByTestId("projection-code")).toHaveAttribute("aria-label", `Sınıf kodu: ${code}`);
     await expect(board.getByTestId("projection-code")).toHaveText(code);
     await expect(board.getByRole("img", { name: "Sınıfa katılma bağlantısının QR kodu" })).toBeVisible();
-    await expect(board.getByRole("listitem").filter({ hasText: "Bu kodu yaz" })).toBeVisible();
+    await expect(board.getByRole("listitem").filter({ hasText: "kutusuna bu kodu yaz" })).toBeVisible();
     await expect(board.getByText("Öğrencilerin katılması bekleniyor…")).toBeVisible();
     await firstPoll;
 

@@ -113,7 +113,8 @@ export function detailSteps(data: LabDetailData): Step[] {
             title: data.training.name,
             text: t.trainingTodo,
             short: t.trainingStart,
-            link: { href: data.training.href, label: t.trainingStart },
+            // 28 (11 Kasım): kilitli odada ana düğme zaten eğitime götürür; burada tekrar etmez.
+            link: data.state === "locked" ? undefined : { href: data.training.href, label: t.trainingStart },
           },
     );
   }

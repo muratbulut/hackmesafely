@@ -7,9 +7,21 @@ import type { LabDetailData } from "@/components/lab/detail/types";
 import { Loading } from "@/components/status/Loading";
 import { dayMonth } from "@/lib/account/dates";
 import { format, getMessages } from "@/lib/i18n";
+import { dueBy, getHomeClasses, isOverdue } from "@/lib/classroom/student";
+import { homeworkLabs } from "@/lib/classroom/homework";
 import { paragraphs } from "@/lib/lab/content";
 import { coverOf } from "@/lib/lab/cover";
-import { getAttemptTaskProgress, getCity, getCompletionCounts, getPublishedLab, getReports, requestTime, type PublishedLab } from "@/lib/lab/data";
+import {
+  getAttemptTaskProgress,
+  getCity,
+  getCompletionCounts,
+  getPublishedLab,
+  getPublishedLabs,
+  getReports,
+  requestTime,
+  type PublishedLab,
+} from "@/lib/lab/data";
+import { labHref } from "@/lib/lab/route";
 import { paths } from "@/lib/navigation";
 import { requireUser } from "@/lib/session";
 import { siteTimeZone } from "@/lib/site";
@@ -42,11 +54,13 @@ async function Detail({ params }: Pick<PageProps<"/oda/[oda]">, "params">) {
 }
 
 async function detailData(lab: PublishedLab, userId: string, verified: boolean): Promise<LabDetailData> {
-  const [city, counts, reports, now] = await Promise.all([
+  const [city, counts, reports, now, classes, labs] = await Promise.all([
     getCity(userId),
     getCompletionCounts(),
     getReports(userId, { labId: lab.id, limit: 1 }),
     requestTime(),
+    getHomeClasses(userId),
+    getPublishedLabs(),
   ]);
   const district = city.find((d) => d.id === lab.neighborhoodId);
   const item = district?.scenarios.find((s) => s.lab.id === lab.id);
@@ -56,6 +70,14 @@ async function detailData(lab: PublishedLab, userId: string, verified: boolean):
   const last = reports[0] ?? null;
   // Bu odayı açan eğitim (lib/lab/gates.ts).
   const training = district.trainings.find((x) => x.lab.id === item.gate?.id) ?? null;
+  // Rotada bu odadan sonraki oda (28 ek, 11 Kasım). Senaryolar birbirini kilitlemez; kilidi eğitim açar.
+  const at = district.route.findIndex((x) => x.lab.id === lab.id);
+  const after = at >= 0 ? (district.route[at + 1] ?? null) : null;
+  // Bu odayı içeren açık ödev: son tarihi en yakın olan (lib/classroom/homework.ts).
+  const homework = classes.assignments
+    .filter((a) => homeworkLabs(a, labs).some((l) => l.id === lab.id))
+    .sort((a, b) => (a.dueDate?.getTime() ?? Infinity) - (b.dueDate?.getTime() ?? Infinity))[0];
+  const homeworkClass = homework ? classes.classes.find((c) => c.id === homework.classroomId) : undefined;
 
   return {
     slug: lab.slug,
@@ -101,7 +123,23 @@ async function detailData(lab: PublishedLab, userId: string, verified: boolean):
     phone: phoneOf(lab, now),
     cover: coverOf(lab),
     ahead: aheadOf(lab),
+    sound: hasSound(lab),
+    homework:
+      homework && homeworkClass
+        ? {
+            classroom: homeworkClass.name,
+            due: homework.dueDate ? dueBy(homework.dueDate) : null,
+            overdue: homework.dueDate !== null && isOverdue(homework.dueDate, now),
+          }
+        : null,
+    after: after ? { name: after.lab.meta.name, href: labHref(after.lab), locked: after.state === "locked", by: after.lockedBy } : null,
   };
+}
+
+/** Görevli odada arayanın sesi var mı (oda dosyasındaki mission.voice). */
+function hasSound(lab: PublishedLab) {
+  const voice = lab.scenario?.mission?.voice;
+  return voice ? [...voice.lines, ...voice.good, voice.goodReported, ...voice.bad].some((src) => src.trim() !== "") : false;
 }
 
 /** "Seni neler bekliyor": yalnızca sayılar ve görevin adları; doğru kararlar gitmez. */

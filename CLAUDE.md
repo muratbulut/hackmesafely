@@ -65,7 +65,7 @@ Next.js (App Router) ve TypeScript, Tailwind CSS ve shadcn/ui, lucide ikonları,
 - Öğrenciye toplam seviye sayısı hiçbir yerde gösterilmez ("x/10" yok); "Sonraki seviyeye N puan kaldı" yazılır.
 - Rozetler kodda tek bir listede tanımlanır, ikonları `public/badges/<code>.svg` dosyalarındadır.
 - Ürün adı, isim hâli ("careful m◐de", harfler çizilmiş yol), maskot simgesi ve sitenin adresi tek dosyadan okunur: `lib/brand.tsx`. Maskotun gövdesi `--logo`, göz bebeği `--logo-eye`. Sekme ve telefon simgeleri `app/icon.svg`, `app/favicon.ico`, `app/apple-icon.png`, `public/icon-512.png`; paylaşım görseli `app/opengraph-image.png`; mail logosu `public/mail/logo.png` (`lib/mail/logo.ts`). Tasarım işinde Murat tuvalde görüp "PR açabilirsin" demeden PR açılmaz (8 Kasım).
-- "Hareketi azalt" ayarı açıksa sarsıntı ve flaş olmaz.
+- "Hareketi azalt" ayarı açıksa sarsıntı ve flaş olmaz. Ayar cihazdan ya da profil > Görünüm'den gelir (`<html data-motion="reduce">`, `lib/motion.ts`): CSS'te `motion-safe:`/`motion-reduce:` ikisine de bakar (`globals.css`), düz `@media (prefers-reduced-motion)` bloğu `[data-motion="reduce"]` karşılığıyla yazılır, betikler `prefersReducedMotion()` sorar.
 
 ### Lablar
 

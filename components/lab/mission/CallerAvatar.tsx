@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { CallerLook } from "@/lib/lab/content";
 import { callerRig } from "./caller-rig";
 import { fatherRig } from "./father-rig";
+import { prefersReducedMotion } from "@/lib/motion";
 
 /** Annenin ve babanın parçaları aynı biçimde; babada bıyık (beard) da var. */
 type Rig = {
@@ -72,7 +73,7 @@ export function CallerAvatar({
       shown.current[key] = value;
       el.innerHTML = key === "lips" ? rig.lips[value as keyof typeof rig.lips] : rig.eyes[value as keyof typeof rig.eyes];
     };
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       set(lips.current, "lips", rest[mood]);
       return;
     }

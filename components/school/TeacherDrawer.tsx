@@ -8,6 +8,7 @@ import { minStudentsJoined } from "@/lib/school/bulletin-model";
 import { cn } from "@/lib/utils";
 import { SignalChip, signalTone, TeacherAvatar } from "./TeacherList";
 import type { ClassAttention, SchoolClass, SchoolTeacher, TeacherHint } from "./types";
+import { prefersReducedMotion } from "@/lib/motion";
 
 function hintText(hint: TeacherHint) {
   const t = getMessages().school.drawer.hints;
@@ -102,7 +103,7 @@ export function TeacherDrawer({
   }, [open]);
 
   function requestClose() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       onClose();
       return;
     }

@@ -19,6 +19,10 @@ const mocks = vi.hoisted(() => ({
   lookups: 0,
   refreshed: 0,
   counters: new Map<string, { count: number; resetAt: Date }>(),
+  // Katılınca ilk ödev (30, 11 Kasım): sınıfın açık ödevleri ve şehrin hali.
+  assignments: [] as { id: string; neighborhoodId: string; labIds: string[]; dueDate: Date | null; createdAt: Date }[],
+  districts: [] as DistrictView[],
+  labs: [] as { id: string; slug: string; neighborhoodId: string; type: "TRAINING" | "SCENARIO"; sortOrder: number; unlockedById: string | null }[],
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -30,6 +34,7 @@ vi.mock("@/lib/db", () => ({
         return where.joinCode === "K7B4X2" ? mocks.classroom : null;
       },
     },
+    assignment: { findMany: async () => mocks.assignments },
     classroomMembership: {
       create: async ({ data }: { data: { classroomId: string; userId: string } }) => {
         const key = `${data.classroomId}:${data.userId}`;
@@ -47,6 +52,15 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 vi.mock("@/lib/session", () => ({ getUser: async () => mocks.user }));
+vi.mock("@/lib/lab/data", () => ({
+  getCityView: async () => ({ districts: mocks.districts, continueSlug: null, continueHref: null }),
+  getNeighborhoods: async () => [
+    { id: "n-olta", slug: "oltalama-limani" },
+    { id: "n-hesap", slug: "hesap-kalesi" },
+  ],
+  getPublishedLabs: async () => mocks.labs,
+  requestTime: async () => new Date("2026-10-11T09:00:00Z"),
+}));
 vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "10.0.0.1" }) }));
 vi.mock("next/cache", () => ({ refresh: () => mocks.refreshed++ }));
 vi.mock("@/lib/rate-limit", async (importOriginal) => {
@@ -88,6 +102,9 @@ beforeEach(() => {
   mocks.counters.clear();
   mocks.lookups = 0;
   mocks.refreshed = 0;
+  mocks.assignments = [];
+  mocks.districts = [];
+  mocks.labs = [];
 });
 
 describe("sınıf koduyla katılma", () => {
@@ -97,9 +114,18 @@ describe("sınıf koduyla katılma", () => {
       status: "ok",
       classroom: { id: "c1", name: "7-B", teacher: "Zeynep Kaya", school: "Bahçelievler Ortaokulu" },
       message: "7-B sınıfına katıldın",
+      homework: null,
     });
     expect(mocks.members.has("c1:u1")).toBe(true);
     expect(mocks.refreshed).toBe(1);
+  });
+
+  it("sınıfın açık ödevi varsa katılınca ödevdeki ilk açık oda döner", async () => {
+    mocks.districts = [district("oltalama-limani", [{}, {}])];
+    mocks.labs = labsOf(mocks.districts);
+    mocks.assignments = [{ id: "a1", neighborhoodId: "n-olta", labIds: [], dueDate: null, createdAt: new Date("2026-10-10T09:00:00Z") }];
+    const result = await joinClassroom("K7B4X2");
+    expect(result).toMatchObject({ status: "ok", homework: { name: "Lab 0", href: "/oda/oltalama-limani-0/oyna" } });
   });
 
   it("giriş yoksa, hesap askıdaysa ya da e-posta doğrulanmadıysa sınıfa bakılmaz", async () => {

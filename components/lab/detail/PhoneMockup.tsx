@@ -1,4 +1,4 @@
-import { MessageCircle } from "lucide-react";
+import { Camera, Flashlight, MessageCircle } from "lucide-react";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { LabDetailData } from "./types";
@@ -80,6 +80,19 @@ export function PhoneMockup({ data, pill = true, className }: { data: LabDetailD
               <div className="mt-0.5 truncate">{format(t.notificationLine, { sender: second.sender, text: second.text })}</div>
             </div>
           ) : null}
+        </div>
+        {/* Kilit ekranının altı (28, 11 Kasım): fener, kamera ve "Açmak için kaydır". */}
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-5 pb-3 text-scene-white">
+          <div className="flex w-full items-center justify-between">
+            <span className="flex size-10 items-center justify-center rounded-full bg-scene-white/18 backdrop-blur-[4px]">
+              <Flashlight className="size-[18px]" strokeWidth={2} />
+            </span>
+            <span className="flex size-10 items-center justify-center rounded-full bg-scene-white/18 backdrop-blur-[4px]">
+              <Camera className="size-[18px]" strokeWidth={2} />
+            </span>
+          </div>
+          <span className="text-xs font-bold opacity-80">{t.swipeToOpen}</span>
+          <span className="h-1 w-24 rounded-full bg-scene-white/85" />
         </div>
       </div>
       {pill ? <AppPill template={data.template} className="absolute top-[26px] -right-[34px] rotate-3" /> : null}

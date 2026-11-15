@@ -7,6 +7,7 @@ import { ChevronRight, CircleHelp, Ellipsis, GraduationCap, House, Mail, Map as 
 import { getMessages } from "@/lib/i18n";
 import { routes, visitorNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/motion";
 
 const icons = { labs: Mail, teachers: GraduationCap, faq: CircleHelp } as const;
 
@@ -106,7 +107,7 @@ export function BottomNav() {
   function closeMenu() {
     const d = dialog.current;
     if (!d?.open) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       d.close();
       return;
     }
