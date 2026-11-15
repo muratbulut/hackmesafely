@@ -16,6 +16,13 @@ updates:
       buyuk:
         patterns: ["*"]
         update-types: [major]
+    ignore:
+      # Node türleri çalışan Node sürümünü izler (Docker ve CI'da Node 22); Node yükselince elle güncellenir.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint (eslint-config-next) TypeScript 6.0 sonrasını henüz desteklemiyor (<6.1); destek gelince kaldırılır.
+      - dependency-name: "typescript"
+        versions: [">=6.1"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
