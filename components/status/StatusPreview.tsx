@@ -31,6 +31,21 @@ function Section({ title, description, children, wide }: { title: string; descri
 
 const smallButton = "inline-flex h-[38px] items-center rounded-[10px] px-3.5 text-[13px] font-bold no-underline";
 
+/**
+ * Sayfanın gerçek hata ekranını açar: düğmeye basınca bileşen çizilirken hata fırlatır, kök hata
+ * sınırı (app/error.tsx) devreye girer. "Tekrar dene" sınırı sıfırlar; bileşen baştan kurulur ve
+ * hata kalkar. Önizleme sayfası yalnızca PREVIEW_PAGE=1 olan sunucuda açılır (proxy.ts).
+ */
+function ErrorTrigger({ label }: { label: string }) {
+  const [broken, setBroken] = useState(false);
+  if (broken) throw new Error("StatusPreview error screen check");
+  return (
+    <button type="button" onClick={() => setBroken(true)} className={`${smallButton} w-fit cursor-pointer border border-line bg-surface text-fg-2`}>
+      {label}
+    </button>
+  );
+}
+
 /** Durum ekranlarının hepsi bir arada (Tur 5, Durumlar-Son). "Tekrar dene" düğmeleri çalışır. */
 export function StatusPreview() {
   const t = getMessages();
@@ -122,6 +137,7 @@ export function StatusPreview() {
             {format(t.errors.code, { code: p.serverError.sampleCode })}
           </code>
         </StatusCard>
+        <ErrorTrigger label={p.serverError.trigger} />
       </Section>
       <Section title={p.signedOut.title} description={p.signedOut.description}>
         <StatusCard

@@ -720,6 +720,8 @@ export const tr = {
       title: "Sunucu hatası",
       description: "Suçlamayan dil; destek için kısa bir kod. Teknik ayrıntı gösterilmez.",
       sampleCode: "7F3A-21C9",
+      // Sayfanın gerçek hata ekranını (app/error.tsx) açar; uçtan uca test "Tekrar dene"yi böyle dener.
+      trigger: "Gerçek hata ekranını aç",
     },
     signedOut: {
       title: "Oturum kapandı",

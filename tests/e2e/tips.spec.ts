@@ -166,7 +166,8 @@ test.describe("günün ipucu", () => {
       await editor.getByRole("button", { name: "Taslak kaydet" }).click();
       await expect(toast(page, "Taslak kaydedildi, öğrencilere gitmez.")).toBeVisible();
 
-      const row = page.getByRole("button", { name: new RegExp(escape(text)) });
+      // Havuz listesindeki satır (aynı metin sıradaki günlerin kartlarında da çıkabilir).
+      const row = page.locator('section[aria-labelledby="tips-pool"]').getByRole("button", { name: new RegExp(escape(text)) });
       await expect(row).toContainText("Taslak");
       await expect(row).toContainText("Öğrenciye gitmez");
       const id = (await tipOf(text))!.id;
