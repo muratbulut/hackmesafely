@@ -509,8 +509,9 @@ const longSchoolName = () => `${longSchool.slice(0, 83)} ${randomUUID().slice(0,
 async function insertApplication(userId: string, school: { id: string; province: string; district: string }) {
   const id = newId();
   await query(
-    `INSERT INTO "TeacherApplication" ("id", "userId", "schoolId", "province", "district", "subject", "institutionalEmail", "documentName", "documentSize")
-     VALUES ($1, $2, $3, $4, $5, 'Bilişim Teknolojileri ve Yazılım', 'ayse.karaosmanoglu@okul.k12.tr', 'gorev-yeri-belgesi.pdf', 8)`,
+    `INSERT INTO "TeacherApplication" ("id", "userId", "schoolId", "province", "district", "subject", "institutionalEmail", "documentName", "documentSize", "note")
+     VALUES ($1, $2, $3, $4, $5, 'Bilişim Teknolojileri ve Yazılım', 'ayse.karaosmanoglu@okul.k12.tr', 'gorev-yeri-belgesi.pdf', 8,
+             'Bu yıl 9-C ve 10-A sınıflarının Bilişim Teknolojileri derslerine giriyorum; öğrencilerime oltalama odalarını ödev olarak vermek istiyorum.')`,
     [id, userId, school.id, school.province, school.district],
   );
   await query(`INSERT INTO "ApplicationDocument" ("applicationId", "mimeType", "data") VALUES ($1, 'application/pdf', $2)`, [id, Buffer.from("%PDF-1.4")]);
@@ -558,15 +559,25 @@ const teacherFullScreens: Screen<TeacherData>[] = [
     open: (page) => page.getByRole("dialog", { name: "Öğrenci" }).getByRole("button", { name: "Sınıftan çıkar" }).click(),
   },
   { name: "Sınıf detayı, konular", path: (d) => `/siniflarim/${d.classroom}`, open: (page) => page.getByRole("tab", { name: "Konular" }).click() },
-  { name: "Tarihi değiştir penceresi", open: (page) => page.getByRole("tabpanel").getByRole("button", { name: "Tarihi değiştir" }).first().click() },
+  { name: "Ödevi düzenle penceresi", open: (page) => page.getByRole("tabpanel").getByRole("button", { name: "Açık ödev · düzenle" }).first().click() },
   { name: "Ödev ver penceresi", path: (d) => `/siniflarim/${d.classroom}`, open: (page) => page.getByRole("button", { name: "Ödev ver", exact: true }).first().click() },
-  { name: "Kodu yansıt", path: (d) => `/siniflarim/${d.classroom}`, open: (page) => page.getByRole("button", { name: "Kodu yansıt" }).click() },
+  { name: "Kodu yansıt", path: (d) => `/siniflarim/${d.classroom}`, open: (page) => page.getByRole("button", { name: "Kodu yansıt" }).first().click() },
   { name: "Kodu yenile onayı", path: (d) => `/siniflarim/${d.classroom}`, open: (page) => page.getByRole("button", { name: "Kodu yenile" }).click() },
   { name: "Okulum", path: "/okulum" },
   {
     name: "Okulum, öğretmen çekmecesi",
     path: "/okulum",
-    open: (page, d) => page.getByRole("region", { name: "Öğretmenler" }).getByRole("button", { name: new RegExp(d.colleague) }).click(),
+    open: (page, d) => page.getByRole("region", { name: "Öğretmenler ve sınıfları" }).getByRole("button", { name: new RegExp(d.colleague) }).click(),
+  },
+  {
+    name: "Okulum, talebi incele",
+    path: "/okulum",
+    open: (page, d) => page.getByRole("button", { name: `${d.applicant} talebini incele` }).click(),
+  },
+  {
+    name: "Okulum, sınıf penceresi",
+    path: "/okulum",
+    open: (page) => page.getByRole("button", { name: new RegExp(`^${longClass} sınıfı:`) }).first().click(),
   },
   { name: "Ana sayfa (öğretmen)", path: "/" },
   { name: "Profil, öğretmenlik (onaylı)", path: "/profil?bolum=ogretmenlik" },

@@ -161,7 +161,9 @@ function DrawerBody({
           <h3 id="drawer-hoods" className="m-0 text-[15px] font-bold">
             {dr.byNeighborhood}
           </h3>
+          {/* Yalnızca odası olan mahalleler: "0/0" öğretmene bir şey söylemiyor (hoca öncesi kontrol 33). */}
           {data.hoods.map((hood, i) => {
+            if (hood.labCount === 0) return null;
             const tone = toneOf(hood.color);
             const count = student.byHood[i] ?? 0;
             return (

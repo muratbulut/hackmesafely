@@ -156,17 +156,17 @@ test.describe("güvenlik turu 3: öğretmen, sınıf ve okul", () => {
       await finishTraining(students[index].email);
       await finishScenario(students[index].email, status);
     };
-    const rate = page.getByText(/^Tuzağı fark eden: ilk seferde %\d+ · tekrar sonrası %\d+$/);
+    const rate = page.getByText(/^Tuzağı fark eden: ilk denemede %\d+ · son denemede %\d+$/);
 
     // 5 öğrenciden 3'ü fark etti: %60.
     for (const [i, status] of (["COMPLETED", "COMPLETED", "HACKED", "HACKED", "COMPLETED"] as const).entries()) await finish(i, status);
     await page.goto(`/siniflarim/${classroomId}`);
-    await expect(rate).toHaveText("Tuzağı fark eden: ilk seferde %60 · tekrar sonrası %60");
+    await expect(rate).toHaveText("Tuzağı fark eden: ilk denemede %60 · son denemede %60");
 
     // Hacklenen 3. öğrenci labı tekrar yapıp fark eder: ilk seferdeki oran aynı, tekrar sonrası artar.
     await finishScenario(students[2].email, "COMPLETED");
     await page.reload();
-    await expect(rate).toHaveText("Tuzağı fark eden: ilk seferde %60 · tekrar sonrası %80");
+    await expect(rate).toHaveText("Tuzağı fark eden: ilk denemede %60 · son denemede %80");
 
     // 6. öğrenci hacklenir. Oran her bitirende değişseydi %50 olurdu ve öğretmen, kimin bitirdiğini
     // gördüğü için 6. öğrencinin hacklendiğini anlardı. Bitiren sayısı değişir, oran değişmez.
@@ -174,12 +174,12 @@ test.describe("güvenlik turu 3: öğretmen, sınıf ve okul", () => {
     await page.reload();
     // Ödevin eğitim labı ve senaryo labı: ikisinde de 6 bitiren.
     await expect(page.getByText("10 öğrenciden 6 bitirdi")).toHaveCount(2);
-    await expect(rate).toHaveText("Tuzağı fark eden: ilk seferde %60 · tekrar sonrası %80");
+    await expect(rate).toHaveText("Tuzağı fark eden: ilk denemede %60 · son denemede %80");
 
     // 10. öğrenci de bitirince ikinci grup sayılır: 10 öğrenciden 7'si ilk seferde, 8'i tekrar sonrası.
     for (const i of [6, 7, 8, 9]) await finish(i, "COMPLETED");
     await page.reload();
-    await expect(rate).toHaveText("Tuzağı fark eden: ilk seferde %70 · tekrar sonrası %80");
+    await expect(rate).toHaveText("Tuzağı fark eden: ilk denemede %70 · son denemede %80");
   });
 
   test("karar ile başvuranın geri çekmesi ya da cevabı aynı anda gelince karar kilitlenip hata vermez", async ({ page }) => {

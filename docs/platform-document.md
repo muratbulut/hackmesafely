@@ -197,7 +197,7 @@ Numaralar `tasarim/ekran-listesi.md` ile aynıdır. "Tur" sütunu son halin hang
 | 21 | Öğretmen talepleri | A4 kontrol listesi (en az 2 kontrol olmadan onay yok), "Bilgi iste", "Yeni okul" etiketi, 5 sn geri al | Tur 4 |
 | 22 | Kullanıcılar ve okullar | Genel (öğrenciler, öğretmenler, yönetim ekibi ve izinleri) ve Okullar (okul ekle, sorumlu ata); öğrencinin kısa profili | Tur 4 |
 | 22b | Kayıt defteri | Kim neyi yaptı; arama ve filtre, kayıtlar silinmez | Tur 4 |
-| 22c | Okulum (okul sorumlusu) | O4 haftalık okul bülteni; sadece kendi okulu, öğrenci adı yok | Tur 4 |
+| 22c | Okulum (okul sorumlusu) | O4 haftalık okul bülteni; 16 Kasım'dan beri "E Karne + pano" (okulun tek cümlesi, sınıfların durumu, talebi incele, sınıf penceresi); sadece kendi okulu, öğrenci adı yok | Tur 4, Tur 8 |
 | 23 | Lab yönetimi | B1 mahalle grupları ve üstte Yayında / Taslak / Gizli sayıları, "Lab ekle" | Tur 4 |
 | 23b | Lab düzenleme | L1: solda bölümler, ortada form, sağda önizleme ve "Öğrenci gibi dene"; kod yok | Tur 4 |
 | 24 | Günün ipucu | C3 bugün, sıradaki 6 gün ve havuz | Tur 4 |
@@ -260,7 +260,7 @@ Numaralar `tasarim/ekran-listesi.md` ile aynıdır. "Tur" sütunu son halin hang
 
 - Yönetici her şeyi yapar. Yönetim ekibindeki kişilere 7 izinden istenenler verilir: Talepler, Lab düzenleme, Lab yayını, İpucu, Gündem, Kayıt defteri, Roller (Roller sadece yöneticide). Öğrenci ekibe sadece İpucu ve Gündem izniyle girebilir.
 - Okullar il ve ilçeyle bir listede tutulur; bu listeyi yalnızca yönetim görür. Öğretmen talepte il ve ilçeyi seçip okulunun adını yazar. Ad listedeki bir okulla aynıysa talep o okula bağlanır; değilse "Yeni okul" etiketiyle gelir, yönetici benzer okulla eşler ya da adı düzeltip okulu ekler. Böylece kimse hangi okulların sistemde olduğunu göremez ve okul verisi dışarıdan çekilmez.
-- Her okula bir okul sorumlusu atanabilir. Sorumlu öğretmen olabilir, öğrenci olamaz. Okulum sayfasında sadece kendi okulunu, öğrenci adı olmadan görür; okulundan gelen öğretmen taleplerini onaylar, "Tanımıyorum" derse karar yöneticiye kalır.
+- Her okula bir okul sorumlusu atanabilir. Sorumlu öğretmen olabilir, öğrenci olamaz. Okulum sayfasında sadece kendi okulunu, öğrenci adı olmadan görür; okulundan gelen öğretmen taleplerini onaylar, "Tanımıyorum" derse karar yöneticiye kalır. Karar vermeden önce talebin ayrıntısına (kurumsal e-posta, not, belge) bakabilir; belgeye her bakış kayıt defterine yazılır (16 Kasım).
 - Öğretmen talebinde üç karar vardır: Onayla, Reddet, Bilgi iste. Onay için en az 2 kontrol işaretlenmelidir; ret notu ve sorulan bilgi öğretmenin profiline gider.
 - Her yönetim işleminden sonra 5 saniye "Geri al" vardır ve işlem kayıt defterine yazılır. Kayıtlar silinmez, düzenlenmez.
 - Özet panelindeki iş kartları gerçek sayılardan gelir: iş bitince kart kendiliğinden kalkar, "Bugün değil" bir günlüğüne saklar, hepsi bitince tek satır kalır.

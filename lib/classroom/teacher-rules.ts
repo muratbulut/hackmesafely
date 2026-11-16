@@ -69,6 +69,41 @@ export function daysLeft(due: Date, now: Date): number {
   return turkeyDay(due) - turkeyDay(now);
 }
 
+const inputDay = (input: string) => Date.parse(`${input}T00:00:00Z`) / dayMs;
+
+/** Tarih kutusu değerinin günü, ayı (0-11) ve haftanın günü (0 pazartesi): tarayıcıda metne çevirmek için. */
+export function dateInputParts(input: string): { day: number; month: number; weekday: number } {
+  const d = new Date(inputDay(input) * dayMs);
+  return { day: d.getUTCDate(), month: d.getUTCMonth(), weekday: (d.getUTCDay() + 6) % 7 };
+}
+
+export type DueShortcut = "week" | "twoWeeks" | "monthEnd" | "none";
+
+/**
+ * Ödev penceresindeki hazır son tarihler (hoca öncesi kontrol 33): 1 hafta, 2 hafta, ay sonu ve
+ * tarih yok. Aynı güne düşen kısayol bir kez görünür (ay sonu 2 haftaya denk gelebilir).
+ */
+export function dueShortcuts(bounds: { min: string; max: string }): { key: DueShortcut; value: string }[] {
+  const today = inputDay(bounds.min);
+  const last = inputDay(bounds.max);
+  const monthEnd = (() => {
+    const d = new Date(today * dayMs);
+    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0) / dayMs;
+  })();
+  const days: [DueShortcut, number][] = [
+    ["week", today + 7],
+    ["twoWeeks", today + 14],
+    ["monthEnd", monthEnd],
+  ];
+  const out: { key: DueShortcut; value: string }[] = [];
+  for (const [key, day] of days) {
+    const value = isoDay(day);
+    if (day <= last && !out.some((o) => o.value === value)) out.push({ key, value });
+  }
+  out.push({ key: "none", value: "" });
+  return out;
+}
+
 // ---------------------------------------------------------------------------------------
 // Sayımlar
 // ---------------------------------------------------------------------------------------
@@ -101,6 +136,46 @@ export function homeworkTotals(doneCounts: readonly number[], labCount: number):
   }
   totals.pct = percent(pairs, doneCounts.length * labCount);
   return totals;
+}
+
+/** Öğrencilerin ödevdeki durumlarının sayısı (ödev yoksa durum da yok, sayılmaz). */
+export function statusCounts(statuses: readonly (StudentStatus | null)[]): Record<StudentStatus, number> {
+  const out: Record<StudentStatus, number> = { finished: 0, inProgress: 0, notStarted: 0 };
+  for (const status of statuses) if (status) out[status]++;
+  return out;
+}
+
+/** Sınıfın bir mahalledeki durumu: bütün odaları bitiren, başlayan ve hiç girmeyen öğrenci sayısı. */
+export function neighborhoodSplit(doneCounts: readonly number[], labCount: number): { all: number; some: number; none: number } {
+  const out = { all: 0, some: 0, none: 0 };
+  for (const done of doneCounts) {
+    if (labCount > 0 && done >= labCount) out.all++;
+    else if (done > 0) out.some++;
+    else out.none++;
+  }
+  return out;
+}
+
+/** Görünen oranların ortalaması (Genel bakıştaki kutu); hiçbiri görünmüyorsa null. */
+export function averageNotice(rates: readonly ({ first: number; last: number } | null)[]): { first: number; last: number } | null {
+  const shown = rates.filter((r): r is { first: number; last: number } => r !== null);
+  if (shown.length === 0) return null;
+  const avg = (pick: (r: { first: number; last: number }) => number) => Math.round(shown.reduce((sum, r) => sum + pick(r), 0) / shown.length);
+  return { first: avg((r) => r.first), last: avg((r) => r.last) };
+}
+
+/**
+ * Mahallenin odaları eğitimlere göre: her eğitim ve onun açtığı senaryolar (Konular, Ödev ver).
+ * Senaryonun açan eğitimi yoksa temel eğitimin altına girer (lib/lab/gates.ts ile aynı kural).
+ */
+export function labGroups<L extends { id: string; training: boolean; gate: string | null }>(labs: readonly L[]): { training: L; scenarios: L[] }[] {
+  const trainings = labs.filter((lab) => lab.training);
+  const basic = trainings.find((lab) => lab.gate === null)?.id ?? trainings[0]?.id ?? null;
+  const ids = new Set(trainings.map((lab) => lab.id));
+  return trainings.map((training) => ({
+    training,
+    scenarios: labs.filter((lab) => !lab.training && ((lab.gate !== null && ids.has(lab.gate) ? lab.gate : basic) === training.id)),
+  }));
 }
 
 /** Tuzağı fark edenlerin yüzdesi: en az minFinishedForRate öğrenci bitirince; daha azsa null. */

@@ -6,6 +6,8 @@ import type { SchoolBulletin } from "@/components/school/types";
 import {
   bulletinSentences,
   canRemind,
+  classStateCounts,
+  classStateOf,
   countByWeek,
   dueText,
   finishingPct,
@@ -14,8 +16,8 @@ import {
   isoWeek,
   joinNames,
   minStudentsJoined,
-  principalMailto,
   reminderKindOf,
+  schoolStateOf,
   setupStep,
   signalOf,
   trendOf,
@@ -195,27 +197,31 @@ describe("bültenin cümleleri", () => {
     expect(trendOf(0, 0)).toEqual({ tone: "same", text: "Geçen haftayla aynı" });
   });
 
-  it("\"Müdüre gönder\" sorumlunun mail uygulamasını kısa özetle açar", () => {
-    const sentences = bulletinSentences(facts());
-    const href = principalMailto({
-      school: "Bahçelievler Ortaokulu",
-      week: 41,
-      range: "5–11 Ekim 2026",
-      preparedBy: "Ahmet Çelik",
-      counts: { teachers: 3, classes: 3, students: 81, weekDone: 34 },
-      sentences,
+  it("sınıfın durumu: ödev yok, iyi gidiyor, dikkat (yarısı başlamadı), yolda", () => {
+    const c = (members: number, pct: number | null, notStarted = 0) => ({
+      members,
+      pct,
+      attention: notStarted > 0 ? { kind: "notStarted", n: notStarted } : null,
     });
-    expect(href.startsWith("mailto:?subject=")).toBe(true);
-    const url = new URL(href);
-    expect(url.searchParams.get("subject")).toBe("Haftalık okul bülteni · Bahçelievler Ortaokulu · 5–11 Ekim 2026");
-    const body = url.searchParams.get("body")!;
-    expect(body).toContain("HAFTALIK OKUL BÜLTENİ · 41. HAFTA\r\nBahçelievler Ortaokulu\r\n5–11 Ekim 2026");
-    expect(body).toContain("3 onaylı öğretmen · 3 sınıf · 81 öğrenci sınıflarda · bu hafta 34 oda bitti");
-    expect(body).toContain(`- ${sentences.labs}`);
-    expect(body).toContain("Hazırlayan: okul sorumlusu Ahmet Çelik");
-    expect(body).toContain("öğrenci adı, puan ya da rapor içermez");
-    // mailto bağlantıları uzun olunca bazı uygulamalar keser; özet kısa kalır.
-    expect(href.length).toBeLessThan(2000);
+    expect(classStateOf(c(0, null))).toBe("none");
+    expect(classStateOf({ members: 0, pct: 0, attention: { kind: "noMembers" } })).toBe("none");
+    expect(classStateOf(c(12, null))).toBe("none");
+    expect(classStateOf(c(12, finishingPct, 6))).toBe("good");
+    expect(classStateOf(c(12, 79, 2))).toBe("good");
+    expect(classStateOf(c(6, 25, 3))).toBe("stuck");
+    expect(classStateOf(c(6, 25, 2))).toBe("onTrack");
+    expect(classStateOf(c(6, 10))).toBe("onTrack");
+    expect(classStateCounts([c(6, 25, 3), c(12, 79), c(3, null), c(5, null)])).toEqual({ stuck: 1, onTrack: 0, good: 1, none: 2 });
+  });
+
+  it("okulun tek cümlesi: yeni başlıyor, yolda, iyi gidiyor", () => {
+    const good = { members: 12, pct: 80, attention: null };
+    const stuck = { members: 6, pct: 10, attention: { kind: "notStarted", n: 4 } };
+    expect(schoolStateOf({ classes: [], stuckTeachers: 0 })).toBe("start");
+    expect(schoolStateOf({ classes: [{ members: 4, pct: null, attention: { kind: "noAssignment" } }], stuckTeachers: 1 })).toBe("start");
+    expect(schoolStateOf({ classes: [good], stuckTeachers: 0 })).toBe("good");
+    expect(schoolStateOf({ classes: [good], stuckTeachers: 1 })).toBe("onTrack");
+    expect(schoolStateOf({ classes: [good, stuck], stuckTeachers: 0 })).toBe("onTrack");
   });
 
   it("bülten kartı sayıları, cümleleri ve grafiği çizer", () => {

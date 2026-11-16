@@ -1,21 +1,25 @@
 "use client";
 
-import { CalendarDays, Info } from "lucide-react";
+import { BookOpen, CalendarDays, Check, Info, Lock, Swords } from "lucide-react";
 import { useId, useMemo, useState, useTransition, type FormEvent } from "react";
-import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
+import { DistrictGlyph, toneOf, type Tone } from "@/components/roadmap/NeighborhoodIcon";
 import { endHomework, giveHomework } from "@/lib/classroom/teacher-actions";
+import { dateInputParts, dueShortcuts, labGroups } from "@/lib/classroom/teacher-rules";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { errorText } from "./client";
 import { Sheet } from "./Sheet";
 import type { ClassroomDetailData, HoodView } from "./types";
 
+type Lab = HoodView["labs"][number];
+
 /**
- * Ödev ver penceresi (Sinif-Detay-Son): bir mahalle, odaları ve isteğe bağlı son tarih.
- * "Puanlanmaz, sadece kimin bitirdiği görünür." Aynı anda tek ödev: başka mahalle seçilirse açık
- * ödev geçmişe taşınır. Açık ödevin mahallesi seçiliyken odaları ve son tarihi kaydedilir ya da
- * ödev bitirilir. Seçilen odayı açan eğitim kendiliğinden işaretlenir ve kaldırılamaz (15 Ekim,
- * Murat); sunucu aynı kuralı lib/classroom/homework.ts ile yeniden uygular.
+ * Ödev ver penceresi (hoca öncesi kontrol 33, Murat: B İki sütun). Solda mahalleler (telefonda
+ * yatay şerit), sağda odalar (eğitim ve açtığı senaryolar) ve son tarih (hazır kısayollar ya da
+ * tarih kutusu), altta özet ve düğme. "Puanlanmaz, sadece kimin bitirdiği görünür." Aynı anda tek
+ * ödev: başka mahalle seçilirse açık ödev geçmişe taşınır. Açık ödevin mahallesi seçiliyken odaları
+ * ve son tarihi kaydedilir ya da ödev bitirilir. Seçilen odayı açan eğitim kendiliğinden işaretlenir
+ * ve kaldırılamaz (15 Ekim, Murat); sunucu aynı kuralı lib/classroom/homework.ts ile yeniden uygular.
  */
 export function HomeworkDialog({
   hoodId,
@@ -37,7 +41,7 @@ export function HomeworkDialog({
       onClose={onClose}
       labelledBy={titleId}
       closeLabel={h.close}
-      className="lg:max-w-[560px]"
+      className="lg:max-w-[960px]"
       title={
         <div className="flex flex-col gap-0.5">
           <h2 id={titleId} className="m-0 font-heading text-[22px] font-bold break-words">
@@ -76,6 +80,10 @@ function HomeworkForm({ initialHood, data, onDone }: { initialHood: string; data
   }, [labs, picked]);
   const chosen = labs.filter((lab) => picked.has(lab.id) || required.has(lab.id));
   const allChosen = labs.length > 0 && chosen.length === labs.length;
+  const tone = toneOf(selected?.color ?? "accent");
+  // Mahalleler: odası olanlar önce, "Yakında" olanlar sonda.
+  const hoods = [...data.hoods.filter((x) => x.labCount > 0), ...data.hoods.filter((x) => x.labCount === 0)];
+  const canSubmit = !pending && selected !== null && selected.labCount > 0 && chosen.length > 0;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,140 +117,120 @@ function HomeworkForm({ initialHood, data, onDone }: { initialHood: string; data
     });
   }
 
+  function toggle(id: string) {
+    setPicked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    setError(null);
+  }
+
   return (
     <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-      <fieldset className="m-0 min-w-0 border-0 p-0">
-        <legend className="sr-only">{h.neighborhoods}</legend>
-        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-          {data.hoods.map((hood) => {
-            const tone = toneOf(hood.color);
-            const isSelected = hood.id === hoodId;
-            const disabled = hood.labCount === 0;
-            return (
-              <label
-                key={hood.id}
-                className={cn(
-                  "flex items-center gap-3 rounded-[14px] border-[1.5px] px-3.5 py-3 transition-colors has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-accent",
-                  isSelected ? cn(tone.border, tone.soft) : "border-line bg-surface-deep",
-                  disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="neighborhood"
-                  value={hood.id}
-                  checked={isSelected}
-                  disabled={disabled}
-                  onChange={() => {
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6">
+        <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0 lg:border-r lg:border-line lg:pr-6">
+          <legend className="mb-2 p-0 text-sm font-bold text-fg-2">{h.neighborhoods}</legend>
+          {/* Telefonda yatay kaydırılan şerit, masaüstünde dikey liste. */}
+          <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0">
+            {hoods.map((hood) => (
+              <div key={hood.id} className="w-[230px] flex-none lg:w-auto">
+                <HoodTile
+                  hood={hood}
+                  on={hood.id === hoodId}
+                  onPick={() => {
                     setHoodId(hood.id);
                     setPicked(initialPick(data, hood.id));
                     setError(null);
                   }}
-                  className="sr-only"
                 />
-                <span aria-hidden="true" className={cn("size-3 flex-none rounded-full", tone.fill)} />
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-[15px] font-bold">{hood.name}</span>
-                  <span className="text-xs text-fg-3">{disabled ? h.noLabs : format(h.option, { labs: hood.labCount, pct: hood.pct })}</span>
-                </span>
-                {hood.current ? <span className="rounded-full bg-accent px-[7px] py-0.5 text-[10px] font-bold text-on-accent">{h.open}</span> : null}
-              </label>
-            );
-          })}
-        </div>
-      </fieldset>
-
-      {labs.length > 0 ? (
-        <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
-          <legend className="mb-1 p-0 text-sm font-bold text-fg-2">{h.rooms}</legend>
-          <span className="-mt-1 text-xs leading-normal text-fg-3">{h.roomsHint}</span>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-bold text-fg-2" aria-live="polite">
-              {format(h.roomCount, { count: chosen.length })}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                setPicked(allChosen ? new Set() : new Set(labs.map((lab) => lab.id)));
-                setError(null);
-              }}
-              className="h-10 cursor-pointer rounded-[10px] px-2.5 text-[13px] font-bold text-accent-light hover:bg-surface-raised"
-            >
-              {allChosen ? h.none : h.all}
-            </button>
+              </div>
+            ))}
           </div>
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {labs.map((lab) => {
-              const locked = required.has(lab.id);
-              const on = locked || picked.has(lab.id);
-              return (
-                <li key={lab.id} className={cn(!lab.training && "pl-5")}>
-                  <label
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2 has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-accent",
-                      on ? "border-line-strong bg-surface-raised" : "border-line bg-surface-deep",
-                      locked ? "cursor-not-allowed" : "cursor-pointer",
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      disabled={locked}
-                      onChange={() => {
-                        setPicked((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(lab.id)) next.delete(lab.id);
-                          else next.add(lab.id);
-                          return next;
-                        });
-                        setError(null);
-                      }}
-                      className="size-[18px] flex-none accent-accent"
-                    />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="text-sm font-bold break-words">{lab.name}</span>
-                      <span className="text-xs text-fg-3">{locked ? h.required : !lab.training ? h.scenario : lab.gate === null ? h.basic : h.training}</span>
-                    </span>
-                  </label>
-                </li>
-              );
-            })}
-          </ul>
         </fieldset>
-      ) : null}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={ids.due} className="text-sm font-bold text-fg-2">
-          {h.due}
-        </label>
-        <span className="relative block">
-          <CalendarDays className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-4" strokeWidth={2} aria-hidden="true" />
-          <input
-            id={ids.due}
-            type="date"
-            name="due"
-            value={due}
-            min={data.dueBounds.min}
-            max={data.dueBounds.max}
-            onChange={(e) => {
-              setDue(e.target.value);
-              setError(null);
-            }}
-            aria-describedby={ids.hint}
-            className="h-[50px] w-full rounded-xl border border-line bg-canvas pr-3.5 pl-10 text-base text-fg focus:border-accent focus:outline-none"
-          />
-        </span>
-        <span id={ids.hint} className="text-xs text-fg-3">
-          {h.dueHint}
-        </span>
+        <div className="flex min-w-0 flex-col gap-5">
+          {labs.length > 0 ? (
+            <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
+              <legend className="sr-only">{h.rooms}</legend>
+              <div className="flex items-center justify-between gap-2">
+                <span aria-hidden="true" className="text-sm font-bold text-fg-2">
+                  {h.rooms}
+                </span>
+                <span className="mr-auto text-[13px] text-fg-3" aria-live="polite">
+                  {format(h.roomCount, { count: chosen.length })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPicked(allChosen ? new Set() : new Set(labs.map((lab) => lab.id)));
+                    setError(null);
+                  }}
+                  className="h-10 cursor-pointer rounded-[10px] px-2.5 text-[13px] font-bold text-accent-light hover:bg-surface-raised"
+                >
+                  {allChosen ? h.none : h.all}
+                </button>
+              </div>
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                {labGroups(labs).map(({ training, scenarios }) => (
+                  <li key={training.id} className="flex flex-col gap-1.5">
+                    <RoomRow lab={training} tone={tone} locked={required.has(training.id)} on={required.has(training.id) || picked.has(training.id)} onToggle={toggle} />
+                    {scenarios.map((lab) => (
+                      <RoomRow key={lab.id} lab={lab} tone={tone} indent locked={required.has(lab.id)} on={required.has(lab.id) || picked.has(lab.id)} onToggle={toggle} />
+                    ))}
+                  </li>
+                ))}
+              </ul>
+            </fieldset>
+          ) : null}
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor={ids.due} className="text-sm font-bold text-fg-2">
+              {h.due}
+            </label>
+            <div role="group" aria-label={h.shortcuts.label} className="flex flex-wrap gap-1.5">
+              {dueShortcuts(data.dueBounds).map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  aria-pressed={due === option.value}
+                  onClick={() => {
+                    setDue(option.value);
+                    setError(null);
+                  }}
+                  className={cn(
+                    "h-10 cursor-pointer rounded-full border px-3.5 text-[13px] font-bold",
+                    due === option.value ? "border-accent bg-accent text-on-accent" : "border-line bg-surface-deep text-fg-2 hover:text-fg",
+                  )}
+                >
+                  {h.shortcuts[option.key]}
+                </button>
+              ))}
+            </div>
+            <span className="relative block">
+              <CalendarDays className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-4" strokeWidth={2} aria-hidden="true" />
+              <input
+                id={ids.due}
+                type="date"
+                name="due"
+                value={due}
+                min={data.dueBounds.min}
+                max={data.dueBounds.max}
+                onChange={(e) => {
+                  setDue(e.target.value);
+                  setError(null);
+                }}
+                aria-describedby={ids.hint}
+                className="h-11 w-full rounded-xl border border-line bg-canvas pr-3.5 pl-10 text-base text-fg focus:border-accent focus:outline-none"
+              />
+            </span>
+            <span id={ids.hint} className="text-xs text-fg-3">
+              {due ? format(h.dueUntil, { date: dateText(due, "long") }) : h.dueHint}
+            </span>
+          </div>
+        </div>
       </div>
-
-      <p className="m-0 flex gap-2.5 rounded-xl border border-card bg-surface-raised px-3.5 py-3 text-[13px] leading-normal text-fg-3">
-        <Info className="mt-0.5 size-4 flex-none text-accent-light" strokeWidth={2} aria-hidden="true" />
-        <span>
-          {same ? h.endNote : current ? format(h.visibleReplaces, { name: current.name }) : h.visible}
-        </span>
-      </p>
 
       {error ? (
         <p role="alert" className="m-0 text-[13px] font-medium text-danger-fg">
@@ -250,25 +238,112 @@ function HomeworkForm({ initialHood, data, onDone }: { initialHood: string; data
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending || !selected || selected.labCount === 0 || chosen.length === 0}
-        className="flex h-[50px] cursor-pointer items-center justify-center rounded-xl bg-accent px-3 text-base font-bold text-on-accent disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? h.saving : same ? h.save : format(h.give, { name: selected?.name ?? "" })}
-      </button>
-      {same ? (
-        <button
-          type="button"
-          onClick={end}
-          disabled={pending}
-          className="h-10 cursor-pointer rounded-xl text-sm font-bold text-danger-fg hover:bg-danger/8 disabled:cursor-wait"
-        >
-          {h.end}
-        </button>
-      ) : null}
+      <div className="sticky bottom-0 z-10 -mx-5 -mb-6 flex flex-col gap-3 border-t border-line bg-surface px-5 py-4 lg:-mx-7 lg:-mb-7 lg:flex-row lg:flex-wrap lg:items-center lg:px-7">
+        {current && !same ? (
+          <span className="flex items-start gap-2 text-[13px] text-warning-fg lg:basis-full">
+            <Info className="mt-0.5 size-4 flex-none" strokeWidth={2} aria-hidden="true" />
+            {format(h.replaces, { name: current.name })}
+          </span>
+        ) : null}
+        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-fg-3">
+          <span aria-hidden="true" className={cn("size-2.5 flex-none rounded-full", tone.fill)} />
+          <b className="text-fg">{selected?.name}</b>
+          <span>
+            {format(h.summary, {
+              rooms: chosen.length,
+              due: due ? format(h.summaryDue, { date: dateText(due, "short") }) : h.summaryNoDue,
+              count: data.students.length,
+            })}
+          </span>
+        </span>
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          {same ? (
+            <button
+              type="button"
+              onClick={end}
+              disabled={pending}
+              className="h-10 cursor-pointer rounded-xl px-4 text-sm font-bold text-danger-fg hover:bg-danger/8 disabled:cursor-wait max-lg:order-last"
+            >
+              {h.end}
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="h-[50px] cursor-pointer rounded-xl bg-accent px-6 text-base font-bold text-on-accent disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {pending ? h.saving : same ? h.save : h.give}
+          </button>
+        </div>
+      </div>
     </form>
   );
+}
+
+/** Mahalle seçeneği: kutunun tamamı seçilir (radyo düğmesi görünmez). */
+function HoodTile({ hood, on, onPick }: { hood: HoodView; on: boolean; onPick: () => void }) {
+  const h = getMessages().classroom.detail.homework;
+  const tone = toneOf(hood.color);
+  const disabled = hood.labCount === 0;
+  return (
+    <label
+      className={cn(
+        "relative flex items-center gap-3 overflow-hidden rounded-2xl border-[1.5px] px-3.5 py-3 transition-colors has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-accent",
+        on ? cn(tone.border, tone.soft) : "border-line bg-surface-deep",
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-line-strong",
+      )}
+    >
+      <input type="radio" name="neighborhood" value={hood.id} checked={on} disabled={disabled} onChange={onPick} className="sr-only" />
+      <span className={cn("flex size-9 flex-none items-center justify-center rounded-xl", on ? "bg-surface/60" : tone.soft)}>
+        <DistrictGlyph icon={hood.icon} className={cn("size-[18px]", tone.text)} strokeWidth={2} aria-hidden="true" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <b className="text-[15px]">{hood.name}</b>
+        <span className="flex flex-wrap items-center gap-1.5 text-xs text-fg-3">
+          {disabled ? h.soon : format(h.option, { labs: hood.labCount, pct: hood.pct })}
+          {hood.current ? <span className="rounded-full bg-accent px-[6px] py-px text-[10px] font-bold text-on-accent">{h.open}</span> : null}
+        </span>
+      </span>
+      {on ? <Check className={cn("size-5 flex-none", tone.text)} strokeWidth={3} aria-hidden="true" /> : null}
+    </label>
+  );
+}
+
+/** Oda satırı: kendi çizdiğimiz onay kutusu; açan eğitim seçili senaryo varken kilitli. */
+function RoomRow({ lab, tone, on, locked, indent, onToggle }: { lab: Lab; tone: Tone; on: boolean; locked: boolean; indent?: boolean; onToggle: (id: string) => void }) {
+  const h = getMessages().classroom.detail.homework;
+  return (
+    <label
+      className={cn(
+        "flex min-h-12 items-center gap-3 rounded-xl border px-3 py-2 transition-colors has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-accent",
+        on ? cn(tone.border, "bg-surface-raised") : "border-line bg-surface-deep",
+        locked ? "cursor-not-allowed" : "cursor-pointer",
+        indent && "ml-6",
+      )}
+    >
+      <input type="checkbox" checked={on} disabled={locked} onChange={() => onToggle(lab.id)} className="sr-only" />
+      <span aria-hidden="true" className={cn("flex size-5 flex-none items-center justify-center rounded-md border-2", on ? cn(tone.fill, "border-transparent text-on-accent") : "border-line-strong")}>
+        {on ? <Check className="size-3.5" strokeWidth={3.5} /> : null}
+      </span>
+      {lab.training ? (
+        <BookOpen className={cn("size-4 flex-none", tone.text)} strokeWidth={2} aria-hidden="true" />
+      ) : (
+        <Swords className="size-4 flex-none text-fg-3" strokeWidth={2} aria-hidden="true" />
+      )}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-sm font-bold break-words">{lab.name}</span>
+        <span className="text-xs text-fg-3">{locked ? h.required : !lab.training ? h.scenario : lab.gate === null ? h.basic : h.training}</span>
+      </span>
+      {locked ? <Lock className="size-3.5 flex-none text-fg-4" strokeWidth={2} aria-hidden="true" /> : null}
+    </label>
+  );
+}
+
+/** Tarih kutusundaki gün metin olarak: "20 Kasım Perşembe" ya da "20 Kasım". */
+function dateText(input: string, kind: "long" | "short"): string {
+  const h = getMessages().classroom.detail.homework;
+  const { day, month, weekday } = dateInputParts(input);
+  return kind === "long" ? format(h.dateLong, { day, month: h.months[month], weekday: h.weekdays[weekday] }) : format(h.dateShort, { day, month: h.months[month] });
 }
 
 /** Pencere açılınca ya da mahalle değişince seçili odalar: açık ödevin mahallesiyse ödevin odaları, değilse hepsi. */

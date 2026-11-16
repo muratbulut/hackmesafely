@@ -15,7 +15,7 @@ import { OverviewTab } from "./OverviewTab";
 import { ProjectionOverlay } from "./ProjectionOverlay";
 import { RenewCodeDialog } from "./RenewCodeDialog";
 import { StudentDrawer } from "./StudentDrawer";
-import { StudentsTab } from "./StudentsTab";
+import { StudentsTab, type StudentFilter } from "./StudentsTab";
 import { TopicsTab } from "./TopicsTab";
 import type { ClassroomDetailData, DetailTab } from "./types";
 
@@ -25,7 +25,7 @@ const tabParam = { overview: undefined, students: "ogrenciler", topics: "konular
 
 /**
  * Sınıf detayı (Tur 3, Murat kararı: D2 sekmeli; tahtalar Sinif-Detay-Son, -Mobil). Başlıkta
- * sınıf kodu ve "Kodu yenile" (sabah soruları 14), "Kodu yansıt" ve "Ödev ver"; altında açık ödevin bandı ve sekmeler: Genel bakış,
+ * sınıf kodu ve "Kodu yenile" (sabah soruları 14), "Kodu yansıt" ve "Ödev ver"; altında açık ödevin bandı (Genel bakışta yerini ödevin panosu alır, 33) ve sekmeler: Genel bakış,
  * Öğrenciler, Konular. Öğretmen öğrencinin yalnızca bitirdi / bitirmedi bilgisini görür.
  */
 export function ClassroomDetail({ data, initialTab }: { data: ClassroomDetailData; initialTab: DetailTab }) {
@@ -34,6 +34,8 @@ export function ClassroomDetail({ data, initialTab }: { data: ClassroomDetailDat
   const [tab, setTab] = useState<DetailTab>(initialTab);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [homeworkHood, setHomeworkHood] = useState<string | null>(null);
+  // Pano'daki durum satırından gelince Öğrenciler o durumla süzülmüş açılır.
+  const [studentFilter, setStudentFilter] = useState<StudentFilter>("all");
   const [projecting, setProjecting] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -44,8 +46,9 @@ export function ClassroomDetail({ data, initialTab }: { data: ClassroomDetailDat
   const tone = hw ? toneOf(hw.color) : null;
   const level = levelName(data.level, t);
 
-  function choose(next: DetailTab) {
+  function choose(next: DetailTab, filter: StudentFilter = "all") {
     setTab(next);
+    setStudentFilter(filter);
     window.history.replaceState(null, "", paths.classroom(data.id, tabParam[next]));
   }
 
@@ -121,7 +124,8 @@ export function ClassroomDetail({ data, initialTab }: { data: ClassroomDetailDat
         </div>
       </header>
 
-      {hw && tone ? (
+      {/* Genel bakışta açık ödevin panosu bandın yerini alır (hoca öncesi kontrol 33). */}
+      {tab === "overview" && hw && data.students.length > 0 ? null : hw && tone ? (
         <section
           aria-labelledby="homework-band-title"
           className="relative flex flex-col gap-3 overflow-hidden rounded-[20px] border border-line bg-surface p-4 lg:p-5"
@@ -202,9 +206,15 @@ export function ClassroomDetail({ data, initialTab }: { data: ClassroomDetailDat
 
       <div role="tabpanel" id={`class-panel-${tab}`} aria-labelledby={`class-tab-${tab}`} className="[animation:fade-up_.25s_ease-out_both]" key={tab}>
         {tab === "overview" ? (
-          <OverviewTab data={data} onOpenStudent={setStudentId} onGiveHomework={() => openHomework()} onProject={() => setProjecting(true)} />
+          <OverviewTab
+            data={data}
+            onOpenStudent={setStudentId}
+            onGiveHomework={openHomework}
+            onProject={() => setProjecting(true)}
+            onShowStudents={(status) => choose("students", status)}
+          />
         ) : tab === "students" ? (
-          <StudentsTab data={data} onOpenStudent={setStudentId} />
+          <StudentsTab data={data} initialFilter={studentFilter} onOpenStudent={setStudentId} />
         ) : (
           <TopicsTab data={data} onGive={openHomework} />
         )}

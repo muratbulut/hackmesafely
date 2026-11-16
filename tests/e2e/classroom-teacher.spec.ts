@@ -257,12 +257,16 @@ test.describe("öğretmenin sınıfları", () => {
 
     // Geçmiş bir gün kabul edilmez.
     await dialog.getByLabel("Son tarih (isteğe bağlı)").fill(turkeyDay(-1));
-    await dialog.getByRole("button", { name: "Oltalama Limanı ödev olarak ver" }).click();
+    await dialog.getByRole("button", { name: "Ödevi ver" }).click();
     await expect(dialog.getByRole("alert")).toHaveText("Son tarih bugünden önce ya da bir yıldan sonra olamaz.");
 
+    // Hazır son tarih: "1 hafta" tarih kutusunu doldurur, özet o günü yazar.
     const due = turkeyDay(7);
-    await dialog.getByLabel("Son tarih (isteğe bağlı)").fill(due);
-    await dialog.getByRole("button", { name: "Oltalama Limanı ödev olarak ver" }).click();
+    await dialog.getByRole("group", { name: "Hazır son tarihler" }).getByRole("button", { name: "1 hafta" }).click();
+    await expect(dialog.getByLabel("Son tarih (isteğe bağlı)")).toHaveValue(due);
+    await expect(dialog.getByRole("button", { name: "1 hafta" })).toHaveAttribute("aria-pressed", "true");
+    await expect(dialog).toContainText("3 öğrenci görecek");
+    await dialog.getByRole("button", { name: "Ödevi ver" }).click();
     await expect(toast(page, "Ödev verildi: Oltalama Limanı")).toBeVisible();
     await expect(dialog).toBeHidden();
 
@@ -274,28 +278,32 @@ test.describe("öğretmenin sınıfları", () => {
     expect(open[0].slug).toBe("oltalama-limani");
     expect(open[0].dueDate?.toISOString()).toBe(new Date(`${due}T23:59:59.999+03:00`).toISOString());
 
-    const band = page.getByRole("region", { name: "Oltalama Limanı" });
-    await expect(band).toContainText("7 gün kaldı");
-    // Sınıf kartı ve ödev bandı yüzde değil kişi sayısı yazar (Murat, 15 Ekim): "1/3".
-    await expect(band).toContainText("1/3");
-    await expect(band).toContainText("Ödevi bitiren öğrenci");
-    const bar = band.getByRole("progressbar", { name: "Ödevin tamamlanması" });
-    await expect(bar).toHaveAttribute("aria-valuenow", "1");
-    await expect(bar).toHaveAttribute("aria-valuetext", "Ödevi bitiren öğrenci: 1/3");
-    await expect(page.getByRole("heading", { name: "1 öğrenci ödeve başlamadı" })).toBeVisible();
+    // Genel bakış: açık ödevin panosu bandın yerini alır (hoca öncesi kontrol 33).
+    const pano = page.getByRole("region", { name: "Oltalama Limanı" });
+    await expect(pano).toContainText("7 gün kaldı");
+    // Yüzde değil kişi sayısı (Murat, 15 Ekim): "1/3".
+    await expect(pano).toContainText("1/3");
+    await expect(pano.getByRole("img", { name: "Ödevi bitiren öğrenci: 1/3" })).toBeVisible();
+    await expect(page.getByRole("progressbar", { name: "Ödevin tamamlanması" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Ödeve başlamayanlar · 1" })).toBeVisible();
     await expect(page.getByText("3 öğrenciden 2 bitirdi")).toBeVisible();
     await expect(page.getByText("Tuzağı fark edenlerin oranı 5 öğrenci bitirince görünür.")).toBeVisible();
 
-    // Öğrenciler: ödevdeki duruma göre süzgeç.
-    await page.getByRole("tab", { name: "Öğrenciler" }).click();
+    // Panodaki durum satırı Öğrenciler'i o durumla süzülmüş açar.
+    await pano.getByRole("button", { name: /^Başlamadı: 1 öğrenci/ }).click();
+    await expect(page.getByRole("tab", { name: "Öğrenciler" })).toHaveAttribute("aria-selected", "true");
     const filters = page.getByRole("group", { name: "Duruma göre" });
+    await expect(filters.getByRole("button", { name: "Başlamadı 1" })).toHaveAttribute("aria-pressed", "true");
     await expect(filters.getByRole("button", { name: "Bitirdi 1" })).toBeVisible();
     await expect(filters.getByRole("button", { name: "Devam ediyor 1" })).toBeVisible();
-    await filters.getByRole("button", { name: "Başlamadı 1" }).click();
     const panel = page.getByRole("tabpanel");
     await expect(panel.getByRole("button", { name: /Deniz Başlamayan/ })).toBeVisible();
     await expect(panel.getByRole("button", { name: /Bora Bitiren/ })).toHaveCount(0);
-    await filters.getByRole("button", { name: "Tümü 3" }).click();
+    // Öğrenciler sekmesinde ödev bandı görünür.
+    const bar = page.getByRole("region", { name: "Oltalama Limanı" }).getByRole("progressbar", { name: "Ödevin tamamlanması" });
+    await expect(bar).toHaveAttribute("aria-valuenow", "1");
+    await expect(bar).toHaveAttribute("aria-valuetext", "Ödevi bitiren öğrenci: 1/3");
+    await filters.getByRole("button", { name: "Hepsi 3" }).click();
     await panel.getByRole("searchbox").fill("cem");
     await expect(panel.getByRole("button", { name: /Cem Yarım/ })).toBeVisible();
     await expect(panel.getByRole("button", { name: /Deniz Başlamayan/ })).toHaveCount(0);
@@ -303,11 +311,21 @@ test.describe("öğretmenin sınıfları", () => {
     // Konular: açık ödev ve geçmiş ödevler.
     await page.getByRole("tab", { name: "Konular" }).click();
     await expect(page).toHaveURL(`/siniflarim/${classroomId}?sekme=konular`);
-    await expect(page.getByRole("tabpanel")).toContainText("Geçmiş ödevler:");
-    await expect(page.getByRole("tabpanel")).toContainText("Yazılım Ormanı");
+    await expect(page.getByRole("tabpanel").getByRole("region", { name: "Geçmiş ödevler" })).toContainText("Yazılım Ormanı");
+    // Odası olmayan mahalleler "Yakında" etiketiyle en altta, yüzdesiz.
+    const soon = await page
+      .getByRole("tabpanel")
+      .locator("li[data-hood]")
+      .evaluateAll((items) => items.map((item) => item.hasAttribute("data-soon")));
+    expect(soon).toContain(false);
+    expect(soon).toEqual([...soon].sort((a, b) => Number(a) - Number(b)));
+    for (const row of await page.getByRole("tabpanel").locator("li[data-soon]").all()) {
+      await expect(row).toContainText("YAKINDA");
+      await expect(row).not.toContainText("%");
+    }
 
     // Son tarihi değiştir, sonra ödevi bitir.
-    await page.getByRole("tabpanel").getByRole("button", { name: "Tarihi değiştir" }).click();
+    await page.getByRole("tabpanel").getByRole("button", { name: "Açık ödev · düzenle" }).click();
     await expect(dialog.getByRole("radio", { name: /Oltalama Limanı/ })).toBeChecked();
     await expect(dialog.getByLabel("Son tarih (isteğe bağlı)")).toHaveValue(due);
     await dialog.getByLabel("Son tarih (isteğe bağlı)").fill(turkeyDay(10));
@@ -316,7 +334,9 @@ test.describe("öğretmenin sınıfları", () => {
     const trainingBox = rooms.getByRole("checkbox", { name: /Oltalama eğitim odası/ });
     await expect(trainingBox).toBeChecked();
     await expect(trainingBox).toBeDisabled();
-    await rooms.getByRole("checkbox", { name: /Sahte kargo maili/ }).uncheck();
+    // Onay kutusu görünmez (kendi çizimimiz); kullanıcı gibi odanın adına dokunulur.
+    await rooms.getByText("Sahte kargo maili", { exact: true }).click();
+    await expect(rooms.getByRole("checkbox", { name: /Sahte kargo maili/ })).not.toBeChecked();
     await expect(trainingBox).toBeEnabled();
     await expect(rooms).toContainText("1 oda seçili");
     await dialog.getByRole("button", { name: "Ödevi kaydet" }).click();
@@ -365,7 +385,7 @@ test.describe("öğretmenin sınıfları", () => {
     await finishTraining(students[4].email);
     await finishScenario(students[4].email, results[4]);
     await page.reload();
-    await expect(page.getByText("Tuzağı fark eden: ilk seferde %60 · tekrar sonrası %60")).toBeVisible();
+    await expect(page.getByText("Tuzağı fark eden: ilk denemede %60 · son denemede %60")).toBeVisible();
 
     // Hacklenen öğrenci de yalnızca "Bitirdi" görünür.
     await page.getByRole("tab", { name: "Öğrenciler" }).click();
@@ -374,6 +394,8 @@ test.describe("öğretmenin sınıfları", () => {
     await expect(drawer.getByRole("heading", { level: 2 })).toHaveText("Can Ak");
     await expect(drawer.getByRole("listitem").filter({ hasText: "Sahte kargo maili" })).toContainText("Bitirdi");
     await expect(drawer).not.toContainText(/hack/i);
+    // Çekmecede yalnızca odası olan mahalleler: "0/0" yok.
+    await expect(drawer).not.toContainText("0/0");
     if (isMobile) await drawer.getByRole("button", { name: "9-B Gizlilik" }).click();
     else await drawer.getByRole("button", { name: "Kapat" }).click();
     await expect(drawer).toBeHidden();
@@ -453,6 +475,9 @@ test.describe("öğretmenin sınıfları", () => {
     await expect(page.getByText("Başkasının sınıfı")).toHaveCount(0);
     await page.goto(`/siniflarim/${victim.id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bu sayfa yok");
+    // 404 tek kabukla açılır: bir üst menü, bir alt bilgi (hoca öncesi kontrol 33).
+    await expect(page.getByRole("banner")).toHaveCount(1);
+    await expect(page.getByRole("contentinfo")).toHaveCount(1);
     await expect(page.getByText("Gizli Öğrenci")).toHaveCount(0);
 
     // Kendi sınıfının sayfasından gönderilen eylemlerde sınıf ve öğrenci kimliği başkasınınkiyle
