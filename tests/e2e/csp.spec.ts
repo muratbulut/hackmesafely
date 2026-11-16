@@ -201,7 +201,7 @@ test.describe("hesapla gezilen sayfalar", () => {
     await visit(page, "/");
   });
 
-  test("öğretmen ve okul sorumlusu: Sınıflarım, QR, sınıf detayı, Okulum, yazdırma ve müdüre gönder", async ({ page }) => {
+  test("öğretmen ve okul sorumlusu: Sınıflarım, QR, sınıf detayı, Okulum ve yazdırma", async ({ page }) => {
     test.slow();
     const email = uniqueEmail("csp-ogretmen");
     await signUpVerified(page, email);
@@ -229,8 +229,8 @@ test.describe("hesapla gezilen sayfalar", () => {
     await page.getByRole("tab", { name: "Öğrenciler" }).click();
     await expect(page).toHaveURL(`/siniflarim/${classroom.id}?sekme=ogrenciler`);
 
-    // Okulum: "PDF olarak indir" yazdırma penceresini açar (burada yalnızca çağrıldığı görülür),
-    // "Müdüre gönder" bir mailto bağlantısıdır (CSP gezinmeyi değil, sayfanın yüklediklerini sınırlar).
+    // Okulum: "PDF olarak indir" yazdırma penceresini açar (burada yalnızca çağrıldığı görülür);
+    // yazdırırken ekrandaki düğmeler gizlenir, yalnızca haftalık bülten basılır.
     await page.addInitScript(() => {
       window.print = () => {
         (window as unknown as { printed: boolean }).printed = true;
@@ -238,12 +238,14 @@ test.describe("hesapla gezilen sayfalar", () => {
     });
     await visit(page, "/okulum");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(school.name);
-    await expect(page.getByRole("link", { name: "Müdüre gönder" })).toHaveAttribute("href", /^mailto:\?subject=/);
+    await expect(page.getByRole("link", { name: "Müdüre gönder" })).toHaveCount(0);
     await page.getByRole("button", { name: "PDF olarak indir" }).click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { printed?: boolean }).printed === true)).toBe(true);
     await page.emulateMedia({ media: "print" });
     await expect(page.getByRole("button", { name: "PDF olarak indir" })).toBeHidden();
+    await expect(page.getByRole("article", { name: school.name })).toBeVisible();
     await page.emulateMedia({ media: "screen" });
+    await expect(page.getByRole("article", { name: school.name })).toBeHidden();
 
     await visit(page, "/profil");
   });

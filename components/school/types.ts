@@ -1,6 +1,8 @@
 // Okulum sayfasının verisi (lib/school/bulletin.ts hazırlar, components/school çizer). Tarayıcıya
-// giden her şey buradadır: öğrenci adı, puanı, raporu; öğretmenin ve başvuranın e-postası;
-// talepteki belge ve kurumsal e-posta adresi hiçbir alanda yoktur (yalnızca "var / yok").
+// giden her şey buradadır: öğrenci adı, puanı, raporu; öğretmenin ve başvuranın hesap e-postası
+// hiçbir alanda yoktur. Okulunu seçen ve karar bekleyen talepte sorumlu, yönetici gibi başvuranın
+// verdiklerini görür: kurumsal e-posta, not ve belge (belge kendi adresinden, kayıt defterine
+// yazılarak açılır; hoca öncesi kontrol 34).
 
 import type { ReminderKind } from "@/lib/mail/teacher-mail";
 import type { SetupStep, Signal } from "@/lib/school/bulletin-model";
@@ -56,8 +58,13 @@ export type SchoolRequest = {
   avatar: string;
   subject: string;
   when: string;
-  hasInstitutionalEmail: boolean;
-  hasDocument: boolean;
+  /** Başvuranın verdiği kurumsal e-posta; vermediyse null. */
+  institutionalEmail: string | null;
+  /** Eklenen belge (adı, "184 KB", açılacağı adres); yoksa null. */
+  document: { name: string; size: string; href: string } | null;
+  note: string | null;
+  /** Hesabın açıldığı gün ("12 Kasım"). */
+  accountSince: string;
   /** Doğum yılına göre 18 yaşından küçük olabilir (yıl sorumluya gösterilmez). */
   minor: boolean;
 };
@@ -79,7 +86,6 @@ export type SchoolView = {
   /** Sorumlu aynı zamanda bu okulun öğretmeni mi (başlıktaki satır). */
   meTeacher: boolean;
   inviteUrl: string;
-  mailto: string;
   bulletin: SchoolBulletin;
   requests: SchoolRequest[];
   handled: HandledRequest[];

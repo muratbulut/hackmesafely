@@ -7,8 +7,9 @@ import { withDb } from "./support/db";
 import { mailOutboxDir } from "./support/outbox-dir";
 import { createSchool, makeCoordinator, makeTeacher, userIdOf } from "./support/teacher";
 
-// Okulum (O4 haftalık okul bülteni): yalnızca okul sorumlusu görür, öğrenci adı ve puanı yoktur;
-// okuldan gelen talebe görüş ve onay (5 saniyelik "Geri al"), takılan öğretmene hatırlatma.
+// Okulum ("E Karne + pano", hoca öncesi kontrol 34): yalnızca okul sorumlusu görür, öğrenci adı ve
+// puanı yoktur; okuldan gelen talep "İncele" penceresinde (kurumsal e-posta, not, belge) görüş ve
+// onay ("Geri al"), sınıf penceresi yalnızca toplamlar, takılan öğretmene hatırlatma.
 // Başvuran, öğretmen ve öğrenci hesapları veritabanına doğrudan yazılır; yalnızca sorumlu giriş yapar.
 
 // Geri al süresi 30 saniye, karar maili ondan 5 saniye sonra gider (lib/teacher/decision-rules.ts).
@@ -56,13 +57,13 @@ async function insertUser(
   return { id, email, name };
 }
 
-/** Okulu seçmiş bekleyen öğretmenlik talebi; belgeli. */
+/** Okulu seçmiş bekleyen öğretmenlik talebi; belgeli, kurumsal e-postalı ve notlu. */
 async function insertApplication(userId: string, school: { id: string; province: string; district: string }, subject = "Bilişim Teknolojileri") {
   const id = newId();
   await query(
-    `INSERT INTO "TeacherApplication" ("id", "userId", "schoolId", "province", "district", "subject", "documentName", "documentSize")
-     VALUES ($1, $2, $3, $4, $5, $6, 'gorev-belgesi.pdf', 8)`,
-    [id, userId, school.id, school.province, school.district, subject],
+    `INSERT INTO "TeacherApplication" ("id", "userId", "schoolId", "province", "district", "subject", "documentName", "documentSize", "institutionalEmail", "note")
+     VALUES ($1, $2, $3, $4, $5, $6, 'gorev-belgesi.pdf', 8, $7, 'Bu yıl 7-A sınıfının dersine giriyorum.')`,
+    [id, userId, school.id, school.province, school.district, subject, `${id}@okul.invalid`],
   );
   await query(`INSERT INTO "ApplicationDocument" ("applicationId", "mimeType", "data") VALUES ($1, 'application/pdf', $2)`, [id, Buffer.from("%PDF-1.4")]);
   return id;
@@ -128,7 +129,18 @@ async function openSchool(page: Page, schoolName: string) {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(schoolName);
 }
 
-const requestItem = (page: Page, name: string) => page.getByRole("region", { name: "Okulundan gelen talepler" }).getByRole("listitem", { name });
+/** Talepler kutusu: başlığı bekleyen sayısını söyler ("1 öğretmenlik talebi kararını bekliyor"). */
+const requests = (page: Page) => page.getByRole("region", { name: /tale(p|bi)/ });
+const requestItem = (page: Page, name: string) => requests(page).getByRole("listitem", { name });
+/** Talebi "İncele" ile açar; kararlar bu pencerede. */
+async function openRequest(page: Page, name: string) {
+  await requestItem(page, name).getByRole("button", { name: `${name} talebini incele` }).click();
+  const sheet = page.getByRole("dialog", { name });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+const board = (page: Page) => page.getByRole("region", { name: "Öğretmenler ve sınıfları" });
+const teacherButton = (page: Page, name: string) => board(page).getByRole("button", { name: new RegExp(name) });
 
 test("giriş yapmamış ziyaretçi Okulum yerine girişe gönderilir", async ({ page }) => {
   await page.goto("/okulum");
@@ -174,22 +186,48 @@ test.describe("Okulum", () => {
     await insertApplication(otherApplicant.id, other);
 
     await openSchool(page, school.name);
-    const teachers = page.getByRole("region", { name: "Öğretmenler" });
-    await expect(teachers.getByRole("button", { name: new RegExp(teacher.name) })).toBeVisible();
-    await expect(teachers.getByRole("button", { name: /SEN/ })).toBeVisible();
+    await expect(teacherButton(page, teacher.name)).toBeVisible();
+    await expect(board(page).getByRole("button", { name: /SEN/ })).toBeVisible();
     await expect(requestItem(page, applicant.name)).toBeVisible();
 
-    // Bülten yalnızca toplamları söyler: 2 öğretmen (sorumlu da), 1 sınıf, 1 öğrenci.
-    const bulletin = page.getByRole("article", { name: school.name });
-    await expect(bulletin).toContainText(/2\s*onaylı öğretmen/);
-    await expect(bulletin).toContainText(/1\s*sınıf/);
-    await expect(bulletin).toContainText(/1\s*öğrenci sınıflarda/);
+    // Üst özet yalnızca toplamları söyler: 2 öğretmen (sorumlu da), 1 sınıf, 1 öğrenci; sınıf ödevde "Dikkat".
+    const summary = page.getByRole("region", { name: /^Okulunuz/ });
+    await expect(summary).toContainText("2 öğretmen, 1 sınıf, 1 öğrenci.");
+    await expect(summary.getByRole("list", { name: "Sınıfların durumu" })).toContainText(/1\s*sınıf · dikkat/);
 
     // Öğretmenin ayrıntısında sınıfı ve öğrenci sayısı var; öğrencinin adı yok.
-    await teachers.getByRole("button", { name: new RegExp(teacher.name) }).click();
+    await teacherButton(page, teacher.name).click();
     const drawer = page.getByRole("dialog", { name: teacher.name });
     await expect(drawer).toContainText(`7-A ${tag}`);
     await expect(drawer).toContainText("1 öğrenci");
+    await drawer.getByRole("button", { name: "Kapat" }).click();
+    await expect(drawer).toBeHidden();
+
+    // Sınıf kutusu sınıfın penceresini açar: durum, ödev, öğrenci sayısı; ad yok. Oradan öğretmene geçilir.
+    await board(page).getByRole("button", { name: `7-A ${tag} sınıfı: Dikkat` }).click();
+    const classSheet = page.getByRole("dialog", { name: `7-A ${tag}` });
+    await expect(classSheet).toContainText(`1 öğrenci · Öğretmeni ${teacher.name}`);
+    await expect(classSheet).toContainText("Dikkat ne demek?");
+    await expect(classSheet).not.toContainText(student.name);
+    await classSheet.getByRole("button", { name: "Öğretmenin ayrıntısını aç" }).click();
+    await expect(page.getByRole("dialog", { name: teacher.name })).toBeVisible();
+    await page.getByRole("dialog", { name: teacher.name }).getByRole("button", { name: "Kapat" }).click();
+
+    // Talebi incele: kurumsal e-posta, not ve belge görünür; belge açılır ve kayıt defterine yazılır.
+    const [applicationId] = (await query<{ id: string }>(`SELECT "id" FROM "TeacherApplication" WHERE "userId" = $1`, [applicant.id])).map((r) => r.id);
+    const sheet = await openRequest(page, applicant.name);
+    await expect(sheet).toContainText(`${applicationId}@okul.invalid`);
+    await expect(sheet).toContainText("Bu yıl 7-A sınıfının dersine giriyorum.");
+    await expect(sheet).toContainText("gorev-belgesi.pdf · 1 KB");
+    const documentLink = sheet.getByRole("link", { name: "Belgeyi aç" });
+    await expect(documentLink).toHaveAttribute("target", "_blank");
+    const documentResponse = await page.request.get((await documentLink.getAttribute("href"))!);
+    expect(documentResponse.status()).toBe(200);
+    expect(documentResponse.headers()["content-type"]).toBe("application/pdf");
+    expect((await auditOf(`application:${applicationId}`)).map((a) => [a.action, a.actorId])).toEqual([["application.document_viewed", coordinator.id]]);
+    // Başka okulun talebinin belgesi açılmaz (aynı boş 404).
+    const [otherApplicationId] = (await query<{ id: string }>(`SELECT "id" FROM "TeacherApplication" WHERE "userId" = $1`, [otherApplicant.id])).map((r) => r.id);
+    expect((await page.request.get(`/yonetim/talepler/${otherApplicationId}/belge`)).status()).toBe(404);
 
     // Ne sayfada ne de sayfayla gelen veride (RSC) öğrenci adı, e-posta ya da başka okul var.
     const html = await (await page.request.get("/okulum")).text();
@@ -205,7 +243,7 @@ test.describe("Okulum", () => {
         otherStudent.name,
         otherApplicant.name,
         other.name,
-        "gorev-belgesi.pdf",
+        `${otherApplicationId}@okul.invalid`,
       ]) {
         expect(text, hidden).not.toContain(hidden);
       }
@@ -219,10 +257,11 @@ test.describe("Okulum", () => {
     const applicationId = await insertApplication(applicant.id, coordinator.school);
 
     await openSchool(page, coordinator.school.name);
-    await requestItem(page, applicant.name).getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
+    await (await openRequest(page, applicant.name)).getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
     await expect(toast(page, `${applicant.name} öğretmen oldu. Kayıt defterine yazıldı.`)).toBeVisible();
+    await expect(page.getByRole("dialog", { name: applicant.name })).toBeHidden();
     await expect(requestItem(page, applicant.name)).toHaveCount(0);
-    await expect(page.getByRole("region", { name: "Okulundan gelen talepler" })).toContainText(
+    await expect(requests(page)).toContainText(
       `${applicant.name} · Onayladın · öğretmenler listesine eklendi`,
     );
 
@@ -234,7 +273,7 @@ test.describe("Okulum", () => {
     expect(await hasDocument(applicationId)).toBe(true);
 
     // Yeni öğretmen listede "Yeni katıldı" olarak görünür.
-    await expect(page.getByRole("region", { name: "Öğretmenler" }).getByRole("button", { name: new RegExp(applicant.name) })).toContainText("Yeni katıldı");
+    await expect(board(page).getByRole("listitem", { name: applicant.name })).toContainText("Yeni katıldı");
 
     await expect
       .poll(async () => (await mailsTo(applicant.email)).length, { timeout: finalizeDelayMs + 45_000, intervals: [2_000] })
@@ -263,7 +302,7 @@ test.describe("Okulum", () => {
     const applicationId = await insertApplication(applicant.id, coordinator.school);
 
     await openSchool(page, coordinator.school.name);
-    await requestItem(page, applicant.name).getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
+    await (await openRequest(page, applicant.name)).getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
     const approved = toast(page, `${applicant.name} öğretmen oldu.`);
     await expect(approved).toBeVisible();
     expect((await userOf(applicant.id)).role).toBe("TEACHER");
@@ -293,10 +332,10 @@ test.describe("Okulum", () => {
     const applicationId = await insertApplication(applicant.id, coordinator.school);
 
     await openSchool(page, coordinator.school.name);
-    await requestItem(page, applicant.name).getByRole("button", { name: "Tanımıyorum" }).click();
+    await (await openRequest(page, applicant.name)).getByRole("button", { name: "Tanımıyorum" }).click();
     await expect(toast(page, `Yöneticiye not gitti: ${applicant.name} bu okulda tanınmıyor.`)).toBeVisible();
     await expect(requestItem(page, applicant.name)).toHaveCount(0);
-    await expect(page.getByRole("region", { name: "Okulundan gelen talepler" })).toContainText(`${applicant.name} · Yöneticiye bıraktın`);
+    await expect(requests(page)).toContainText(`${applicant.name} · Yöneticiye bıraktın`);
 
     expect(await applicationOf(applicationId)).toMatchObject({ status: "PENDING", coordinatorOpinion: "NOT_RECOGNIZED", decidedById: null });
     expect(await userOf(applicant.id)).toEqual({ role: "STUDENT", schoolId: null });
@@ -312,10 +351,11 @@ test.describe("Okulum", () => {
     const applicationId = await insertApplication(applicant.id, coordinator.school);
 
     await openSchool(page, coordinator.school.name);
-    await expect(requestItem(page, applicant.name)).toContainText("kararı yönetici verir");
-    await requestItem(page, applicant.name).getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
+    const sheet = await openRequest(page, applicant.name);
+    await expect(sheet).toContainText("kararı yönetici verir");
+    await sheet.getByRole("button", { name: "Okulumda çalışıyor, onayla" }).click();
     await expect(toast(page, `Görüşün yöneticiye gitti: ${applicant.name} okulunda çalışıyor.`)).toBeVisible();
-    await expect(page.getByRole("region", { name: "Okulundan gelen talepler" })).toContainText(`${applicant.name} · Okulunda çalıştığını söyledin`);
+    await expect(requests(page)).toContainText(`${applicant.name} · Okulunda çalıştığını söyledin`);
 
     expect(await applicationOf(applicationId)).toMatchObject({ status: "PENDING", coordinatorOpinion: "ENDORSED", decidedById: null });
     expect(await userOf(applicant.id)).toEqual({ role: "STUDENT", schoolId: null });
@@ -333,10 +373,13 @@ test.describe("Okulum", () => {
 
     await openSchool(page, coordinator.school.name);
     const warning = "Doğum yılına göre 18 yaşından küçük olabilir. Tanımıyorsan onaylama.";
-    await expect(requestItem(page, minor.name)).toContainText(warning);
-    await expect(requestItem(page, minor.name)).not.toContainText(String(year - 15));
-    await expect(requestItem(page, adult.name)).not.toContainText(warning);
-    await expect(requestItem(page, minor.name).getByRole("button", { name: "Okulumda çalışıyor, onayla" })).toBeEnabled();
+    const minorSheet = await openRequest(page, minor.name);
+    await expect(minorSheet).toContainText(warning);
+    await expect(minorSheet).not.toContainText(String(year - 15));
+    await expect(minorSheet.getByRole("button", { name: "Okulumda çalışıyor, onayla" })).toBeEnabled();
+    await minorSheet.getByRole("button", { name: "Kapat" }).click();
+    await expect(minorSheet).toBeHidden();
+    await expect(await openRequest(page, adult.name)).not.toContainText(warning);
   });
 
   test("hatırlatma bir mail gönderir; aynı gün ikincisi reddedilir", async ({ page, context }) => {
@@ -348,9 +391,8 @@ test.describe("Okulum", () => {
     await openSchool(stale, coordinator.school.name);
     await openSchool(page, coordinator.school.name);
 
-    const card = page.getByRole("region", { name: "Öğretmenler" }).getByRole("button", { name: new RegExp(teacher.name) });
-    await expect(card).toContainText("Takıldı");
-    await card.click();
+    await expect(board(page).getByRole("listitem", { name: teacher.name })).toContainText("Takıldı");
+    await teacherButton(page, teacher.name).click();
     const drawer = page.getByRole("dialog", { name: teacher.name });
     await drawer.getByRole("button", { name: "Hatırlat: Sınıfını kur" }).click();
     await expect(toast(page, `Hatırlatma gitti: ${teacher.name} · "Sınıfını kur"`)).toBeVisible();
@@ -362,7 +404,7 @@ test.describe("Okulum", () => {
     expect(mail.subject).toBe("Sınıfını kurmaya ne dersin?");
     expect(mail.text).toContain(`${coordinator.school.name} okul sorumlusu olarak`);
 
-    await stale.getByRole("region", { name: "Öğretmenler" }).getByRole("button", { name: new RegExp(teacher.name) }).click();
+    await teacherButton(stale, teacher.name).click();
     await stale.getByRole("dialog", { name: teacher.name }).getByRole("button", { name: "Hatırlat: Sınıfını kur" }).click();
     await expect(toast(stale, "Bu öğretmene son 24 saatte hatırlatma gitti.")).toBeVisible();
     expect(await mailsTo(teacher.email)).toHaveLength(1);

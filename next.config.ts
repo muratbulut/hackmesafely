@@ -55,8 +55,8 @@ const contentSecurityPolicy = {
   "worker-src": ["'none'"],
   // <base> etiketi kullanılmaz; sızan bir <base> göreli adresleri başka siteye çeviremez.
   "base-uri": ["'none'"],
-  // Formlar (sunucu eylemleri) yalnızca siteye gönderilir. mailto bağlantıları (Okulum "Müdüre
-  // gönder") form değil, gezinmedir; CSP onları kısıtlamaz.
+  // Formlar (sunucu eylemleri) yalnızca siteye gönderilir. mailto bağlantıları form değil,
+  // gezinmedir; CSP onları kısıtlamaz.
   "form-action": ["'self'"],
   // Site hiçbir sayfada çerçeveye alınamaz (X-Frame-Options: DENY'nin CSP karşılığı).
   "frame-ancestors": ["'none'"],

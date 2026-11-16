@@ -9,6 +9,7 @@
 import "server-only";
 import type { HandledRequest, SchoolClass, SchoolRequest, SchoolTeacher, SchoolView, TeacherHint } from "@/components/school/types";
 import { mayBeMinor } from "@/lib/account/shared";
+import { documentHref } from "@/lib/admin/application-rules";
 import { auditTarget } from "@/lib/audit";
 import { avatarOf } from "@/lib/avatars";
 import { homeworkLabs } from "@/lib/classroom/homework";
@@ -19,6 +20,7 @@ import { format, getMessages } from "@/lib/i18n";
 import { getNeighborhoods, getPublishedLabs } from "@/lib/lab/data";
 import { paths } from "@/lib/navigation";
 import { siteUrl } from "@/lib/site";
+import { formatFileSize } from "@/lib/teacher/document";
 import * as model from "./bulletin-model";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -198,8 +200,12 @@ export async function getSchoolView(coordinator: { userId: string; name: string 
         createdAt: true,
         institutionalEmail: true,
         documentName: true,
+        documentSize: true,
+        note: true,
         coordinatorOpinion: true,
-        user: { select: { id: true, displayName: true, avatar: true, birthYear: true } },
+        // Belgenin yalnızca var olup olmadığı; baytlar okunmaz.
+        document: { select: { applicationId: true } },
+        user: { select: { id: true, displayName: true, avatar: true, birthYear: true, createdAt: true } },
       },
     }),
     db.teacherApplication.findMany({
@@ -251,8 +257,11 @@ export async function getSchoolView(coordinator: { userId: string; name: string 
       avatar: avatarOf(a.user).emoji,
       subject: a.subject,
       when: model.whenText(a.createdAt, now),
-      hasInstitutionalEmail: !!a.institutionalEmail,
-      hasDocument: a.documentName !== null,
+      institutionalEmail: a.institutionalEmail,
+      document:
+        a.document && a.documentName ? { name: a.documentName, size: formatFileSize(a.documentSize ?? 0), href: documentHref(a.id) } : null,
+      note: a.note,
+      accountSince: model.whenText(a.user.createdAt, now),
       minor: mayBeMinor(a.user.birthYear, now),
     }));
   const handled: HandledRequest[] = [
@@ -289,7 +298,6 @@ export async function getSchoolView(coordinator: { userId: string; name: string 
     school: { id: school.id, name: school.name, province: school.province, district: school.district, coordinatorApproves: school.coordinatorApproves },
     meTeacher: teachers.some((t) => t.me),
     inviteUrl: `${siteUrl()}${paths.teacherInvite(school.id)}`,
-    mailto: model.principalMailto({ school: school.name, week, range, preparedBy: coordinator.name, counts, sentences }),
     bulletin: {
       week,
       range,

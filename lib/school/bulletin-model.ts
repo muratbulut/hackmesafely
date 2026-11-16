@@ -255,31 +255,39 @@ export function bulletinSentences(facts: BulletinFacts) {
 
 export type BulletinSentences = ReturnType<typeof bulletinSentences>;
 
+// ---------------------------------------------------------------------------------------
+// Üst özet ve sınıf panosu (hoca öncesi kontrol 34, "E Karne + pano")
+// ---------------------------------------------------------------------------------------
+
+/** Sınıfın tek bakışta durumu: Dikkat (sarı), Yolda (camgöbeği), İyi gidiyor (yeşil), Ödev yok (gri). */
+export type ClassState = "stuck" | "onTrack" | "good" | "none";
+/** Ekrandaki sıra: önce ilgi isteyen. */
+export const classStates: readonly ClassState[] = ["stuck", "onTrack", "good", "none"];
+
+type ClassForState = { members: number; pct: number | null; attention: { kind: string; n?: number } | null };
+
 /**
- * "Müdüre gönder": site rastgele adrese mail göndermez; sorumlunun kendi mail uygulaması bültenin
- * kısa düz metin özetiyle açılır (alıcıyı kendisi yazar). Öğrenci adı yoktur.
+ * Öğrencisi ya da ödevi olmayan sınıf "Ödev yok"; ödevin en az yarısı bitmişse "İyi gidiyor";
+ * öğrencilerin en az yarısı ödeve hiç başlamamışsa "Dikkat"; gerisi "Yolda".
  */
-export function principalMailto(input: {
-  school: string;
-  week: number;
-  range: string;
-  preparedBy: string;
-  counts: { teachers: number; classes: number; students: number; weekDone: number };
-  sentences: BulletinSentences;
-}): string {
-  const t = getMessages().school.principal;
-  const subject = format(t.subject, { school: input.school, range: input.range });
-  const body = [
-    format(t.heading, { week: input.week }),
-    input.school,
-    input.range,
-    "",
-    format(t.counts, input.counts),
-    "",
-    ...Object.values(input.sentences).map((s) => `- ${s}`),
-    "",
-    format(t.preparedBy, { name: input.preparedBy }),
-    t.privacy,
-  ].join("\r\n");
-  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+export function classStateOf(c: ClassForState): ClassState {
+  if (c.members === 0 || c.pct === null) return "none";
+  if (c.pct >= finishingPct) return "good";
+  const notStarted = c.attention?.kind === "notStarted" ? (c.attention.n ?? 0) : 0;
+  return notStarted * 2 >= c.members ? "stuck" : "onTrack";
+}
+
+export function classStateCounts(classes: readonly ClassForState[]): Record<ClassState, number> {
+  const counts: Record<ClassState, number> = { stuck: 0, onTrack: 0, good: 0, none: 0 };
+  for (const c of classes) counts[classStateOf(c)]++;
+  return counts;
+}
+
+/** Okulun tek cümlesi: hiç ödev yoksa "yeni başlıyor"; takılan öğretmen ya da Dikkat'te sınıf varsa "yolda"; yoksa "iyi gidiyor". */
+export type SchoolState = "good" | "onTrack" | "start";
+
+export function schoolStateOf(input: { classes: readonly ClassForState[]; stuckTeachers: number }): SchoolState {
+  const counts = classStateCounts(input.classes);
+  if (counts.good + counts.onTrack + counts.stuck === 0) return "start";
+  return input.stuckTeachers === 0 && counts.stuck === 0 ? "good" : "onTrack";
 }

@@ -4,18 +4,24 @@ import { classLevels, classNameOk, generateJoinCode, isJoinCode, minFinishedForR
 import {
   attentionFor,
   attentionOrder,
+  averageNotice,
+  dateInputParts,
   daysLeft,
+  dueShortcuts,
   dueBounds,
   groupedNoticeRates,
   homeworkTotals,
   initialOf,
+  labGroups,
   matchesSearch,
+  neighborhoodSplit,
   packQr,
   parseDueDate,
   percent,
   qrPath,
   noticeRate,
   shortName,
+  statusCounts,
   studentStatus,
   toDateInput,
   turkeyDate,
@@ -247,5 +253,53 @@ describe("QR kodu", () => {
     const qr = packQr(3, [1, 0, 1, 0, 1, 0, 1, 1, 1]);
     expect(qrPath(qr)).toBe("M0 0h1v1h-1zM2 0h1v1h-1zM1 1h1v1h-1zM0 2h3v1h-3z");
     expect(qrPath(packQr(2, [0, 0, 0, 0]))).toBe("");
+  });
+});
+
+describe("sınıf detayı (hoca öncesi kontrol 33)", () => {
+  it("hazır son tarihler: 1 hafta, 2 hafta, ay sonu, tarih yok; aynı güne düşen bir kez", () => {
+    expect(dueShortcuts({ min: "2026-11-16", max: "2027-11-16" })).toEqual([
+      { key: "week", value: "2026-11-23" },
+      { key: "twoWeeks", value: "2026-11-30" },
+      { key: "none", value: "" },
+    ]);
+    expect(dueShortcuts({ min: "2026-11-03", max: "2027-11-03" }).map((o) => o.key)).toEqual(["week", "twoWeeks", "monthEnd", "none"]);
+    expect(dueShortcuts({ min: "2026-12-20", max: "2027-12-20" })[2]).toEqual({ key: "monthEnd", value: "2026-12-31" });
+    // Ay sonu bugünse (ayın son günü) 1 haftadan önce gelmez, yine sırada kalır.
+    expect(dueShortcuts({ min: "2026-11-30", max: "2027-11-30" }).map((o) => o.value)).toEqual(["2026-12-07", "2026-12-14", "2026-11-30", ""]);
+  });
+
+  it("tarih kutusu değerinin günü, ayı ve haftanın günü (0 pazartesi)", () => {
+    expect(dateInputParts("2026-11-20")).toEqual({ day: 20, month: 10, weekday: 4 });
+    expect(dateInputParts("2026-11-16")).toEqual({ day: 16, month: 10, weekday: 0 });
+    expect(dateInputParts("2026-11-22")).toEqual({ day: 22, month: 10, weekday: 6 });
+  });
+
+  it("durum sayıları; ödev yoksa durum sayılmaz", () => {
+    expect(statusCounts(["finished", "notStarted", "notStarted", null, "inProgress"])).toEqual({ finished: 1, inProgress: 1, notStarted: 2 });
+  });
+
+  it("mahallede hepsini bitiren, başlayan ve girmeyen; odası olmayan mahallede kimse bitirmiş sayılmaz", () => {
+    expect(neighborhoodSplit([3, 3, 1, 0, 4], 3)).toEqual({ all: 3, some: 1, none: 1 });
+    expect(neighborhoodSplit([0, 0], 0)).toEqual({ all: 0, some: 0, none: 2 });
+  });
+
+  it("görünen oranların ortalaması; hiçbiri görünmüyorsa yok", () => {
+    expect(averageNotice([{ first: 60, last: 80 }, null, { first: 70, last: 90 }])).toEqual({ first: 65, last: 85 });
+    expect(averageNotice([null, null])).toBeNull();
+  });
+
+  it("odalar eğitimlere göre: senaryo kendi eğitiminin, açanı yoksa temel eğitimin altında", () => {
+    const labs = [
+      { id: "t1", training: true, gate: null },
+      { id: "s1", training: false, gate: "t1" },
+      { id: "t2", training: true, gate: "t1" },
+      { id: "s2", training: false, gate: "t2" },
+      { id: "s3", training: false, gate: null },
+    ];
+    expect(labGroups(labs).map((g) => [g.training.id, g.scenarios.map((s) => s.id)])).toEqual([
+      ["t1", ["s1", "s3"]],
+      ["t2", ["s2"]],
+    ]);
   });
 });
