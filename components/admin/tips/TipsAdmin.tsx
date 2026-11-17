@@ -132,7 +132,7 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
           className="flex flex-col gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4 lg:flex-row lg:items-center lg:gap-4 lg:px-5"
         >
           <span className="flex min-w-0 flex-1 items-start gap-3">
-            <TriangleAlert className="mt-0.5 size-5 flex-none text-warning" strokeWidth={2} aria-hidden="true" />
+            <TriangleAlert className="mt-0.5 size-5 flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
             <span className="flex min-w-0 flex-col gap-0.5">
               <b className="text-[15px] leading-snug">{format(t.warning.title, { n: pool.length, date: dayLabel(warning.firstRepeat) })}</b>
               <span className="text-[13px] leading-normal text-fg-3">{t.warning.text}</span>
