@@ -188,6 +188,9 @@ test.describe("günün ipucu", () => {
       const strip = page.getByRole("region", { name: "Sıradaki 6 gün" });
       await strip.getByRole("listitem").nth(stripIndex).getByRole("button").click();
       const picker = page.getByRole("dialog", { name: new RegExp(`^${label(nearDay)} `) });
+      // Uzun havuzda pencerede arama: yalnızca uyan ipucu kalır.
+      await picker.getByRole("searchbox", { name: "Seçilecek ipucunu ara" }).fill(text);
+      await expect(picker.getByRole("group", { name: "İpucu seç" }).getByRole("button")).toHaveCount(1);
       await picker.getByRole("button", { name: new RegExp(escape(text)) }).click();
       await expect(toast(page, `${label(nearDay)} için ipucu sabitlendi.`)).toBeVisible();
       await expect(strip.getByRole("listitem").nth(stripIndex)).toContainText(text);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { evaluateBadges, type ProgressFacts } from "@/lib/progress/badges";
 import { dayLabel, weekdayLabel } from "@/lib/tips/format";
+import { isLowRead, poolByNeighborhood, poolWarning, repeatDays } from "@/lib/tips/insights";
 import { normalizeTipText, pinDayError, pinRange, reasonError, textError } from "@/lib/tips/rules";
 import { addDays, dateToDay, dayToDate, daysBetween, isDayKey, pickForDay, planDays, turkeyDay, type ScheduleTip } from "@/lib/tips/schedule";
 
@@ -164,5 +165,41 @@ describe("Meraklı rozeti", () => {
     expect(merakli(6)).toMatchObject({ earned: false, progress: { kind: "days", value: 6, total: 7 } });
     expect(merakli(7)).toMatchObject({ earned: true, progress: { value: 7, total: 7 } });
     expect(merakli(12)).toMatchObject({ earned: true, progress: { value: 7 } });
+  });
+});
+
+describe("ipucu ekranının uyarıları", () => {
+  const today = "2026-11-17";
+
+  it("havuz küçükse ipuçları dönünce tekrar eden günler işaretlenir", () => {
+    const tips = ["t1", "t2", "t3"].map((id) => tip(id));
+    const plan = planDays(tips, today, 7);
+    expect([...repeatDays(plan)]).toEqual(["2026-11-20", "2026-11-21", "2026-11-22", "2026-11-23"]);
+  });
+
+  it("havuz bir haftaya yetmiyorsa uyarı ilk tekrar gününü söyler; 7 ve üstünde uyarı yok", () => {
+    const six = ["t1", "t2", "t3", "t4", "t5", "t6"].map((id) => tip(id));
+    expect(poolWarning(planDays(six, today, 14), 6)).toEqual({ firstRepeat: "2026-11-23" });
+    const seven = [...six, tip("t7")];
+    expect(poolWarning(planDays(seven, today, 14), 7)).toBeNull();
+    expect(poolWarning([], 0)).toBeNull();
+  });
+
+  it("mahalle sayısı yalnızca havuzdakileri sayar", () => {
+    const counts = poolByNeighborhood([
+      { status: "POOL", neighborhoodId: "a" },
+      { status: "POOL", neighborhoodId: "a" },
+      { status: "DRAFT", neighborhoodId: "a" },
+      { status: "ARCHIVED", neighborhoodId: "b" },
+      { status: "POOL", neighborhoodId: null },
+    ]);
+    expect(counts.get("a")).toBe(2);
+    expect(counts.get("b")).toBeUndefined();
+  });
+
+  it("az görülen ipucu oranı düşük olsa da 'az okunuyor' sayılmaz", () => {
+    expect(isLowRead({ views: 9, reasonViews: 0 })).toBe(false);
+    expect(isLowRead({ views: 10, reasonViews: 1 })).toBe(true);
+    expect(isLowRead({ views: 10, reasonViews: 2 })).toBe(false);
   });
 });

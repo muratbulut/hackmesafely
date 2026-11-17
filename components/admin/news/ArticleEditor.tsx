@@ -11,6 +11,7 @@ import { brand } from "@/lib/brand";
 import { format, getMessages, rich } from "@/lib/i18n";
 import { roomArtOf } from "@/lib/lab/art";
 import { labHref } from "@/lib/lab/route";
+import { prefersReducedMotion } from "@/lib/motion";
 import {
   saveArticleDraft,
   saveLiveArticle,
@@ -65,7 +66,7 @@ type Form = {
 /** Sunucudaki hal: kimlik (ilk kayıttan sonra), durum ve yayın haftası. */
 type Saved = { id: string | null; state: ArticleState; week: string | null };
 
-function formOf(article: EditorArticle | null): Form {
+function formOf(article: EditorArticle | null, initialWeek: string | null = null): Form {
   const c = article?.content;
   return {
     title: article?.title ?? "",
@@ -80,7 +81,7 @@ function formOf(article: EditorArticle | null): Form {
     relatedLabId: article?.relatedLabId ?? "",
     sourceName: article?.sourceName ?? "",
     sourceUrl: article?.sourceUrl ?? "",
-    week: article?.week ?? "",
+    week: article?.week ?? initialWeek ?? "",
     cover: {
       focusX: article?.coverFocusX ?? 50,
       focusY: article?.coverFocusY ?? 50,
@@ -125,9 +126,10 @@ const snapshot = (form: Form) => JSON.stringify({ ...form, week: "" });
  * Gündem düzenleyicisi (Gundem-Son, E1): tam sayfa form, sağda "Yayına hazır mı?" ve üç düğme:
  * Taslak kaydet / Önizle / Planla. Taslak eksikle kaydedilir; planlamak için zorunlu maddeler ve
  * yayın haftası gerekir. Önizleme öğrencinin haber sayfasını tam ekran açar (Gundem-Son-Onizleme).
- * Telefonda liste formun altına iner. Her işlemden sonra 5 saniyelik "Geri al".
+ * Telefonda liste formun altına iner. Her işlemden sonra 5 saniyelik "Geri al". Listedeki bir
+ * maddeye basınca form o alana kayar ve alan kısa süre çerçevelenir (hoca öncesi kontrol, 41).
  */
-export function ArticleEditor({ article, options }: { article: EditorArticle | null; options: EditorOptions }) {
+export function ArticleEditor({ article, options, initialWeek = null }: { article: EditorArticle | null; options: EditorOptions; initialWeek?: string | null }) {
   const t = getMessages();
   const n = t.news.admin;
   const e = n.editor;
@@ -136,8 +138,8 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
   const sourceStatusId = useId();
   const leaving = useRef(false);
 
-  const [form, setForm] = useState<Form>(() => formOf(article));
-  const [saved, setSaved] = useState(() => snapshot(formOf(article)));
+  const [form, setForm] = useState<Form>(() => formOf(article, initialWeek));
+  const [saved, setSaved] = useState(() => snapshot(formOf(article, initialWeek)));
   const [server, setServer] = useState<Saved>({ id: article?.id ?? null, state: article?.state ?? "draft", week: article?.week ?? null });
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState<null | "draft" | "plan" | "unschedule">(null);
@@ -193,6 +195,19 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
             : e.hints.ready;
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+
+  /** "Yayına hazır mı?" maddesinin alanına git: ortaya kaydır, ilk kutuya odaklan, kısa süre çerçevele. */
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function goTo(key: ReadinessKey) {
+    const target = document.querySelector<HTMLElement>(`[data-ready-target="${key}"]`);
+    if (!target) return;
+    target.scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    target.querySelector<HTMLElement>("input:not([disabled]), textarea:not([disabled]), select:not([disabled])")?.focus({ preventScroll: true });
+    document.querySelectorAll("[data-flash]").forEach((el) => el.removeAttribute("data-flash"));
+    target.setAttribute("data-flash", "");
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => target.removeAttribute("data-flash"), 1600);
+  }
   const say = (message: string, undo?: () => void) => setToast(nextToast({ message, undo }));
   const fail = (error: NewsActionError) => setToast(nextToast({ message: n.errors[error], tone: "error" }));
 
@@ -402,7 +417,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
           </div>
 
           <div className="flex flex-col gap-4">
-            <Field label={e.title} count={[form.title.length, newsLimits.title]} error={tried && !form.title.trim() ? e.titleMissing : null}>
+            <Field label={e.title} target="titleSummary" count={[form.title.length, newsLimits.title]} error={tried && !form.title.trim() ? e.titleMissing : null}>
               {(id, describedBy) => (
                 <input
                   ref={titleRef}
@@ -432,7 +447,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                 />
               )}
             </Field>
-            <Field label={e.whatsHappening} hint={e.whatsHappeningHint}>
+            <Field label={e.whatsHappening} hint={e.whatsHappeningHint} target="whatsHappening">
               {(id, describedBy) => (
                 <textarea
                   id={id}
@@ -489,7 +504,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                 )}
               </Field>
             </div>
-            <Group title={e.signs}>
+            <Group title={e.signs} target="signs">
               {form.signs.map((s, i) => (
                 <div key={i} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
                   <span className="flex items-center gap-2">
@@ -518,7 +533,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                 </div>
               ))}
             </Group>
-            <Field label={e.actions} hint={e.actionsHint} error={actionsError}>
+            <Field label={e.actions} hint={e.actionsHint} error={actionsError} target="actions">
               {(id, describedBy) => (
                 <textarea
                   id={id}
@@ -533,7 +548,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                 />
               )}
             </Field>
-            <Group title={e.takeaways}>
+            <Group title={e.takeaways} target="takeaways">
               {form.takeaways.map((value, i) => (
                 <input
                   key={i}
@@ -551,7 +566,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
 
           <Section title={e.sourceSection} hint={format(e.sourceHint, { brand: brand.name })}>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Field label={e.sourceName} className="sm:flex-[1_1_220px]">
+              <Field label={e.sourceName} target="source" className="sm:flex-[1_1_220px]">
                 {(id) => (
                   <input
                     id={id}
@@ -564,7 +579,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                   />
                 )}
               </Field>
-              <Field label={e.sourceUrl} className="sm:flex-[2_1_300px]">
+              <Field label={e.sourceUrl} target="trustedSource" className="sm:flex-[2_1_300px]">
                 {(id) => (
                   <input
                     id={id}
@@ -588,7 +603,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
 
           <Section title={e.linkSection}>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Field label={e.topic} className="sm:flex-1">
+              <Field label={e.topic} target="topic" className="sm:flex-1">
                 {(id) => (
                   <select
                     id={id}
@@ -609,7 +624,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                   </select>
                 )}
               </Field>
-              <Field label={e.lab} hint={neighborhood ? undefined : e.labNeedsTopic} className="sm:flex-1">
+              <Field label={e.lab} hint={neighborhood ? undefined : e.labNeedsTopic} target="lab" className="sm:flex-1">
                 {(id, describedBy) => (
                   <select
                     id={id}
@@ -629,7 +644,7 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
                 )}
               </Field>
             </div>
-            <Field label={e.week} hint={live ? e.weekLive : undefined}>
+            <Field label={e.week} hint={live ? e.weekLive : undefined} target="week">
               {(id, describedBy) =>
                 live ? (
                   <select id={id} value="live" disabled aria-describedby={describedBy} className={cn(inputClass, "h-[46px] pr-8 text-[15px]")}>
@@ -670,9 +685,10 @@ export function ArticleEditor({ article, options }: { article: EditorArticle | n
             </span>
             <ul className="m-0 flex list-none flex-col p-0">
               {check.items.map((item) => (
-                <CheckRow key={item.key} label={e.checks[item.key]} ok={item.ok} required={item.required} itemKey={item.key} />
+                <CheckRow key={item.key} label={e.checks[item.key]} ok={item.ok} required={item.required} itemKey={item.key} onGo={() => goTo(item.key)} />
               ))}
             </ul>
+            <span className="text-xs text-fg-4">{e.checklistHint}</span>
           </section>
 
           <div className="flex flex-col gap-2">
@@ -799,10 +815,14 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
+/** Kısa süre çerçevelenen alan ("Yayına hazır mı?" maddesinden gelince). Hareketi azaltta geçiş yok. */
+const flashClass =
+  "rounded-xl motion-safe:transition-shadow motion-safe:duration-500 data-[flash]:ring-2 data-[flash]:ring-accent data-[flash]:ring-offset-4 data-[flash]:ring-offset-surface";
+
+function Group({ title, target, children }: { title: string; target?: ReadinessKey; children: ReactNode }) {
   const id = useId();
   return (
-    <div role="group" aria-labelledby={id} className="flex flex-col gap-2">
+    <div role="group" aria-labelledby={id} data-ready-target={target} className={cn("flex flex-col gap-2", target && flashClass)}>
       <span id={id} className="text-sm font-bold text-fg-2">
         {title}
       </span>
@@ -817,6 +837,7 @@ function Field({
   hint,
   error,
   count,
+  target,
   className,
   children,
 }: {
@@ -824,6 +845,8 @@ function Field({
   hint?: string;
   error?: string | null;
   count?: [number, number];
+  /** "Yayına hazır mı?" listesinden bu alana gelinir. */
+  target?: ReadinessKey;
   className?: string;
   children: (id: string, describedBy: string | undefined) => ReactNode;
 }) {
@@ -831,7 +854,7 @@ function Field({
   const id = useId();
   const note = error ?? hint;
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
+    <div data-ready-target={target} className={cn("flex min-w-0 flex-col gap-1.5", target && flashClass, className)}>
       <span className="flex items-baseline justify-between gap-3">
         <label htmlFor={id} className="text-sm font-bold text-fg-2">
           {label}
@@ -848,17 +871,23 @@ function Field({
   );
 }
 
-function CheckRow({ label, ok, required, itemKey }: { label: string; ok: boolean; required: boolean; itemKey: ReadinessKey }) {
+function CheckRow({ label, ok, required, itemKey, onGo }: { label: string; ok: boolean; required: boolean; itemKey: ReadinessKey; onGo: () => void }) {
   const s = getMessages().news.admin.editor.checkState;
   return (
-    <li data-check={itemKey} className="flex items-center gap-2.5 py-1 text-sm">
-      {ok ? (
-        <CircleCheck className="size-4 flex-none text-success-fg" strokeWidth={2.4} aria-hidden="true" />
-      ) : (
-        <span aria-hidden="true" className={cn("size-4 flex-none rounded-full border-2", required ? "border-warning" : "border-fg-4")} />
-      )}
-      <span className={cn("flex-1", ok ? "text-success-fg" : required ? "text-warning-fg" : "text-fg-4")}>{label}</span>
-      <span className="sr-only">{ok ? s.ok : required ? s.missing : s.optional}</span>
+    <li data-check={itemKey} className="-mx-2 flex">
+      <button
+        type="button"
+        onClick={onGo}
+        className="relative flex min-h-10 flex-1 cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-2 py-1 text-left text-sm hover:bg-card/60"
+      >
+        {ok ? (
+          <CircleCheck className="size-4 flex-none text-success-fg" strokeWidth={2.4} aria-hidden="true" />
+        ) : (
+          <span aria-hidden="true" className={cn("size-4 flex-none rounded-full border-2", required ? "border-warning" : "border-fg-4")} />
+        )}
+        <span className={cn("flex-1", ok ? "text-success-fg" : required ? "text-warning-fg" : "text-fg-4")}>{label}</span>
+        <span className="sr-only">{ok ? s.ok : required ? s.missing : s.optional}</span>
+      </button>
     </li>
   );
 }

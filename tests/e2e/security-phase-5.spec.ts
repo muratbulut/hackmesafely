@@ -225,6 +225,10 @@ test("ekipteki öğrenci hesabı veritabanında başka izin satırı olsa da yal
   const missing = newId();
 
   for (const path of ["/yonetim/odalar", "/yonetim/kayit-defteri", "/yonetim/talepler", "/yonetim/kullanicilar"]) await expectNotFound(page, path);
+  // Kayıt defterinin CSV'si de kapalı (sayfa gibi 404, gövde boş)
+  const csv = await page.request.get("/yonetim/kayit-defteri/indir");
+  expect(csv.status()).toBe(404);
+  expect(await csv.text()).toBe("");
   expect((await call(page.request, "moveLab", [missing, 1], "/")).result).toEqual({ ok: false, error: "forbidden" });
   expect((await call(page.request, "publishLab", [missing, { revision: 0 }], "/")).result).toEqual({ ok: false, error: "forbidden" });
   expect((await call(page.request, "undoApplicationDecision", [missing], "/")).result).toEqual({ ok: false, error: "forbidden" });

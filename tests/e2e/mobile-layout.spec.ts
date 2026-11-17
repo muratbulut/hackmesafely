@@ -810,11 +810,17 @@ const adminScreens: Screen<AdminData>[] = [
   },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
+  {
+    name: "Gün seçme penceresi",
+    path: "/yonetim/ipucu",
+    open: (page) => page.getByRole("region", { name: "Sıradaki 6 gün" }).getByRole("button").first().click(),
+  },
   { name: "Gündem", path: "/yonetim/gundem" },
   { name: "Yeni haber", path: "/yonetim/gundem/yeni" },
   { name: "Haber düzenleme", path: (d) => `/yonetim/gundem/${d.article}` },
   { name: "Haber önizleme penceresi", path: (d) => `/yonetim/gundem/${d.article}`, open: (page) => page.getByRole("button", { name: "Önizle" }).click() },
   { name: "Kayıt defteri", path: "/yonetim/kayit-defteri" },
+  { name: "Kayıt defteri, süzgeçli", path: "/yonetim/kayit-defteri?tur=oda&bas=2026-01-01&bit=2026-12-31" },
 ];
 
 test.describe("telefon düzeni", () => {

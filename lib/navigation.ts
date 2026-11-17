@@ -45,7 +45,10 @@ export const paths = {
   adminNews: "/yonetim/gundem",
   adminNewArticle: "/yonetim/gundem/yeni",
   adminArticle: (id: string) => `/yonetim/gundem/${encodeURIComponent(id)}`,
+  /** Takvim şeridindeki boş Cuma: yeni haber o hafta seçili açılır. */
+  adminNewArticleFor: (week: string) => `/yonetim/gundem/yeni?hafta=${encodeURIComponent(week)}`,
   adminAudit: "/yonetim/kayit-defteri",
+  adminAuditExport: "/yonetim/kayit-defteri/indir",
   adminLabs: "/yonetim/odalar",
   adminLab: (id: string) => `/yonetim/odalar/${encodeURIComponent(id)}`,
   /** Taslağı öğrenci gibi oynatma: tam ekran, yönetim çerçevesi olmadan. */

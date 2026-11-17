@@ -3,6 +3,7 @@ import {
   articleContentSchema,
   articleDraftContentSchema,
   articleState,
+  boldParts,
   checkSourceUrl,
   emptyContent,
   fridayPublishTime,
@@ -249,5 +250,26 @@ describe("yayın haftası", () => {
   it("taslağın geçici adresi gerçek bir adresle karışmaz", () => {
     expect(isDraftSlug("_taslak-abc")).toBe(true);
     expect(isDraftSlug("sahte-kargo-smsleri")).toBe(false);
+  });
+});
+
+describe("Ne oluyor? paragrafında kalın yazı", () => {
+  it("iki yıldız arasındaki metin kalın olur, gerisi düz kalır", () => {
+    expect(boldParts("Mesajdaki link **sahte bir sayfaya** gidiyor.")).toEqual([
+      { text: "Mesajdaki link ", bold: false },
+      { text: "sahte bir sayfaya", bold: true },
+      { text: " gidiyor.", bold: false },
+    ]);
+    expect(boldParts("**Dur** ve **düşün**")).toEqual([
+      { text: "Dur", bold: true },
+      { text: " ve ", bold: false },
+      { text: "düşün", bold: true },
+    ]);
+  });
+
+  it("eşi olmayan ya da boş yıldızlar olduğu gibi kalır; HTML üretilmez", () => {
+    expect(boldParts("5 ** 2 yanlış")).toEqual([{ text: "5 ** 2 yanlış", bold: false }]);
+    expect(boldParts("boş **** yıldız")).toEqual([{ text: "boş **** yıldız", bold: false }]);
+    expect(boldParts("**<b>x</b>**")).toEqual([{ text: "<b>x</b>", bold: true }]);
   });
 });

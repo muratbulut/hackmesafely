@@ -51,6 +51,13 @@ export function dayKey(date: Date): string {
   return `${p.year}-${pad(p.month + 1)}-${pad(p.day)}`;
 }
 
+/** "2026-10-11" anahtarlı Türkiye gününün başı (00.00); bozuk anahtarda null. */
+export function dayKeyStart(key: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!match) return null;
+  return at(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
 /** "09:15" */
 export function clock(date: Date): string {
   const p = trParts(date);
@@ -90,6 +97,22 @@ export function whenLabel(date: Date, now: Date): { short: string; full: string 
   if (date.getTime() >= today - dayMs) return { short: format(t.yesterday, { time }), full };
   if (p.year === trParts(now).year) return { short: dayMonth(date), full };
   return { short: format(t.dateYear, { date: dayMonth(date), year: p.year }), full };
+}
+
+/**
+ * Kayıt defterindeki gün başlığı: "Bugün", "Dün", bu yıl "14 Kasım, Cuma", önceki yıllar
+ * "14 Kasım 2025, Cuma".
+ */
+export function dayHeading(date: Date, now: Date): string {
+  const t = getMessages().adminAudit;
+  const today = dayStart(now).getTime();
+  const start = dayStart(date).getTime();
+  if (start === today) return t.day.today;
+  if (start === today - dayMs) return t.day.yesterday;
+  const p = trParts(date);
+  const weekday = t.weekdays[p.weekday];
+  if (p.year === trParts(now).year) return format(t.day.date, { date: dayMonth(date), weekday });
+  return format(t.day.dateYear, { date: dayMonth(date), year: p.year, weekday });
 }
 
 /**
