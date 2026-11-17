@@ -6,7 +6,7 @@ Projeye yeni katılan ekip arkadaşı ve onun Claude'u için tek sayfalık giri�
 
 Hack Me Safely, ortaokul ve lise öğrencileri için Türkçe bir dijital güvenlik eğitim platformudur. Öğrenci önce **eğitim odasında** kısa kartlarla öğrenir, sonra **senaryo odasında** sahte bir mail kutusunda ya da mesajlaşmada karar verir. Yanlış kararda "Hacklendin" ekranını görür, sonunda bir rapor alır. Öğretmen sınıf açar ve ödev verir; yönetim ekibi odaları, gündemi ve günün ipucunu yönetir.
 
-Murat Bulut'un bitirme projesidir. Fikirleri ve oda içeriğini ekip yazar, kodu Claude Code yazar. Canlı site: https://bitirme.muratbulut.net.
+Murat Bulut'un bitirme projesidir. Fikirleri ve oda içeriğini ekip yazar, kodu Claude Code yazar. Canlı site: https://hackmesafely.com.
 
 ## Önce okunacaklar
 

@@ -145,7 +145,9 @@ test("ziyaretçi sayfaları CSP ile gelir; tema betiği ve gezinme engellenmez",
   // İstemci tarafı gezinme (React verisi aynı kökten gelir).
   await page.getByRole("contentinfo").getByRole("link", { name: "SSS", exact: true }).click();
   await page.waitForURL("/sss");
-  await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
+  // Başlık adıyla aranır: geçiş sırasında tanıtım sayfasının başlığı bir an daha görünür kalabilir
+  // (Next önceki sayfayı DOM'da tutar), "görünen tek h1" araması o anda iki öğe bulur.
+  await expect(page.getByRole("heading", { level: 1, name: "Ne merak ediyorsun?" })).toBeVisible();
 });
 
 test.describe("hesapla gezilen sayfalar", () => {

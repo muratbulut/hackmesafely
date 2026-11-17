@@ -7,7 +7,7 @@
 
 	header {
 		# includeSubDomains yalnızca alan adının alt adları bilinirse eklenir. Sunucudaki nginx onu
-		# ekler (bitirme.muratbulut.net'in alt adı yok; güvenlik turu 5); burada DOMAIN herhangi bir
+		# ekler (güvenlik turu 5); burada DOMAIN herhangi bir
 		# ad olabileceği için eklenmez.
 		Strict-Transport-Security "max-age=31536000"
 		-Server

@@ -50,11 +50,12 @@ env:
   # yönlenen ek adlar (boşlukla ayrılır), REDIRECT_DOMAINS her isteği ana adrese yönlendiren eski
   # adresler. NEXT_DOMAIN taşınılacak yeni adres: sertifikası depoya girene kadar yalnızca imza
   # isteği (CSR) yazdırır, siteye dokunmaz. Ayrıntı: docker/server/README.md, "Alan adı taşıma".
-  DOMAIN: bitirme.muratbulut.net
-  DOMAIN_ALIASES: ""
-  REDIRECT_DOMAINS: ""
-  NEXT_DOMAIN: hackmesafely.com
-  NEXT_DOMAIN_ALIASES: www.hackmesafely.com
+  DOMAIN: hackmesafely.com
+  DOMAIN_ALIASES: www.hackmesafely.com
+  # Site 17 Kasım 2026'da buradan taşındı; eski bağlantılar bozulmasın diye yönlendirir.
+  REDIRECT_DOMAINS: bitirme.muratbulut.net
+  NEXT_DOMAIN: ""
+  NEXT_DOMAIN_ALIASES: ""
   # Uygulama sunucuda yalnızca 127.0.0.1:<port>'ta dinler.
   APP_PORT: "3002"
 

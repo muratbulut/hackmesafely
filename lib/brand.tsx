@@ -6,7 +6,7 @@ import { useId, type SVGProps } from "react";
 export const brand = {
   name: "Hack Me Safely",
   // Paylaşım görselinin (opengraph-image) tam adresi buradan kurulur; alan adı değişince burası değişir.
-  siteUrl: "https://bitirme.muratbulut.net",
+  siteUrl: "https://hackmesafely.com",
   // Kaynak kodu (AGPL-3.0); alt bilgideki "Kaynak kodu" bağlantısı.
   sourceUrl: "https://github.com/muratbulut/carefulmode",
 } as const;

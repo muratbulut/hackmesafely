@@ -476,7 +476,7 @@ Hedef, **aynı anda 100 kullanıcıyı** yavaşlama olmadan kaldırmaktır ve bu
 | Özellik | Değer |
 | --- | --- |
 | Sunucu | Murat'ın kendi sunucusu, DeHost (Türkiye); aynı sunucuda başka işler de çalışıyor |
-| Adres | https://bitirme.muratbulut.net (Cloudflare üzerinden; ürünün kendi alan adı isim kesinleşince) |
+| Adres | https://hackmesafely.com (Cloudflare üzerinden; 17 Kasım 2026'ya kadar bitirme.muratbulut.net, o adres yeni adrese yönlenir) |
 | Bu sitenin payı | Konteyner sınırları: uygulama 2 CPU / 1 GB RAM, veritabanı 1,5 CPU / 1 GB RAM; diğer işleri sıkıştırmaz |
 | Ayrıntı | Depoda `docker/server/README.md` |
 
@@ -556,7 +556,7 @@ Platform yedi fazda yapılır. Öncelik işin **hem iyi hem hızlı** yapılmas�
 **Açık kararlar (Faz 1'den önce verilmeli)**
 
 - [x] Sunucu sağlayıcısı: yurt içi sağlayıcı DeHost (dehost.com.tr). Murat'ın kendi sunucusu (Faz 1'de kuruldu, Bölüm 7); IP kaydı ve konum veritabanları sunucuyu Türkiye'de gösteriyor, KVKK gereği veriler yurt içinde kalır
-- [ ] Alan adı: şimdilik bitirme.muratbulut.net; ürünün kendi alan adı isim kesinleşince alınacak
+- [x] Alan adı: hackmesafely.com (17 Kasım 2026; eski bitirme.muratbulut.net yönlenir)
 - [ ] E-posta gönderim servisi: Resend ücretsiz katmanı günlük gönderim sınırına sahiptir; bir sınıfın aynı gün kayıt olması için yeterli olup olmadığı kontrol edilmeli
 - [ ] İlk admin hesabının nasıl oluşturulacağı (öneri: kurulumda tek seferlik bir komutla)
 - [ ] Demo labın konusu (öneri: tasarımdaki "Sahte kargo maili" labı)
