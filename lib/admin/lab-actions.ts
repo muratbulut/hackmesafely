@@ -1,8 +1,9 @@
 "use server";
 
-// Yönetimdeki lab işlemleri: yeni taslak, taslağı kaydetme, yayınlama (ve hemen geri alma),
-// gizleme / yeniden yayınlama, sıra değiştirme, senaryoyu açan eğitimi değiştirme. Her eylem erişimi yeniden denetler; düzenlemek
-// LAB_EDITING, yayın ve sıra LAB_PUBLISHING ister (yönetici ikisini de yapar). Her değişiklik
+// Yönetimdeki oda işlemleri: yayınlama (ve hemen geri alma), gizleme / yeniden yayınlama, sıra
+// değiştirme. Odanın içeriği panelde yazılmaz: oda depodaki dosyada yazılır, her yayında başlangıç
+// verisi taslağa yansıtır (prisma/rooms.ts; 17 Kasım, Murat). Açan eğitim de dosyadadır
+// (unlockedBy). Her eylem erişimi yeniden denetler; yayın ve sıra LAB_PUBLISHING ister. Her değişiklik
 // kayıt defterine (AuditLog) yazılır; kayıt defteri silinmez ve düzenlenmez. Yazma işlemleri kişi
 // başına istek sınırına tabidir (ipucu ve gündemle ortak sayaç).
 //
@@ -10,35 +11,29 @@
 // sayfayı yeniler, öğrenci sayfaları bir sonraki açılışta yeni hali görür.
 
 import { refresh } from "next/cache";
-import { redirect } from "next/navigation";
-import * as z from "@/lib/zod";
 import { auditTarget, writeAudit, type AuditAction } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { templates, type LabContent } from "@/lib/lab/content";
+import type { LabContent } from "@/lib/lab/content";
 import { basicTrainingOf, gateOf, type GateLab } from "@/lib/lab/gates";
-import { paths } from "@/lib/navigation";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { getLabAccess, type AdminAccess } from "./access";
-import { emptyContent, exampleContent } from "./drafts";
 import { countInProgress, isPublishable, readContent, sameContent } from "./lab-data";
-import { slugify, uniqueSlug } from "./slug";
 import { draftIssues, validateContent } from "./validate";
 
-type Need = "edit" | "publish";
-
-async function allowed(need: Need): Promise<AdminAccess | null> {
+/** Yayın, gizleme ve sıra LAB_PUBLISHING ister. */
+async function allowed(): Promise<AdminAccess | null> {
   const access = await getLabAccess();
   if (!access) return null;
-  return (need === "edit" ? access.canEdit : access.canPublish) ? access : null;
+  return access.canPublish ? access : null;
 }
 
 /**
  * Yazma işlemlerinin kapısı: izin, sonra kişi başına istek sınırı (lib/rate-limit.ts,
  * adminActions; her işlem silinmeyen kayıt defterine yazar). İzni olmayanın denemesi sayılmaz.
  */
-async function writer(need: Need): Promise<{ access: AdminAccess } | { error: "forbidden" | "rateLimited" }> {
-  const access = await allowed(need);
+async function writer(): Promise<{ access: AdminAccess } | { error: "forbidden" | "rateLimited" }> {
+  const access = await allowed();
   if (!access) return { error: "forbidden" };
   const limit = await rateLimit.consume(rateRules.adminActions, access.userId);
   return limit.allowed ? { access } : { error: "rateLimited" };
@@ -68,97 +63,7 @@ export type ActionError =
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: ActionError; issues?: string[] };
 
 // ---------------------------------------------------------------------------------------
-// Yeni lab
-// ---------------------------------------------------------------------------------------
-
-export type CreateLabState = {
-  error?: "forbidden" | "rateLimited" | "name" | "neighborhood" | "template" | "gate" | "failed";
-  values?: { neighborhood: string; template: string; name: string; example: boolean; gate: string };
-};
-
-const createSchema = z.object({
-  neighborhood: z.string().min(1).max(64),
-  template: z.enum(templates),
-  name: z.string().trim().min(4).max(80),
-  example: z.boolean(),
-  // Senaryoyu açan eğitimin kimliği; boşsa mahallenin temel eğitimi.
-  gate: z.string().max(64),
-});
-
-export async function createLab(_prev: CreateLabState, form: FormData): Promise<CreateLabState> {
-  const values = {
-    neighborhood: String(form.get("neighborhood") ?? ""),
-    template: String(form.get("template") ?? ""),
-    name: String(form.get("name") ?? ""),
-    example: form.get("example") === "on",
-    gate: String(form.get("gate") ?? ""),
-  };
-  const gate = await writer("edit");
-  if ("error" in gate) return { error: gate.error, values };
-  const { access } = gate;
-
-  const parsed = createSchema.safeParse(values);
-  if (!parsed.success) {
-    const field = parsed.error.issues[0]?.path[0];
-    return { error: field === "name" ? "name" : field === "template" ? "template" : field === "gate" ? "gate" : "neighborhood", values };
-  }
-  const { template, name, example } = parsed.data;
-  const neighborhood = await db.neighborhood.findUnique({ where: { slug: parsed.data.neighborhood }, select: { id: true } });
-  if (!neighborhood) return { error: "neighborhood", values };
-
-  const type = template === "TRAINING" ? "TRAINING" : "SCENARIO";
-  // Açan eğitim aynı mahallenin eğitim odası olmalı (taslak olabilir).
-  const gateId = type === "SCENARIO" && parsed.data.gate ? parsed.data.gate : null;
-  if (gateId && !(await db.lab.findFirst({ where: { id: gateId, neighborhoodId: neighborhood.id, type: "TRAINING" }, select: { id: true } }))) {
-    return { error: "gate", values };
-  }
-  const content = example ? exampleContent(template, name) : emptyContent(template, name);
-  const base = slugify(name);
-
-  let labId: string | null = null;
-  // Aynı anda aynı adla iki taslak açılırsa ikinci deneme yeni bir adres alır. Yeni lab kendi
-  // türünün sonuna eklenir: ilk eğitim temel eğitim olur, sonrakiler ileri eğitim (lib/lab/gates.ts).
-  for (let attempt = 0; attempt < 3 && !labId; attempt++) {
-    try {
-      labId = await db.$transaction(async (tx) => {
-        // Mahallenin satırı kilitlenir: aynı anda açılan iki eğitim aynı sırayı alıp ikisi de
-        // "temel eğitim" olamasın.
-        await tx.$queryRaw`SELECT "id" FROM "Neighborhood" WHERE "id" = ${neighborhood.id} FOR UPDATE`;
-        const taken = await tx.lab.findMany({ where: { slug: { startsWith: base } }, select: { slug: true } });
-        const last = await tx.lab.aggregate({
-          where: { neighborhoodId: neighborhood.id, type },
-          _max: { sortOrder: true },
-        });
-        const lab = await tx.lab.create({
-          data: {
-            slug: uniqueSlug(base, taken.map((t) => t.slug)),
-            neighborhoodId: neighborhood.id,
-            type,
-            template,
-            sortOrder: last._max.sortOrder === null ? (type === "TRAINING" ? 0 : 1) : last._max.sortOrder + 1,
-            unlockedById: gateId,
-            status: "DRAFT",
-            ...columnsFrom(content),
-            draftContent: content as Prisma.InputJsonObject,
-            updatedById: access.userId,
-          },
-          select: { id: true, slug: true },
-        });
-        await audit(tx, access.userId, "lab.create", lab.id, { slug: lab.slug, template, example });
-        return lab.id;
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") continue;
-      console.error("[yönetim] lab oluşturulamadı:", error instanceof Error ? error.message : error);
-      return { error: "failed", values };
-    }
-  }
-  if (!labId) return { error: "failed", values };
-  redirect(paths.adminLab(labId));
-}
-
-// ---------------------------------------------------------------------------------------
-// Taslağı kaydetme ve yayınlama
+// Yayınlama
 // ---------------------------------------------------------------------------------------
 
 async function loadLab(labId: string) {
@@ -172,106 +77,42 @@ async function loadLab(labId: string) {
 /** Tarayıcıdan gelen taslak sürümü; tam sayı değilse (eski sayfa ya da elle çağrı) hiçbir sürümle eşleşmez. */
 const asRevision = (value: unknown): number | null => (Number.isSafeInteger(value) ? (value as number) : null);
 
-/** Taslak, formun bildiği sürümden sonra değişti: işlem geri alınır, "conflict" döner. */
+/** Taslak, listenin bildiği sürümden sonra değişti: işlem geri alınır, "conflict" döner. */
 class DraftConflict extends Error {}
 
 /**
  * Labı yalnızca taslağı hâlâ `expected` sürümündeyse günceller (güvenlik turu 2, D9). Denetim ve
- * yazım tek bir UPDATE'tir: aynı sürümle aynı anda gelen iki istekten yalnızca biri yazar.
- * `bump`: taslağın içeriği yazılıyorsa sürüm bir artar. Dönen değer taslağın yeni sürümü.
+ * yazım tek bir UPDATE'tir: bu arada dosyadan gelen yeni taslak varsa yazılmaz.
  */
-async function writeIfRevision(
-  tx: Prisma.TransactionClient,
-  labId: string,
-  expected: number,
-  data: Prisma.LabUncheckedUpdateManyInput,
-  bump: boolean,
-): Promise<number> {
-  const result = await tx.lab.updateMany({
-    where: { id: labId, draftRevision: expected },
-    data: { ...data, ...(bump ? { draftRevision: { increment: 1 } } : {}) },
-  });
+async function writeIfRevision(tx: Prisma.TransactionClient, labId: string, expected: number, data: Prisma.LabUncheckedUpdateManyInput) {
+  const result = await tx.lab.updateMany({ where: { id: labId, draftRevision: expected }, data });
   if (result.count === 0) throw new DraftConflict();
-  return bump ? expected + 1 : expected;
-}
-
-/**
- * Taslağı kaydeder; öğrenciler yayındaki sürümü görmeye devam eder. `revision` formun açıldığı
- * (ya da son kaydedildiği) andaki taslağın sürümü: arada başka biri taslağı değiştirdiyse
- * "conflict" döner. `force` ("Benimkiyle üstüne yaz") taslağın şu anki sürümünün üstüne yazar.
- * Okunamayan (şemaya uymayan) taslağın üstüne hiç yazılmaz: "unreadable" (D8).
- */
-export async function saveLabDraft(
-  labId: string,
-  input: unknown,
-  revision: number,
-  force = false,
-): Promise<ActionResult<{ revision: number }>> {
-  const gate = await writer("edit");
-  if ("error" in gate) return { ok: false, error: gate.error };
-  const { access } = gate;
-  const lab = await loadLab(labId);
-  if (!lab) return { ok: false, error: "notFound" };
-  if (draftIssues(lab.template, lab.draftContent)) return { ok: false, error: "unreadable" };
-  const check = validateContent(lab.template, input);
-  if (!check.ok) return { ok: false, error: "invalid", issues: check.issues };
-  // Üstüne yazmada da koşul az önce okunan (ve okunabildiği denetlenen) sürümdür.
-  const expected = force === true ? lab.draftRevision : asRevision(revision);
-  if (expected !== lab.draftRevision) return { ok: false, error: "conflict" };
-
-  try {
-    const next = await db.$transaction(async (tx) => {
-      const next = await writeIfRevision(
-        tx,
-        lab.id,
-        expected,
-        {
-          draftContent: check.content as Prisma.InputJsonObject,
-          updatedById: access.userId,
-          // Hiç yayınlanmamış labın sütunları öğrenciye görünmez; yayındakiler yayınlanınca değişir.
-          ...(lab.publishedVersion === null ? columnsFrom(check.content) : {}),
-        },
-        true,
-      );
-      await audit(tx, access.userId, "lab.save_draft", lab.id, { slug: lab.slug });
-      return next;
-    });
-    refresh();
-    return { ok: true, revision: next };
-  } catch (error) {
-    if (error instanceof DraftConflict) return { ok: false, error: "conflict" };
-    console.error("[yönetim] taslak kaydedilemedi:", error instanceof Error ? error.message : error);
-    return { ok: false, error: "failed" };
-  }
 }
 
 /**
  * Taslağı yeni sürüm olarak yayınlar (sürüm numarası bir artar). `revision` yayınlayanın gördüğü
  * taslağın sürümüdür: listedeki "Yayınla" da gönderir; taslak bu arada değiştiyse yayınlamaz
- * ("conflict"), çünkü yayınlanacak hali kimse görmedi (D9). Formdaki içerik verilirse
- * (kaydedilmemiş değişiklikler) önce o yazılır; `force` taslağın şu anki sürümünün üstüne yazar.
+ * ("conflict"), çünkü yayınlanacak hali kimse görmedi (D9). Taslak olduğu gibi yayınlanır.
  * Yayına hazır değilse, taslak okunamıyorsa ya da yayındaki sürümle aynıysa yayınlamaz. Labın
  * ortasındaki öğrenciler başladıkları sürümle bitirir.
  */
 export async function publishLab(
   labId: string,
-  form: { content?: unknown; revision: number; force?: boolean },
-): Promise<ActionResult<{ version: number; revision: number }>> {
-  const gate = await writer("publish");
+  form: { revision: number },
+): Promise<ActionResult<{ version: number }>> {
+  const gate = await writer();
   if ("error" in gate) return { ok: false, error: gate.error };
   const { access } = gate;
   // Eylem tarayıcıdan her türlü değerle çağrılabilir.
-  const options: { content?: unknown; revision?: unknown; force?: unknown } = typeof form === "object" && form !== null ? form : {};
-  const withContent = options.content !== undefined;
-  if (withContent && !access.canEdit) return { ok: false, error: "forbidden" };
+  const options: { revision?: unknown } = typeof form === "object" && form !== null ? form : {};
   const lab = await loadLab(labId);
   if (!lab) return { ok: false, error: "notFound" };
   if (draftIssues(lab.template, lab.draftContent)) return { ok: false, error: "unreadable" };
 
-  const check = validateContent(lab.template, withContent ? options.content : lab.draftContent);
-  if (!check.ok) return withContent ? { ok: false, error: "invalid", issues: check.issues } : { ok: false, error: "notReady" };
+  const check = validateContent(lab.template, lab.draftContent);
+  if (!check.ok) return { ok: false, error: "notReady" };
   const content = check.content;
-  const expected = options.force === true ? lab.draftRevision : asRevision(options.revision);
+  const expected = asRevision(options.revision);
   if (expected !== lab.draftRevision) return { ok: false, error: "conflict" };
   if (!isPublishable(lab.template, content)) return { ok: false, error: "notReady" };
 
@@ -289,27 +130,15 @@ export async function publishLab(
       await tx.labVersion.create({
         data: { labId: lab.id, version: next, content: content as Prisma.InputJsonObject, publishedById: access.userId },
       });
-      // Listeden yayında taslak olduğu gibi kalır (sürümü değişmez); formdan yayında formdaki hali yazılır.
-      const revision = await writeIfRevision(
-        tx,
-        lab.id,
-        expected,
-        {
-          ...(withContent ? { draftContent: content as Prisma.InputJsonObject } : {}),
-          publishedVersion: next,
-          status: "PUBLISHED",
-          updatedById: access.userId,
-          ...columnsFrom(content),
-        },
-        withContent,
-      );
+      // Taslak olduğu gibi kalır (sürümü değişmez); yalnızca taslak hâlâ görülen sürümdeyse yazılır.
+      await writeIfRevision(tx, lab.id, expected, { publishedVersion: next, status: "PUBLISHED", updatedById: access.userId, ...columnsFrom(content) });
       await audit(tx, access.userId, "lab.publish", lab.id, {
         slug: lab.slug,
         version: next,
         previousVersion: lab.publishedVersion,
         previousStatus: lab.status,
       });
-      return { version: next, revision };
+      return { version: next };
     });
     if (published === null) return { ok: false, error: "unchanged" };
     refresh();
@@ -329,7 +158,7 @@ export async function publishLab(
  * geri alınamaz.
  */
 export async function undoPublish(labId: string, version: number): Promise<ActionResult> {
-  const gate = await writer("publish");
+  const gate = await writer();
   if ("error" in gate) return { ok: false, error: gate.error };
   const { access } = gate;
   const lab = await loadLab(labId);
@@ -386,7 +215,7 @@ export async function undoPublish(labId: string, version: number): Promise<Actio
 export async function setLabVisibility(labId: string, visible: boolean, note = ""): Promise<ActionResult> {
   // Eylem tarayıcıdan her türlü değerle çağrılabilir: yalnızca gerçek true yayına alır.
   const show = visible === true;
-  const gate = await writer("publish");
+  const gate = await writer();
   if ("error" in gate) return { ok: false, error: gate.error };
   const { access } = gate;
   const lab = await loadLab(labId);
@@ -421,7 +250,7 @@ const neighborhoodLabs = (tx: Prisma.TransactionClient, neighborhoodId: string) 
  * senaryolar arasında; ileri eğitim, ileri eğitimler arasında. Temel eğitim hep ilk (taşınmaz).
  */
 export async function moveLab(labId: string, direction: -1 | 1): Promise<ActionResult<{ position: number }>> {
-  const gate = await writer("publish");
+  const gate = await writer();
   if ("error" in gate) return { ok: false, error: gate.error };
   const { access } = gate;
   if (direction !== -1 && direction !== 1) return { ok: false, error: "invalid" };
@@ -456,47 +285,9 @@ export async function moveLab(labId: string, direction: -1 | 1): Promise<ActionR
   return { ok: true, position };
 }
 
-/**
- * Senaryo labını açan eğitimi değiştirir (boş: mahallenin temel eğitimi). Eğitim aynı mahallenin
- * eğitim odası olmalı. Yayından bağımsızdır, hemen geçerli olur: öğrencinin haritasında oda o
- * eğitimin altına geçer, kilidi o eğitime bağlanır; bitmiş denemeler ve puanlar kalır.
- */
-export async function setLabGate(labId: string, trainingId: string): Promise<ActionResult<{ gate: string | null }>> {
-  const gate = await writer("publish");
-  if ("error" in gate) return { ok: false, error: gate.error };
-  const { access } = gate;
-  const lab = await db.lab.findUnique({ where: { id: String(labId) }, select: gateFields });
-  if (!lab) return { ok: false, error: "notFound" };
-  if (lab.type !== "SCENARIO") return { ok: false, error: "invalid" };
-  const target = typeof trainingId === "string" && trainingId ? trainingId : null;
-
-  const changed = await db.$transaction(async (tx) => {
-    const labs = await neighborhoodLabs(tx, lab.neighborhoodId);
-    const training = target ? labs.find((l) => l.id === target && l.type === "TRAINING") : null;
-    if (target && !training) return "invalid" as const;
-    // Temel eğitim seçildiyse boş yazılır: temel eğitim değişirse oda yeni temele bağlı kalır.
-    const value = training && training.id !== basicTrainingOf(labs, lab.neighborhoodId)?.id ? training.id : null;
-    if (value === lab.unlockedById) return "unchanged" as const;
-    await tx.lab.update({ where: { id: lab.id }, data: { unlockedById: value } });
-    const name = value ? await gateName(tx, value) : null;
-    await audit(tx, access.userId, "lab.gate_changed", lab.id, { slug: lab.slug, gate: name });
-    return { gate: value };
-  });
-  if (changed === "invalid") return { ok: false, error: "invalid" };
-  if (changed === "unchanged") return { ok: false, error: "unchanged" };
-  refresh();
-  return { ok: true, ...changed };
-}
-
-/** Eğitimin adı (taslağından; okunamazsa adresi) kayıt defteri cümlesi için. */
-async function gateName(tx: Prisma.TransactionClient, id: string) {
-  const row = await tx.lab.findUnique({ where: { id }, select: { slug: true, template: true, draftContent: true } });
-  return row ? readContent(row.template, row.draftContent, row.slug).meta.name || row.slug : null;
-}
-
 /** Yayınlama penceresi için: şu an labın ortasında olan öğrenci sayısı (isim yok). */
 export async function labInProgress(labId: string): Promise<number> {
-  const access = await allowed("publish");
+  const access = await allowed();
   if (!access) return 0;
   return countInProgress(String(labId));
 }

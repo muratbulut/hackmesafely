@@ -12,11 +12,11 @@ export function neighborhoodColor(name: string) {
   return colors[name as keyof typeof colors] ?? colors.accent;
 }
 
-/** Lab durumunun rengi (Lablar-Son: yayında yeşil, taslak gri, gizli sarı). */
+/** Oda durumunun rengi (39, 17 Kasım): yayında yeşil, taslak sarı, gizli gri. */
 export const statusColors = {
-  PUBLISHED: { dot: "bg-success", badge: "bg-success/12 text-success-fg", tile: "border-success" },
-  DRAFT: { dot: "bg-fg-3", badge: "bg-fg-3/12 text-fg-3", tile: "border-fg-3" },
-  HIDDEN: { dot: "bg-warning", badge: "bg-warning/12 text-warning-fg", tile: "border-warning" },
+  PUBLISHED: { dot: "bg-success", badge: "bg-success/14 text-success-fg", tile: "border-success", text: "text-success-fg" },
+  DRAFT: { dot: "bg-warning", badge: "bg-warning/14 text-warning-fg", tile: "border-warning", text: "text-warning-fg" },
+  HIDDEN: { dot: "bg-fg-4", badge: "bg-card text-fg-3", tile: "border-fg-3", text: "text-fg-3" },
 } as const;
 
 /** Sahnedeki gönderen avatarlarının renkleri (kurgusal uygulamaların kendi renkleri). */

@@ -8,7 +8,7 @@ import { format, getMessages } from "@/lib/i18n";
 import { removeNewsCover, uploadNewsCover, type NewsActionError } from "@/lib/news/actions";
 import { clampFocus, coverRules, scaledSize, type CoverView } from "@/lib/news/cover";
 import { cn } from "@/lib/utils";
-import { inputClass } from "../editor/fields";
+import { inputClass } from "../fields";
 
 /** Sunucudaki kapak (yüklendikten sonra); odak, alt metin ve kaynak formda durur. */
 export type SavedCover = { src: string; width: number; height: number };

@@ -175,7 +175,6 @@ test("yönetimdeki yazma eylemleri (lab, ipucu, gündem, talepler, ekip, kullan�
     // Lab işlemleri (Faz 3): olmayan lab bile sınırdan önce sorulmaz.
     expect((await call(page.request, "moveLab", [missing, 1], "/yonetim/odalar")).result).toEqual(limited);
     expect((await call(page.request, "setLabVisibility", [missing, false, ""], "/yonetim/odalar")).result).toEqual(limited);
-    expect((await call(page.request, "saveLabDraft", [missing, {}, "", true], "/yonetim/odalar")).result).toEqual(limited);
     expect((await call(page.request, "publishLab", [missing], "/yonetim/odalar")).result).toEqual(limited);
     expect((await call(page.request, "undoPublish", [missing, 1], "/yonetim/odalar")).result).toEqual(limited);
     // İpucu ve gündem
@@ -227,7 +226,7 @@ test("ekipteki öğrenci hesabı veritabanında başka izin satırı olsa da yal
 
   for (const path of ["/yonetim/odalar", "/yonetim/kayit-defteri", "/yonetim/talepler", "/yonetim/kullanicilar"]) await expectNotFound(page, path);
   expect((await call(page.request, "moveLab", [missing, 1], "/")).result).toEqual({ ok: false, error: "forbidden" });
-  expect((await call(page.request, "saveLabDraft", [missing, {}, "", true], "/")).result).toEqual({ ok: false, error: "forbidden" });
+  expect((await call(page.request, "publishLab", [missing, { revision: 0 }], "/")).result).toEqual({ ok: false, error: "forbidden" });
   expect((await call(page.request, "undoApplicationDecision", [missing], "/")).result).toEqual({ ok: false, error: "forbidden" });
   await page.goto("/yonetim/ipucu");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Günün ipucu");

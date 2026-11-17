@@ -36,7 +36,7 @@ import {
 import type { EditorArticle, EditorOptions } from "@/lib/news/data";
 import { paths } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { inputClass } from "../editor/fields";
+import { inputClass } from "../fields";
 import { nextToast, UndoToast, type ToastData } from "../UndoToast";
 import { ArticlePreview } from "./ArticlePreview";
 import { CoverField, type CoverMeta, type SavedCover } from "./CoverField";

@@ -265,7 +265,6 @@ test.describe("hesapla gezilen sayfalar", () => {
       "/yonetim/talepler",
       "/yonetim/kullanicilar",
       "/yonetim/odalar",
-      "/yonetim/odalar/yeni",
       "/yonetim/ipucu",
       "/yonetim/gundem",
       "/yonetim/gundem/yeni",
@@ -274,7 +273,7 @@ test.describe("hesapla gezilen sayfalar", () => {
       await visit(page, path);
     }
 
-    // Lab düzenleme ve önizleme: Postam'da hacklenip rapora kadar (hiçbir şey kaydedilmez).
+    // Odanın sayfası ve önizleme: Postam'da hacklenip rapora kadar (hiçbir şey kaydedilmez).
     const labs = await query<{ id: string; slug: string }>(`SELECT "id", "slug" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'oltalama-egitimi', 'kodu-soran-arkadas')`);
     const labId = (slug: string) => labs.find((l) => l.slug === slug)!.id;
     await visit(page, `/yonetim/odalar/${labId("sahte-kargo-maili")}`);

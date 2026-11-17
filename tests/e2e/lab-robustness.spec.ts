@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
-import { callAction, callActionBurst, callFormAction } from "./support/actions";
+import { callAction, callActionBurst } from "./support/actions";
 import { deleteTestLabs, makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
 
@@ -100,7 +100,7 @@ const insertTraining = (neighborhoodId: string) =>
 // D8: okunamayan taslak
 // ---------------------------------------------------------------------------------------
 
-test("D8: okunamayan taslak uyarıyla açılır; kaydetme ve yayınlama onun üstüne yazmaz", async ({ page }) => {
+test("D8: okunamayan taslak odanın sayfasında uyarıyla açılır; yayınlama onun üstüne yazmaz", async ({ page }) => {
   // Şema sıkılaşınca (ör. bağlantı adresinde artık boşluk olmaz) eski taslak okunamaz hale gelir.
   const broken = inboxContent(`E2E Bozuk ${stamp()}`, (c) => {
     c.items[0].link.url = "kargo teslimat tr.xyz/adres";
@@ -112,14 +112,10 @@ test("D8: okunamayan taslak uyarıyla açılır; kaydetme ve yayınlama onun üs
     const alert = page.getByRole("alert").filter({ hasText: "Taslak okunamadı" });
     await expect(alert).toBeVisible();
     await expect(alert).toContainText("items.0.link.url");
-    await expect(page.getByRole("button", { name: "Kaydet", exact: true })).toBeDisabled();
-    await expect(page.getByRole("button", { name: /olarak yayınla$/ })).toBeDisabled();
+    await expect(page.getByRole("region", { name: "Yayına hazır mı?" })).toHaveCount(0);
 
-    // Arayüz kapalı olsa da eylem elle çağrılabilir: sunucu da reddeder, üstüne yazmaya zorlansa bile.
-    const valid = inboxContent(broken.meta.name);
-    const saved = (await callAction(page.request, "saveLabDraft", [lab.id, valid, 0, true], "/yonetim/odalar")) as Result;
-    expect(saved).toMatchObject({ ok: false, error: "unreadable" });
-    const published = (await callAction(page.request, "publishLab", [lab.id, { content: valid, revision: 0, force: true }], "/yonetim/odalar")) as Result;
+    // Eylem elle de çağrılabilir: sunucu reddeder.
+    const published = (await callAction(page.request, "publishLab", [lab.id, { revision: 0 }], "/yonetim/odalar")) as Result;
     expect(published).toMatchObject({ ok: false, error: "unreadable" });
     expect((await draftOf(lab.id)).meta.name).toBe(broken.meta.name);
     expect(JSON.stringify(await draftOf(lab.id))).toContain("kargo teslimat tr.xyz/adres");
@@ -138,32 +134,6 @@ test("D8: okunamayan taslak uyarıyla açılır; kaydetme ve yayınlama onun üs
 // D9: aynı anda düzenleme
 // ---------------------------------------------------------------------------------------
 
-test("D9: aynı taslak sürümüyle gelen eşzamanlı kaydetmelerden yalnızca biri yazılır", async ({ page }) => {
-  const name = `E2E Eşzamanlı ${stamp()}`;
-  const lab = await insertInboxLab(inboxContent(name));
-  try {
-    await signUpAdmin(page);
-    const first = (await callAction(page.request, "saveLabDraft", [lab.id, inboxContent(name), 0, true], "/yonetim/odalar")) as Result;
-    expect(first.ok).toBe(true);
-
-    const results = (await Promise.all(
-      [1, 2, 3, 4, 5].map((n) =>
-        callAction(page.request, "saveLabDraft", [lab.id, inboxContent(name, (c) => (c.meta.summary = `Özet ${n}`)), first.revision, false], "/yonetim/odalar"),
-      ),
-    )) as Result[];
-    const winners = results.flatMap((r, i) => (r.ok ? [i + 1] : []));
-    expect(winners).toHaveLength(1);
-    expect(results.filter((r) => !r.ok).map((r) => r.error)).toEqual(["conflict", "conflict", "conflict", "conflict"]);
-    expect((await draftOf(lab.id)).meta.summary).toBe(`Özet ${winners[0]}`);
-
-    // Eski sürümle bir daha kaydetmek de çakışmadır; dönen yeni sürümle kaydetmek yazar.
-    const stale = (await callAction(page.request, "saveLabDraft", [lab.id, inboxContent(name), first.revision, false], "/yonetim/odalar")) as Result;
-    expect(stale).toMatchObject({ ok: false, error: "conflict" });
-  } finally {
-    await deleteTestLabs({ slug: lab.slug });
-  }
-});
-
 test("D9: listedeki Yayınla, liste açıldıktan sonra değişen taslağı yayınlamaz; yeniledikten sonra yayınlar", async ({ page }) => {
   const name = `E2E Liste ${stamp()}`;
   const lab = await insertInboxLab(inboxContent(name));
@@ -174,10 +144,9 @@ test("D9: listedeki Yayınla, liste açıldıktan sonra değişen taslağı yay�
     const publish = page.getByRole("button", { name: `Yayınla: ${name}` });
     await expect(publish).toBeVisible();
 
-    // Liste açıkken başka bir sekmede (ya da başka biri) taslağı değiştirir.
-    const changed = inboxContent(name, (c) => (c.meta.summary = "Başka sekmede değişen özet"));
-    const saved = (await callAction(page.request, "saveLabDraft", [lab.id, changed, 0, true], "/yonetim/odalar")) as Result;
-    expect(saved.ok).toBe(true);
+    // Liste açıkken depodan yeni taslak gelir (yayındaki başlangıç verisi taslağı yazar, sürümü artar).
+    const changed = inboxContent(name, (c) => (c.meta.summary = "Depodan gelen özet"));
+    await query(`UPDATE "Lab" SET "draftContent" = $2::jsonb, "draftRevision" = "draftRevision" + 1 WHERE "id" = $1`, [lab.id, JSON.stringify(changed)]);
 
     await publish.click();
     const dialog = page.getByRole("dialog", { name: `${name} odasını yayınla` });
@@ -194,7 +163,7 @@ test("D9: listedeki Yayınla, liste açıldıktan sonra değişen taslağı yay�
     }).toPass({ timeout: 15_000 });
     const versions = await versionsOf(lab.id);
     expect(versions.map((v) => v.version)).toEqual([1]);
-    expect(versions[0].content.meta.summary).toBe("Başka sekmede değişen özet");
+    expect(versions[0].content.meta.summary).toBe("Depodan gelen özet");
   } finally {
     await deleteTestLabs({ slug: lab.slug });
   }
@@ -224,26 +193,6 @@ test("D10: veritabanı bir mahallede ikinci eğitimi kabul eder; silinen eğitim
     await query(`DELETE FROM "Lab" WHERE "id" = $1`, [advanced]);
     const rows = await query<{ unlockedById: string | null }>(`SELECT "unlockedById" FROM "Lab" WHERE "id" = $1`, [scenario]);
     expect(rows[0].unlockedById).toBeNull();
-  } finally {
-    await deleteNeighborhood(neighborhood.id);
-  }
-});
-
-test("D10: aynı anda gelen 'Yeni lab' isteklerinin hepsi eğitim açar; sıraları ayrı, yalnızca biri temel eğitim", async ({ page }) => {
-  const neighborhood = await insertNeighborhood();
-  try {
-    await signUpAdmin(page);
-    const fields = (n: number) => ({ neighborhood: neighborhood.slug, template: "TRAINING", name: `E2E Eğitim ${stamp()} ${n}` });
-    // Başarılı olan lab sayfasına yönlendirir; yanıtında okunacak bir sonuç yoktur.
-    const results = (await Promise.all(
-      [1, 2, 3].map((n) => callFormAction(page.request, "createLab", fields(n), "/yonetim/odalar/yeni").catch(() => undefined)),
-    )) as ({ error?: string } | undefined)[];
-    const labs = await query<{ sortOrder: number }>(`SELECT "sortOrder" FROM "Lab" WHERE "neighborhoodId" = $1 AND "type" = 'TRAINING' ORDER BY "sortOrder"`, [
-      neighborhood.id,
-    ]);
-    // Bir mahallede birden çok eğitim olabilir (15 Ekim); mahalle satırı kilitlendiği için sıralar ayrıdır.
-    expect(labs.map((l) => l.sortOrder)).toEqual([0, 1, 2]);
-    expect(results.filter((r) => r?.error)).toEqual([]);
   } finally {
     await deleteNeighborhood(neighborhood.id);
   }

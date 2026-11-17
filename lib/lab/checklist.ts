@@ -1,6 +1,6 @@
-// "Yayına hazır mı?" listesi (Lab-Duzenle-Son). Liste tamamlanmadan lab yayınlanamaz; aynı
-// denetim hem formda (canlı) hem sunucuda (yayınla eylemi) çalışır. Maddelerin yazısı sözlükte:
-// t.admin.editor.checklist[anahtar].
+// "Yayına hazır mı?" listesi. Liste tamamlanmadan oda yayınlanamaz; aynı denetim yayınla eyleminde,
+// odanın sayfasında (eksikler) ve oda dosyalarının testinde çalışır. Maddelerin yazısı sözlükte:
+// t.admin.room.checklist[anahtar].
 
 import { fillParts, maxScore, rawTotal, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "./content";
 

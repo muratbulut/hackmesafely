@@ -7,6 +7,8 @@
 //   Dosya "PUBLISHED" diyorsa ve içerik yayındakinden farklıysa yeni sürüm yayınlanır; eski
 //   denemeler kendi sürümüyle kalır. Gizlenmiş oda gizli kalır. "DRAFT" dosya yayındaki odayı
 //   yayından kaldırmaz, yalnızca taslağı günceller.
+// - Odanın sırası (sortOrder) yalnızca oda ilk eklenirken dosyadan gelir; sonra yönetimdeki
+//   Odalar sayfasında okla değişir ve dosya değişince ezilmez (17 Kasım, Murat).
 // - Aynı adreste formla açılmış bir oda varsa dosya onu devralır; türü, şablonu ya da mahallesi
 //   farklıysa dokunulmaz, atlanır.
 //
@@ -174,7 +176,6 @@ export async function syncRooms(db: PrismaClient, rooms: Room[], log: (line: str
             draftRevision: { increment: 1 },
             difficulty: room.content.meta.difficulty,
             durationMin: room.content.meta.durationMin,
-            sortOrder: room.sortOrder,
             status: plan.status,
             publishedVersion,
             sourceHash: room.hash,

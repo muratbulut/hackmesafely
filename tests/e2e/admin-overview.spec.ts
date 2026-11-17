@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
-import { deleteTestLabs, makeAdmin } from "./support/admin";
+import { deleteTestLabs, insertTestLab, makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
 import { userIdOf } from "./support/teacher";
 
@@ -203,19 +203,13 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     lab.slug = lab.name.toLowerCase().replaceAll(" ", "-");
     const note = "Metinler gözden geçiriliyor";
     try {
-      // Örnek içerikle taslak, v1 yayını ve not ile gizleme
-      await page.goto("/yonetim/odalar/yeni");
-      const form = page.getByRole("form", { name: "Yeni oda" });
-      await form.getByText("Gelen kutusu", { exact: true }).click();
-      await form.getByLabel("Oda adı").fill(lab.name);
-      await form.getByText("Örnek içerikle başla").click();
-      await form.getByRole("button", { name: "Taslağı oluştur" }).click();
-      await page.waitForURL(/\/yonetim\/odalar\/(?!yeni)[^/]+$/);
-      await page.getByRole("button", { name: "v1 olarak yayınla" }).click();
-      await page.getByRole("dialog", { name: `${lab.name} · v1 yayınlansın mı?` }).getByRole("button", { name: "Yayınla", exact: true }).click();
-      await expect(toast(page, `${lab.name} v1 yayında.`)).toBeVisible();
+      // Depodan gelen taslak (oda panelde açılmaz), listeden v1 yayını ve not ile gizleme
+      await insertTestLab({ slug: lab.slug, name: lab.name });
       await page.goto("/yonetim/odalar");
-      await page.getByRole("switch", { name: `Gizle: ${lab.name}` }).click();
+      await page.getByRole("button", { name: `Yayınla: ${lab.name}` }).click();
+      await page.getByRole("dialog", { name: `${lab.name} odasını yayınla` }).getByRole("button", { name: "Yayınla", exact: true }).click();
+      await expect(toast(page, `${lab.name} yayında`)).toBeVisible();
+      await page.getByRole("button", { name: `Gizle: ${lab.name}` }).click();
       const hide = page.getByRole("dialog", { name: `${lab.name} odasını gizle` });
       await hide.getByLabel(/Neden gizliyorsun/).fill(note);
       await hide.getByRole("button", { name: "Gizle", exact: true }).click();
@@ -229,7 +223,6 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
       await expect(page).toHaveURL(/[?&]tur=oda/);
       await expect(kinds.getByRole("link", { name: "Oda", exact: true })).toHaveAttribute("aria-current", "true");
       const ours = rows(page).filter({ hasText: lab.name });
-      await expect(ours.filter({ hasText: `"${lab.name}" taslağı örnek içerikle açıldı` })).toHaveCount(1);
       await expect(ours.filter({ hasText: `"${lab.name}" v1 yayınlandı` })).toHaveCount(1);
       await expect(ours.filter({ hasText: `"${lab.name}" gizlendi · not: ${note}` })).toHaveCount(1);
       for (const row of await ours.all()) {
@@ -240,8 +233,8 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
       // Arama: yalnızca bu labın kayıtları
       await page.getByRole("searchbox", { name: "Kayıtlarda ara" }).fill(lab.name);
       await expect(page).toHaveURL(/[?&]ara=/);
-      await expect(rows(page)).toHaveCount(3);
-      await expect(page.getByTestId("audit-count")).toHaveText("3 kayıt");
+      await expect(rows(page)).toHaveCount(2);
+      await expect(page.getByTestId("audit-count")).toHaveText("2 kayıt");
 
       // Tür "Talep" ile aynı arama boş
       await kinds.getByRole("link", { name: "Talep", exact: true }).click();
@@ -253,7 +246,7 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
       await page.goto("/yonetim/kayit-defteri");
       await page.getByLabel("Kişi").selectOption({ label: adminName });
       await expect(page).toHaveURL(/[?&]kisi=/);
-      await expect(rows(page)).toHaveCount(3);
+      await expect(rows(page)).toHaveCount(2);
       for (const row of await rows(page).all()) await expect(row).toContainText(`Defter${tag} Y.`);
     } finally {
       await deleteTestLabs({ slug: lab.slug });

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { LabEditor } from "@/components/admin/editor/LabEditor";
+import { RoomPage } from "@/components/admin/labs/RoomPage";
 import { Loading } from "@/components/status/Loading";
+import { checklistFor } from "@/lib/admin/compare";
 import { requireLabAccess } from "@/lib/admin/access";
-import { getAdminLab } from "@/lib/admin/lab-data";
+import { getAdminLab, getAdminLabList } from "@/lib/admin/lab-data";
 import { adminMetadata } from "@/lib/admin/metadata";
 
 export function generateMetadata({ params }: PageProps<"/yonetim/odalar/[id]">) {
@@ -14,19 +15,35 @@ export function generateMetadata({ params }: PageProps<"/yonetim/odalar/[id]">) 
   }, "LAB_EDITING", "LAB_PUBLISHING");
 }
 
-/** Lab düzenleme (Lab-Duzenle-Son, -SMS, -Mobil): taslağı yaz, kontrol et, yayınla. */
-export default function LabEditorPage({ params }: PageProps<"/yonetim/odalar/[id]">) {
+/**
+ * Odanın salt okunur sayfası (39, 17 Kasım, Murat): sayılar, "Öğrenci gibi dene", yayınla / gizle ve
+ * odanın depodaki dosyası. İçerik burada yazılmaz; oda dosyada yazılır, yayınla birlikte gelir.
+ */
+export default function LabRoomPage({ params }: PageProps<"/yonetim/odalar/[id]">) {
   return (
     <Suspense fallback={<Loading className="m-4 lg:m-9" />}>
-      <EditorLoader params={params} />
+      <RoomLoader params={params} />
     </Suspense>
   );
 }
 
-async function EditorLoader({ params }: Pick<PageProps<"/yonetim/odalar/[id]">, "params">) {
+async function RoomLoader({ params }: Pick<PageProps<"/yonetim/odalar/[id]">, "params">) {
   const access = await requireLabAccess();
   const { id } = await params;
-  const lab = await getAdminLab(id);
-  if (!lab) notFound();
-  return <LabEditor key={lab.id} lab={lab} canEdit={access.canEdit} canPublish={access.canPublish} />;
+  const [lab, neighborhoods] = await Promise.all([getAdminLab(id), getAdminLabList()]);
+  const neighborhood = neighborhoods.find((n) => n.labs.some((r) => r.id === id));
+  const row = neighborhood?.labs.find((r) => r.id === id);
+  if (!lab || !neighborhood || !row) notFound();
+  // Taslak okunamıyorsa eksik listesi gösterilmez (yerine "Taslak okunamadı" uyarısı çıkar).
+  const missing = row.status === "DRAFT" && !row.ready && !lab.draftIssues ? checklistFor(lab.template, lab.draft).filter((c) => !c.ok).map((c) => c.key) : [];
+  return (
+    <RoomPage
+      row={row}
+      neighborhood={neighborhood}
+      sourceFile={lab.sourceFile}
+      draftIssues={lab.draftIssues}
+      missing={missing}
+      canPublish={access.canPublish}
+    />
+  );
 }

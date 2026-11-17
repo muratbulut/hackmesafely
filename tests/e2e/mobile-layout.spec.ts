@@ -599,14 +599,6 @@ type AdminData = {
   article: string;
 };
 
-/** Oda düzenleme formunda bir bölümü açar (telefonda bölüm kendi sayfasında açılır). */
-async function openLabSection(page: Page, name: string) {
-  const back = page.getByRole("button", { name: "Bölümler", exact: true });
-  if (await back.isVisible()) await back.click();
-  await page.getByRole("navigation", { name: "Oda bölümleri" }).getByRole("button", { name: new RegExp(`^${name}`) }).click();
-  await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
-}
-
 const applicationDetail = (page: Page, name: string) => page.getByRole("region", { name: `Talep: ${name}` });
 
 const adminScreens: Screen<AdminData>[] = [
@@ -678,41 +670,22 @@ const adminScreens: Screen<AdminData>[] = [
   },
   { name: "Okul ekleme penceresi", path: "/yonetim/kullanicilar?gorunum=okullar", open: (page) => page.getByRole("button", { name: "Okul ekle" }).first().click() },
   { name: "Odalar", path: "/yonetim/odalar" },
-  { name: "Odalar, bütün mahalleler açık", path: "/yonetim/odalar", open: (page) => page.getByRole("button", { name: "Hepsini aç" }).click() },
+  { name: "Odalar, Yeni oda nasıl gelir?", path: "/yonetim/odalar", open: (page) => page.getByText("Yeni oda nasıl gelir?").click() },
   {
     name: "Oda gizleme penceresi",
-    open: (page) => page.getByRole("switch", { name: "Gizle: Sahte kargo maili" }).click(),
+    path: "/yonetim/odalar",
+    open: (page) => page.getByRole("button", { name: "Gizle: Sahte kargo maili" }).click(),
   },
-  { name: "Yeni oda", path: "/yonetim/odalar/yeni" },
-  { name: "Oda düzenleme, bölümler", path: (d) => `/yonetim/odalar/${d.labs.inbox}` },
-  { name: "Oda düzenleme, kapak", open: (page) => openLabSection(page, "Kapak ve hatırlatma") },
-  { name: "Oda düzenleme, gelen kutusu", open: (page) => openLabSection(page, "Gelen kutusu") },
-  { name: "Oda düzenleme, sahte sayfa", open: (page) => openLabSection(page, "Sahte sayfa") },
-  { name: "Oda düzenleme, görevler", open: (page) => openLabSection(page, "Görevler") },
-  { name: "Oda düzenleme, rapor", open: (page) => openLabSection(page, "Rapor") },
-  {
-    name: "Oda düzenleme, öğrenci gibi dene",
-    open: async (page) => {
-      await page.getByRole("button", { name: "Bölümler", exact: true }).click();
-      await page.getByRole("button", { name: "Öğrenci gibi dene" }).click();
-    },
-  },
-  { name: "Oda düzenleme, mesajlar", path: (d) => `/yonetim/odalar/${d.labs.messaging}`, open: (page) => openLabSection(page, "Mesajlar") },
-  { name: "Oda düzenleme, tuzak anı", open: (page) => openLabSection(page, "Tuzak anı") },
-  { name: "Oda düzenleme, eğitim kartları", path: (d) => `/yonetim/odalar/${d.labs.training}`, open: (page) => openLabSection(page, "Kartlar") },
+  { name: "Odalar, taslak süzgeci", path: "/yonetim/odalar", open: (page) => page.getByRole("switch", { name: "Taslak odaları göster" }).click() },
+  { name: "Odanın sayfası, senaryo", path: (d) => `/yonetim/odalar/${d.labs.inbox}` },
+  { name: "Odanın sayfası, taslak", path: (d) => `/yonetim/odalar/${d.labs.messaging}` },
+  { name: "Odanın sayfası, eğitim", path: (d) => `/yonetim/odalar/${d.labs.training}` },
   { name: "Oda önizleme, başlangıç", path: (d) => `/yonetim/odalar/${d.labs.messaging}/onizle` },
   { name: "Oda önizleme, Mesajlar", open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
   { name: "Oda önizleme, sohbet", open: (page) => page.getByRole("button", { name: /^Deniz/ }).first().click() },
   { name: "Oda önizleme, Postam", path: (d) => `/yonetim/odalar/${d.labs.inbox}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
   // Kutulara ayırma, eşleştirme ve boşluk doldurma kartları: Para Çarşısı temel eğitimi (oda dosyası, taslak).
-  {
-    name: "Oda düzenleme, kutulara ayırma kartı",
-    path: (d) => `/yonetim/odalar/${d.labs.placement}`,
-    open: async (page) => {
-      await openLabSection(page, "Kartlar");
-      await page.getByRole("button", { name: /Hangi bilgi hangi kutuya girer\?/ }).click();
-    },
-  },
+  { name: "Odanın sayfası, depodaki dosya", path: (d) => `/yonetim/odalar/${d.labs.placement}` },
   { name: "Oda önizleme, video kartı", path: (d) => `/yonetim/odalar/${d.labs.placement}/onizle` },
   { name: "Oda önizleme, video sorusu cevaplandı", open: (page) => answerVideo(page, 81, "Kimseye verilmez") },
   { name: "Oda önizleme, keşfet kartı", open: next },
