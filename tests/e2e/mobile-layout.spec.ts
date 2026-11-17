@@ -781,6 +781,11 @@ const adminScreens: Screen<AdminData>[] = [
   },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
+  {
+    name: "Gün seçme penceresi",
+    path: "/yonetim/ipucu",
+    open: (page) => page.getByRole("region", { name: "Sıradaki 6 gün" }).getByRole("button").first().click(),
+  },
   { name: "Gündem", path: "/yonetim/gundem" },
   { name: "Yeni haber", path: "/yonetim/gundem/yeni" },
   { name: "Haber düzenleme", path: (d) => `/yonetim/gundem/${d.article}` },

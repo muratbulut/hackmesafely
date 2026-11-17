@@ -4008,10 +4008,18 @@ export const tr = {
       emptyText:
         "Öğrenciler şimdilik hazır gelen ipucunu görüyor. İlk ipucunu yazıp havuza eklediğinde sırası gelince gösterilir.",
     },
+    // Havuz bir haftaya yetmiyorsa üstteki şerit (hoca öncesi kontrol, 40).
+    warning: {
+      title: "Havuzda {n} ipucu var: {date} günü ipuçları tekrar etmeye başlıyor.",
+      text: "Bir hafta tekrarsız geçmesi için en az 7 ipucu gerekir; 30 ipucuyla bir ay boyunca hiçbiri tekrar etmez.",
+      action: "İpucu ekle",
+    },
     next: {
       title: "Sıradaki 6 gün",
       hint: "Bir güne bas, ipucunu seç",
       pinned: "Bu güne sabit",
+      repeat: "tekrar",
+      repeatLabel: "Daha önce gösterilen ipucu yeniden çıkıyor",
       empty: "Havuzda sırası gelen ipucu yok",
     },
     pool: {
@@ -4020,6 +4028,8 @@ export const tr = {
       all: "Hepsi",
       searchLabel: "İpucu ara",
       searchPlaceholder: "İpucunda ara",
+      // Süzgeç çipindeki sayı: o mahallede havuzdaki ipucu sayısı.
+      chipCount: "{n} ipucu havuzda",
       empty: "Bu süzgece uyan ipucu yok.",
       emptyPool: 'Henüz ipucu yok. "Yeni ipucu" ile ilkini yaz.',
       status: { POOL: "Havuzda", DRAFT: "Taslak", ARCHIVED: "Arşivde" },
@@ -4031,6 +4041,9 @@ export const tr = {
       archived: "Arşivde",
       why: '%{n} "Neden?"e baktı',
       notShown: "Henüz gösterilmedi",
+      lastShown: "Son: {date}",
+      lowRead: "Az okunuyor",
+      lowReadHint: '"Neden?"ine bakan az; metni yeniden yazmayı dene.',
       pinnedIcon: "Belirli bir güne sabit",
       showArchive: "Arşivi göster ({n})",
       hideArchive: "Arşivi gizle",
@@ -4039,6 +4052,10 @@ export const tr = {
       kicker: "BU GÜNÜN İPUCU",
       title: "{date} {weekday}",
       options: "İpucu seç",
+      searchLabel: "Seçilecek ipucunu ara",
+      searchPlaceholder: "İpucunda ara",
+      filterLabel: "Mahalleye göre süz",
+      empty: "Bu süzgece uyan ipucu yok.",
       auto: "Otomatik: havuzdan sıradaki",
       autoHint: "En uzun süredir gösterilmeyen ipucu çıkar",
       sub: "{neighborhood} · {n} kez gösterildi",
