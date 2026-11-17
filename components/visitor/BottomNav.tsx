@@ -15,7 +15,7 @@ const navClass =
   "fixed inset-x-3 bottom-3.5 z-40 flex items-center rounded-[22px] border border-line bg-surface-translucent px-2 py-1 shadow-floating backdrop-blur-[10px] lg:hidden print:hidden";
 
 const centerClass =
-  "-mt-[26px] flex size-[58px] flex-none items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_10px_24px_rgb(34_211_238/0.35),0_0_0_6px_var(--canvas)]";
+  "-mt-[26px] flex size-[58px] flex-none items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_10px_24px_color-mix(in_srgb,var(--accent)_35%,transparent),0_0_0_6px_var(--canvas)]";
 
 const tabClass =
   "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-bold no-underline cursor-pointer bg-transparent border-0 font-[inherit]";

@@ -53,7 +53,7 @@ export function GazeOverlay({ state, onClose, overlay }: { state: GazeState | nu
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-[38px] flex-none cursor-pointer items-center gap-1.5 rounded-[10px] border-0 bg-on-warning px-3 font-[inherit] text-sm font-bold text-warning"
+              className="inline-flex h-[38px] flex-none cursor-pointer items-center gap-1.5 rounded-[10px] border-0 bg-on-warning px-3 font-[inherit] text-sm font-bold text-warning-fg"
             >
               <X className="size-4" strokeWidth={2.4} aria-hidden="true" />
               {t.close}

@@ -108,7 +108,7 @@ export function SecuritySection({
                   <b className="truncate text-sm">{device}</b>
                   <span className="text-xs text-fg-3">{session.lastActive ?? s.now}</span>
                 </span>
-                {session.current ? <span className="text-xs font-bold text-success">{s.active}</span> : null}
+                {session.current ? <span className="text-xs font-bold text-success-fg">{s.active}</span> : null}
               </li>
             );
           })}

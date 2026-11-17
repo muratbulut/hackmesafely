@@ -32,7 +32,7 @@ export function HeroScenes({ scenes }: Props) {
 
   return (
     <div
-      className="keep-dark hs-area relative mx-auto h-[320px] w-full max-w-[358px] lg:h-[440px] lg:max-w-[500px]"
+      className="hs-area relative mx-auto h-[320px] w-full max-w-[358px] lg:h-[440px] lg:max-w-[500px]"
       data-testid="hero-scenes"
       // Yalnızca fare: telefonda dokunmak sayacı durdurmasın (dokunuşta "ayrılma" gelmez, takılı kalırdı).
       onPointerEnter={(event) => event.pointerType === "mouse" && store.setHover(true)}

@@ -60,7 +60,7 @@ Next.js (App Router) ve TypeScript, Tailwind CSS ve shadcn/ui, lucide ikonları,
 
 ### Tasarım
 
-- Renkler ve yazı tipleri tek yerde, tema değişkenleri olarak tanımlanır. Koyu ve gri tema aynı değişkenlerden çıkar; bileşenlerde sabit renk kodu yazılmaz.
+- Renkler ve yazı tipleri tek yerde, tema değişkenleri olarak tanımlanır. Koyu ve açık tema (kodda `gray`) aynı değişkenlerden çıkar; açık temada kartlar da açıktır (17 Kasım, Murat), bilerek koyu kalan yerler `keep-dark` alır; bileşenlerde sabit renk kodu yazılmaz.
 - Her ekran masaüstünde ve 390 px telefonda düzgün çalışır. Telefon hali kendi düzenine sahiptir. Yeni ekran ya da pencere `tests/e2e/mobile-layout.spec.ts` listesine de eklenir (yatay kaydırma, taşma, kesilme, alt menü denetimi; `LAYOUT_SHOTS=<klasör>` görüntü alır, depoya girmez). Dokunma alanları en az 40 px'tir.
 - Öğrenciye toplam seviye sayısı hiçbir yerde gösterilmez ("x/10" yok); "Sonraki seviyeye N puan kaldı" yazılır.
 - Rozetler kodda tek bir listede tanımlanır, ikonları `public/badges/<code>.svg` dosyalarındadır.

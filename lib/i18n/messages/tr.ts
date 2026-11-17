@@ -605,8 +605,8 @@ export const tr = {
       lead: "Üst menüdeki tema düğmesiyle de değiştirebilirsin.",
       dark: "Koyu",
       darkHint: "Varsayılan",
-      gray: "Gri",
-      grayHint: "Göz yormayan açık tema",
+      gray: "Açık",
+      grayHint: "Beyaz kartlar, koyu yazı",
       changed: "Tema değişti",
       // 29 (11 Kasım): sitenin kendi "Hareketi azalt" ayarı (lib/motion.ts).
       motion: "Hareketi azalt",

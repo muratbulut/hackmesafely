@@ -118,7 +118,7 @@ export function PostamScene() {
         aria-hidden="true"
         className="anim-toast-slide absolute bottom-0 left-3 flex items-center gap-2 rounded-[10px] border border-success bg-success-subtle px-3 py-2 text-[13px] font-bold text-success-subtle-fg shadow-[0_12px_28px_var(--shadow-color)] lg:left-6 lg:rounded-xl lg:px-3.5 lg:py-2.5 lg:text-sm"
       >
-        <Check className="hidden size-4 text-success lg:block" strokeWidth={2.6} />
+        <Check className="hidden size-4 text-success-fg lg:block" strokeWidth={2.6} />
         {t.reported}
       </div>
     </figure>

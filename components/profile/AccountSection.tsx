@@ -70,7 +70,7 @@ export function AccountSection({ user, onDone }: { user: ProfileUser; onDone: (m
             <div className={readonlyBox}>
               <span className="min-w-0 flex-1 truncate">{user.email}</span>
               {user.emailVerified ? (
-                <span className="inline-flex flex-none items-center gap-1 text-xs font-bold text-success">
+                <span className="inline-flex flex-none items-center gap-1 text-xs font-bold text-success-fg">
                   <Check className="size-3.5" strokeWidth={2.6} aria-hidden="true" />
                   {a.verified}
                 </span>

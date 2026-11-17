@@ -22,7 +22,7 @@ export async function UnverifiedStrip() {
         className="flex flex-col gap-2.5 rounded-2xl border border-warning/45 bg-warning/8 p-3.5 md:flex-row md:items-center md:justify-between md:gap-6 md:px-5"
       >
         <div className="flex items-start gap-2.5">
-          <Mail className="size-5 flex-none text-warning" strokeWidth={2} aria-hidden="true" />
+          <Mail className="size-5 flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
           <div className="flex flex-col gap-0.5">
             <p className="font-bold text-warning-fg">{t.title}</p>
             <p className="text-sm leading-normal text-fg-2">{t.text}</p>

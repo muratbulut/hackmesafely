@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 /** İkon kutusunun renk tonları; zemin ikon renginin saydam hâlidir. */
 const tones = {
   accent: "text-accent-fg bg-accent/12",
-  warning: "text-warning bg-warning/12",
-  danger: "text-danger bg-danger/12",
-  purple: "text-purple bg-purple/12",
+  warning: "text-warning-fg bg-warning/12",
+  danger: "text-danger-fg bg-danger/12",
+  purple: "text-purple-fg bg-purple/12",
   success: "text-success-fg bg-success/12",
 } as const;
 

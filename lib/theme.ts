@@ -1,4 +1,4 @@
-// Tema tercihi: koyu ("dark", varsayılan) ve gri ("gray"). Tercih "theme" çerezinde durur.
+// Tema tercihi: koyu ("dark", varsayılan) ve açık ("gray"; iç adı eski gri temadan kaldı). Tercih "theme" çerezinde durur.
 // Çerez "gerekli / tercih" sınıfındadır, onay bandını beklemez (Bölüm 8).
 // Sayfanın kendisi statik kalır; <head> içindeki küçük betik çerezi okuyup
 // ilk boyamadan önce <html data-theme> değerini koyar, böylece tema yanıp sönmez.
@@ -11,8 +11,8 @@ export const THEME_COOKIE = "theme";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 export const THEME_COLOR: Record<Theme, string> = {
-  dark: "#0B1020",
-  gray: "#DDE1E8",
+  dark: "#141517",
+  gray: "#ECEDEE",
 };
 
 export function isTheme(value: unknown): value is Theme {

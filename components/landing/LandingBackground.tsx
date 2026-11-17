@@ -13,7 +13,7 @@ export function LandingBackground() {
           <FlowingThreads pattern="hero" />
         </div>
       </div>
-      <div className="absolute top-10 right-[6%] hidden size-[520px] rounded-full bg-[radial-gradient(circle,rgb(34_211_238/0.14),transparent_65%)] lg:block" />
+      <div className="absolute top-10 right-[6%] hidden size-[520px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--accent)_14%,transparent),transparent_65%)] lg:block" />
       {/* Telefon */}
       <div className="absolute inset-x-0 top-[60px] h-[620px] [mask-image:linear-gradient(#000_60%,transparent)] lg:hidden">
         <FlowingThreads pattern="mobile" />

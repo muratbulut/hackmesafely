@@ -377,7 +377,7 @@ function TodaySection({ data, tip, neighborhood }: { data: TipAdminData; tip: Ad
         <div className="flex flex-col gap-3 rounded-[18px] border border-warning/35 bg-warning/8 p-5">
           <div className="flex items-center gap-3">
             <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-warning/16">
-              <Lightbulb className="size-5 text-warning" strokeWidth={2} aria-hidden="true" />
+              <Lightbulb className="size-5 text-warning-fg" strokeWidth={2} aria-hidden="true" />
             </span>
             <span className="flex flex-col">
               <b>{t.title}</b>

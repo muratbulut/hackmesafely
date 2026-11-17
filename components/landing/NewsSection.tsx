@@ -55,7 +55,7 @@ async function NewsSectionContent() {
         <div className={cn("grid gap-3.5 lg:gap-[18px]", others.length > 0 && "lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]")}>
           <Link
             href={paths.article(headline.slug)}
-            className="group relative flex flex-col gap-3.5 overflow-hidden rounded-[22px] border border-orange/45 keep-dark bg-[linear-gradient(135deg,color-mix(in_oklab,var(--orange)_14%,var(--canvas)),var(--surface)_55%)] p-5 text-fg no-underline transition-transform hover:-translate-y-[3px] lg:min-h-[280px] lg:p-7"
+            className="group relative flex flex-col gap-3.5 overflow-hidden rounded-[22px] border border-orange/45 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--orange)_14%,var(--canvas)),var(--surface)_55%)] p-5 text-fg no-underline transition-transform hover:-translate-y-[3px] lg:min-h-[280px] lg:p-7"
           >
             <span aria-hidden="true" className="absolute -right-6 -bottom-[30px] flex opacity-25">
               <DistrictGlyph icon={headline.topic?.icon ?? "mail"} className={cn("size-[140px] lg:size-[200px]", tone.text)} strokeWidth={1.2} />
