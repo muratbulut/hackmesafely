@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { PulseFeedItem } from "@/lib/admin/pulse";
 import type { FeedKind } from "@/lib/admin/pulse-model";
-import { getMessages } from "@/lib/i18n";
+import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const tones: Record<FeedKind, { dot: string; text: string }> = {
@@ -19,8 +19,10 @@ const tones: Record<FeedKind, { dot: string; text: string }> = {
 };
 
 /**
- * "Şu an ne oluyor?" (CanliNabiz-Son): en yeni hareket en üstte. Yenilemede gelen yeni satır
- * hafifçe belirir (hareketi azalt açıksa belirmez). İsim yok: kim değil, ne olduğu.
+ * "Şu an ne oluyor?" (Sahne, 17 Kasım): en yeni hareket en üstte, art arda aynı olay tek satır ve
+ * "×3" rozeti, süre tam yazımla ("2 saat önce"), listenin alt kenarı yumuşak solar (son satır
+ * kesilmiş görünmez). Yenilemede gelen yeni satır hafifçe belirir (hareketi azalt açıksa belirmez).
+ * İsim yok: kim değil, ne olduğu.
  */
 export function PulseFeed({ items }: { items: PulseFeedItem[] }) {
   const t = getMessages().adminPulse;
@@ -43,38 +45,48 @@ export function PulseFeed({ items }: { items: PulseFeedItem[] }) {
       {items.length === 0 ? (
         <p className="m-0 rounded-2xl border border-dashed border-line p-6 text-center text-[13px] text-fg-3">{t.feed.empty}</p>
       ) : (
-        <ol
-          aria-label={t.feed.label}
-          data-testid="pulse-feed"
-          className="m-0 flex max-h-[470px] list-none flex-col gap-2 overflow-y-auto rounded-2xl p-0 lg:max-h-[640px]"
-        >
-          {items.map((item) => (
-            <li
-              key={item.id}
-              className={cn(
-                "flex items-center gap-3 rounded-[14px] border border-card bg-surface px-3.5 py-3",
-                known && !known.has(item.id) && "motion-safe:[animation:fade-up_.4s_ease-out_both]",
-              )}
-            >
-              <span aria-hidden="true" className={cn("size-[9px] flex-none rounded-full", tones[item.kind].dot)} />
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-sm leading-[1.45] [overflow-wrap:anywhere]">{item.text}</span>
-                <span className="flex flex-wrap gap-x-2 text-xs text-fg-4">
-                  <span className={cn("font-bold", tones[item.kind].text)}>{t.kinds[item.kind]}</span>
-                  {item.where ? (
-                    <>
-                      <span aria-hidden="true">·</span>
-                      <span>{item.where}</span>
-                    </>
-                  ) : null}
+        <div className="relative">
+          <ol
+            aria-label={t.feed.label}
+            data-testid="pulse-feed"
+            className="m-0 flex max-h-[470px] list-none flex-col gap-2 overflow-y-auto rounded-2xl p-0 pb-10 lg:max-h-[560px]"
+          >
+            {items.map((item) => (
+              <li
+                key={item.id}
+                className={cn(
+                  "flex items-center gap-3 rounded-[14px] border border-card bg-surface px-3.5 py-3",
+                  known && !known.has(item.id) && "motion-safe:[animation:fade-up_.4s_ease-out_both]",
+                )}
+              >
+                <span aria-hidden="true" className={cn("size-[9px] flex-none rounded-full", tones[item.kind].dot)} />
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="text-sm leading-[1.45] [overflow-wrap:anywhere]">
+                    {item.text}
+                    {item.n > 1 ? (
+                      <span className={cn("ml-2 inline-block rounded-full px-1.5 py-px align-middle text-[11px] font-bold text-canvas", tones[item.kind].dot)}>
+                        {format(t.feed.times, { n: item.n })}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="flex flex-wrap gap-x-2 text-xs text-fg-4">
+                    <span className={cn("font-bold", tones[item.kind].text)}>{t.kinds[item.kind]}</span>
+                    {item.where ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>{item.where}</span>
+                      </>
+                    ) : null}
+                  </span>
                 </span>
-              </span>
-              <time dateTime={item.at} className="flex-none text-xs text-fg-4">
-                {item.ago}
-              </time>
-            </li>
-          ))}
-        </ol>
+                <time dateTime={item.at} className="flex-none text-xs text-fg-4 whitespace-nowrap">
+                  {item.ago}
+                </time>
+              </li>
+            ))}
+          </ol>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-14 rounded-b-2xl bg-gradient-to-t from-canvas to-transparent" />
+        </div>
       )}
     </section>
   );

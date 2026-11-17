@@ -23,7 +23,7 @@ export default function AdminPulsePage() {
 }
 
 async function AdminPulse() {
-  const access = await requireAdminAccess();
-  const data = await getPulse(access);
+  await requireAdminAccess();
+  const data = await getPulse();
   return <PulseView data={data} />;
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import { EyeOff } from "lucide-react";
+import Link from "next/link";
+import { ClipboardList, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
 import { TeacherAvatar } from "@/components/school/TeacherList";
 import { Loading } from "@/components/status/Loading";
+import { applicationsHref } from "@/lib/admin/application-rules";
 import { openStudentProfile, type UserActionError } from "@/lib/admin/user-actions";
 import type { CalendarCell } from "@/lib/admin/users-model";
 import { format, getMessages } from "@/lib/i18n";
@@ -15,8 +17,10 @@ import type { StudentProfile } from "./types";
 type Loaded = { id: string; profile: StudentProfile } | { id: string; error: UserActionError };
 
 /**
- * Öğrencinin kısa profili (Kullanicilar-Son-Ogrenci): "Ad S.", sınıfı, bitirdiği lab, son aktif,
- * haftada ortalama, son 4 haftanın takvimi, şu an yaptığı, mahalleler ve bitirdiği lablar.
+ * Öğrencinin kısa profili ("Sıkı çekmece", 17 Kasım, Murat): en üstte "bu bakış kayda yazıldı"
+ * satırı, "Ad S.", sınıfı, bekleyen öğretmenlik talebi (rozet ve "Talebi aç"), dört sayı (bitirdiği
+ * oda, son 4 haftada aktif gün, haftada ortalama, son aktif), son 4 haftanın takvimi, şu an
+ * yaptığı, mahalleler ve bitirdiği lablar.
  * E-posta, soyadı, puan ve rapor cevabı yok. Profil sunucu eylemiyle gelir; her açılış kayıt
  * defterine yazılır (eylem yazar, burası yalnızca ister).
  */
@@ -88,10 +92,22 @@ function ProfileBody({ profile }: { profile: StudentProfile }) {
 
   return (
     <>
+      <span className="-mt-2 flex items-start gap-1.5 text-xs leading-[1.45] text-fg-4" data-testid="profile-viewed">
+        <EyeOff className="mt-px size-3.5 flex-none" strokeWidth={2} aria-hidden="true" />
+        {t.viewed}
+      </span>
       <div className="flex items-center gap-3.5">
         <TeacherAvatar emoji={profile.avatar} size="lg" />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <b className="font-heading text-[22px] break-words">{profile.name}</b>
+          <span className="flex flex-wrap items-center gap-2">
+            <b className="font-heading text-[22px] break-words">{profile.name}</b>
+            {profile.application ? (
+              <span className="inline-flex h-[22px] flex-none items-center gap-1.5 rounded-full bg-warning/14 px-2 text-[11px] font-extrabold tracking-[.3px] whitespace-nowrap text-warning-fg">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-warning" />
+                {t.applicant}
+              </span>
+            ) : null}
+          </span>
           <span className="text-[13px] leading-[1.4] text-fg-3">{sub}</span>
           {profile.team ? (
             <span className="mt-0.5 self-start rounded-full bg-purple/14 px-[9px] py-[3px] text-xs font-bold text-purple-fg">
@@ -101,10 +117,26 @@ function ProfileBody({ profile }: { profile: StudentProfile }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      {profile.application ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[14px] border border-warning/35 bg-warning/8 px-3.5 py-3">
+          <ClipboardList className="size-[18px] flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
+          <span className="min-w-0 flex-[1_1_200px] text-[13px] leading-normal text-fg">
+            <b>{t.applicantTitle}</b> {t.applicantText}
+          </span>
+          <Link
+            href={applicationsHref("pending", profile.application)}
+            className="inline-flex min-h-10 items-center text-[13px] font-bold whitespace-nowrap text-warning-fg no-underline"
+          >
+            {t.applicantLink}
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat value={String(profile.labs)} label={t.labs} />
-        <Stat value={profile.lastActive ?? getMessages().adminUsers.never} label={t.lastActive} />
+        <Stat value={format(t.activeDaysValue, { n: profile.activeDays, total: profile.cells.filter((c) => c.state === "member").length })} label={t.activeDays} />
         <Stat value={profile.weekly} label={t.weekly} />
+        <Stat value={profile.lastActive ?? getMessages().adminUsers.never} label={t.lastActive} />
       </div>
 
       <section aria-labelledby="student-weeks" className="flex flex-col gap-2.5 rounded-2xl border border-card bg-surface-deep px-4 py-3.5">
@@ -217,13 +249,6 @@ function ProfileBody({ profile }: { profile: StudentProfile }) {
           <span className="rounded-[14px] border border-dashed border-line p-3.5 text-[13px] text-fg-3">{t.noFinished}</span>
         )}
       </section>
-
-      <p className="m-0 flex gap-2.5 rounded-[14px] border border-card bg-surface-deep px-3.5 py-3 text-xs leading-normal text-fg-3">
-        <EyeOff className="mt-px size-4 flex-none" strokeWidth={2} aria-hidden="true" />
-        <span>
-          <b className="text-fg-2">{t.hiddenTitle}</b> {t.hiddenText}
-        </span>
-      </p>
     </>
   );
 }

@@ -1,32 +1,26 @@
-// Yönetim özetinin (Ozet-Son) saf hesapları: zaman pencereleri, sayı kutuları, son 6 haftanın
-// grafiği, bekleyen iş kartları, gündemdeki boş haftalar ve en çok tuzağa düşülen lablar. Veritabanı
-// sorguları lib/admin/overview.ts içinde; burası yalnızca sayılardan ekrandaki metni çıkarır.
-// Hepsi toplam sayıdır, öğrenci adı ya da kimliği yoktur. Saf modül; birim testli.
+// Yönetim özetinin (Durum karnesi, 17 Kasım) saf hesapları: zaman pencereleri, adil haftalık kıyas,
+// dört alanın durumu (trafik ışığı), son 6 haftanın grafiği, gündemdeki boş haftalar ve en çok
+// tuzağa düşülen lablar. Veritabanı sorguları lib/admin/overview.ts içinde; burası yalnızca
+// sayılardan ekrandaki metni çıkarır. Hepsi toplam sayıdır, öğrenci adı ya da kimliği yoktur.
+// Saf modül; birim testli.
 
 import { format, getMessages } from "@/lib/i18n";
 import { paths } from "@/lib/navigation";
-import { dayMonth, dayMonthShort, dayMs, monthStart, trParts, weekMs, weekStart } from "./calendar";
-
-export const periods = ["week", "month", "all"] as const;
-export type Period = (typeof periods)[number];
-
-export const chartMetrics = ["finished", "signups", "active"] as const;
-export type ChartMetric = (typeof chartMetrics)[number];
-
-export const kpiKeys = ["newStudents", "activeStudents", "finishedLabs", "noticedFirst"] as const;
-export type KpiKey = (typeof kpiKeys)[number];
+import { dayMonth, dayMonthShort, dayMs, dayStart, weekMs, weekStart } from "./calendar";
 
 // ---------------------------------------------------------------------------------------
 // Zaman pencereleri
 // ---------------------------------------------------------------------------------------
 
 export const chartWeeks = 6;
-export const windowKeys = ["w0", "w1", "w2", "w3", "w4", "w5", "month", "prevMonth", "all"] as const;
+export const windowKeys = ["w0", "w1", "w2", "w3", "w4", "w5", "lastSame", "all"] as const;
 export type WindowKey = (typeof windowKeys)[number];
 export type TimeWindow = { key: WindowKey; start: Date; end: Date };
 
 /**
- * Sayıların pencereleri: son 6 hafta (w0 en eski, w5 bu hafta), bu ay, geçen ay ve tüm zamanlar.
+ * Sayıların pencereleri: son 6 hafta (w0 en eski, w5 bu hafta), geçen haftanın aynı günleri
+ * (lastSame: geçen pazartesiden, bu haftada geçen süre kadar) ve tüm zamanlar. Bu hafta yarım
+ * olduğu için tam geçen haftayla değil lastSame ile kıyaslanır (pazartesi sabahı "%62 az" demesin).
  * Bitmemiş pencerenin sonu bir gün sonrasıdır (sunucu ile veritabanı saati arasındaki küçük fark
  * yeni satırı dışarıda bırakmasın; gelecekte tarihli satır yok).
  */
@@ -37,10 +31,10 @@ export function overviewWindows(now: Date): TimeWindow[] {
     const start = thisWeek - (chartWeeks - 1 - i) * weekMs;
     return { key: windowKeys[i], start: new Date(start), end: i === chartWeeks - 1 ? open : new Date(start + weekMs) };
   });
+  const lastWeek = thisWeek - weekMs;
   return [
     ...weeks,
-    { key: "month", start: monthStart(now), end: open },
-    { key: "prevMonth", start: monthStart(now, 1), end: monthStart(now) },
+    { key: "lastSame", start: new Date(lastWeek), end: new Date(lastWeek + Math.max(0, now.getTime() - thisWeek)) },
     { key: "all", start: new Date(0), end: open },
   ];
 }
@@ -52,224 +46,166 @@ export function overviewWindows(now: Date): TimeWindow[] {
 export type WindowCounts = { finished: number; firstTries: number; firstNoticed: number; signups: number; active: number };
 export const emptyCounts: WindowCounts = { finished: 0, firstTries: 0, firstNoticed: 0, signups: 0, active: 0 };
 
-// ---------------------------------------------------------------------------------------
-// Sayı kutuları ve grafik
-// ---------------------------------------------------------------------------------------
-
 const thousands = (n: number) => n.toLocaleString("tr-TR");
-const percent = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) : null);
 
-export type Kpi = { key: KpiKey; value: string; sub: string };
-
-/** Değişim: "+%13 geçen haftaya göre" gibi; geçen hafta hiç yoksa ayrı cümle. */
-export function changeOf(current: number, previous: number): { kind: "up" | "down" | "same" | "noPrevious"; n: number } {
-  if (previous === 0) return current === 0 ? { kind: "same", n: 0 } : { kind: "noPrevious", n: 0 };
-  const n = Math.round(((current - previous) / previous) * 100);
-  return n > 0 ? { kind: "up", n } : n < 0 ? { kind: "down", n: -n } : { kind: "same", n: 0 };
+/** Adil kıyas cümlesi: "geçen hafta aynı günlerde 2, 1 fazla" (yüzde yok; küçük sayıda yanıltır). */
+export function versusLastWeek(current: number, before: number): string {
+  const t = getMessages().adminOverview.versus;
+  if (current === before) return format(t.same, { n: thousands(before) });
+  return format(current > before ? t.more : t.less, { n: thousands(before), diff: thousands(Math.abs(current - before)) });
 }
 
-/** Dönem dönem sayı kutuları (Bu hafta / Bu ay / Tüm zamanlar); metinler sunucuda hazırlanır. */
-export function buildKpis(
-  counts: Record<WindowKey, WindowCounts>,
-  context: { now: Date; publishedLabs: number; firstSignup: Date | null },
-): Record<Period, Kpi[]> {
-  const t = getMessages().adminOverview;
-  const s = t.subs;
-  const months = getMessages().profile;
-  const { now } = context;
-  const registered = counts.all.signups;
-  const week = counts.w5;
-  const lastWeek = counts.w4;
-  const month = counts.month;
-  const prevMonth = counts.prevMonth;
-  const prevMonthIndex = trParts(monthStart(now, 1)).month;
-  const today = trParts(now);
-
-  const rate = (c: WindowCounts) => {
-    const value = percent(c.firstNoticed, c.firstTries);
-    return value === null ? t.none : format(t.percent, { n: value });
-  };
-  const active = (c: WindowCounts): Kpi => ({
-    key: "activeStudents",
-    value: thousands(c.active),
-    sub: format(s.ofRegistered, { n: thousands(registered) }),
-  });
-
-  const finishedChange = changeOf(week.finished, lastWeek.finished);
-  const weekFinishedSub =
-    finishedChange.kind === "up"
-      ? format(s.moreThanLastWeek, { n: finishedChange.n })
-      : finishedChange.kind === "down"
-        ? format(s.lessThanLastWeek, { n: finishedChange.n })
-        : finishedChange.kind === "same"
-          ? s.sameAsLastWeek
-          : format(s.lastWeek, { n: thousands(lastWeek.finished) });
-  const lastWeekRate = percent(lastWeek.firstNoticed, lastWeek.firstTries);
-  const prevMonthRate = percent(prevMonth.firstNoticed, prevMonth.firstTries);
-  const prevMonthOn = months.monthsOn[prevMonthIndex];
-
-  const first = context.firstSignup ? trParts(context.firstSignup) : null;
-
-  return {
-    week: [
-      { key: "newStudents", value: thousands(week.signups), sub: format(s.lastWeek, { n: thousands(lastWeek.signups) }) },
-      active(week),
-      { key: "finishedLabs", value: thousands(week.finished), sub: weekFinishedSub },
-      {
-        key: "noticedFirst",
-        value: rate(week),
-        sub: lastWeekRate === null ? s.lastWeekNone : format(s.lastWeekRate, { n: lastWeekRate }),
-      },
-    ],
-    month: [
-      {
-        key: "newStudents",
-        value: thousands(month.signups),
-        sub:
-          today.day === 1
-            ? format(s.monthFirstDay, { month: t.monthsOf[today.month] })
-            : format(s.monthSoFar, { month: t.monthsOf[today.month], n: today.day }),
-      },
-      active(month),
-      { key: "finishedLabs", value: thousands(month.finished), sub: format(s.inMonth, { month: prevMonthOn, n: thousands(prevMonth.finished) }) },
-      {
-        key: "noticedFirst",
-        value: rate(month),
-        sub: prevMonthRate === null ? format(s.monthNone, { month: prevMonthOn }) : format(s.monthRate, { month: prevMonthOn, n: prevMonthRate }),
-      },
-    ],
-    all: [
-      {
-        key: "newStudents",
-        value: thousands(counts.all.signups),
-        sub: first ? format(s.since, { day: first.day, month: t.monthsFrom[first.month] }) : s.noStudents,
-      },
-      active(counts.all),
-      { key: "finishedLabs", value: thousands(counts.all.finished), sub: format(s.publishedLabs, { n: thousands(context.publishedLabs) }) },
-      { key: "noticedFirst", value: rate(counts.all), sub: s.allScenarios },
-    ],
-  };
+/**
+ * İlk denemede tuzağı fark eden. En az `trapMinSample` ilk deneme yoksa yüzde verilmez: "3/3" ve
+ * "3 ilk denemede 3 kez fark edildi" (küçük sayıda %100 yanıltır).
+ */
+export function noticedFirst(c: Pick<WindowCounts, "firstTries" | "firstNoticed">): { value: string; sub: string } {
+  const t = getMessages().adminOverview.noticed;
+  if (c.firstTries === 0) return { value: t.none, sub: t.noTries };
+  const n = { tries: thousands(c.firstTries), noticed: thousands(c.firstNoticed) };
+  if (c.firstTries < trapMinSample) return { value: format(t.fraction, n), sub: format(t.few, n) };
+  return { value: format(t.percent, { n: Math.round((c.firstNoticed / c.firstTries) * 100) }), sub: format(t.many, n) };
 }
+
+// ---------------------------------------------------------------------------------------
+// Grafik
+// ---------------------------------------------------------------------------------------
 
 export type ChartBar = { label: string; value: number; display: string; current: boolean };
-export type ChartSeries = { metric: ChartMetric; bars: ChartBar[]; total: string; change: string };
 
-const metricField: Record<ChartMetric, keyof WindowCounts> = { finished: "finished", signups: "signups", active: "active" };
-
-/** Son 6 haftanın üç dizisi (biten lab, yeni kayıt, aktif öğrenci); son çubuk bu hafta. */
-export function buildChart(counts: Record<WindowKey, WindowCounts>, windows: readonly TimeWindow[]): ChartSeries[] {
+/** Son 6 haftada biten oda; son çubuk bu hafta (henüz bitmedi, ekranda taralı). */
+export function buildChart(counts: Record<WindowKey, WindowCounts>, windows: readonly TimeWindow[]): ChartBar[] {
   const t = getMessages().adminOverview.chart;
   const weeks = windows.slice(0, chartWeeks);
-  return chartMetrics.map((metric) => {
-    const field = metricField[metric];
-    const values = weeks.map((w) => counts[w.key][field]);
-    const current = values[values.length - 1];
-    const change = changeOf(current, values[values.length - 2]);
-    return {
-      metric,
-      bars: weeks.map((w, i) => ({
-        label: i === weeks.length - 1 ? t.thisWeek : dayMonthShort(w.start),
-        value: values[i],
-        display: thousands(values[i]),
-        current: i === weeks.length - 1,
-      })),
-      total: thousands(current),
-      change:
-        change.kind === "up"
-          ? format(t.up, { n: change.n })
-          : change.kind === "down"
-            ? format(t.down, { n: change.n })
-            : change.kind === "same"
-              ? t.same
-              : t.noPrevious,
-    };
+  return weeks.map((w, i) => {
+    const value = counts[w.key].finished;
+    const current = i === weeks.length - 1;
+    return { label: current ? t.thisWeek : dayMonthShort(w.start), value, display: thousands(value), current };
   });
 }
 
 // ---------------------------------------------------------------------------------------
-// Bekleyen işler
+// Durum karnesi: dört alan ve üstteki cümle
 // ---------------------------------------------------------------------------------------
 
-export const pendingKeys = ["applications", "news", "labs", "notes"] as const;
-export type PendingKey = (typeof pendingKeys)[number];
+/** Alanın rengi: turuncu iş var, sarı göz at, yeşil yolunda. */
+export const tones = ["work", "watch", "good"] as const;
+export type Tone = (typeof tones)[number];
 
-export type PendingCard = { key: PendingKey; count: number; title: string; sub: string; href: string; go: string };
+export const areaKeys = ["applications", "students", "content", "labs"] as const;
+export type AreaKey = (typeof areaKeys)[number];
 
-/** Kartların girdisi; izni olmayan işin girdisi hiç verilmez (kart da çıkmaz). */
-export type PendingInput = {
-  applications?: { pending: number; newSchool: number; answered: number };
-  notes?: { count: number; first: { school: string | null; opinion: "ENDORSED" | "NOT_RECOGNIZED" } | null };
-  news?: { emptyWeeks: Date[]; drafts: number };
-  labs?: { drafts: { name: string; neighborhood: string }[] };
+export type Area = { key: AreaKey; tone: Tone; name: string; value: string; unit: string; line: string; href: string; go: string };
+
+/** Alanların girdisi; izni olmayan alanın girdisi hiç verilmez (alan da çıkmaz, sayısı sayfaya gitmez). */
+export type AreaInput = {
+  applications?: { pending: number; newSchool: number; answered: number; notes: number };
+  /** Kullanıcılar sayfasını açabilen (ROLES) oraya, açamayan Canlı nabza gider. */
+  students: { active: number; finished: number; finishedBefore: number; canSeeUsers: boolean };
+  news?: { emptyWeeks: Date[]; next: Date | null };
+  tips?: { pool: number; now: Date };
+  labs?: { published: number; hidden: number; drafts: { name: string; neighborhood: string }[] };
 };
+
+/** Havuzda 7'den az ipucu varsa bugünkü ipucunun yeniden çıkacağı gün (havuz sırayla döner). */
+export function tipRepeatDay(pool: number, now: Date): Date | null {
+  return pool > 0 && pool < 7 ? new Date(dayStart(now).getTime() + pool * dayMs) : null;
+}
 
 const listFormat = () => new Intl.ListFormat("tr", { style: "long", type: "conjunction" });
 
-/** Bekleyen iş kartları (Tur 5 sırası: talep, gündem, lab, okul notu). Sayısı 0 olan kart çıkmaz. */
-export function buildPendingCards(input: PendingInput): PendingCard[] {
-  const t = getMessages().adminOverview.cards;
-  const cards: PendingCard[] = [];
+/** Dört alan (Talepler, Öğrenciler, Gündem ve ipucu, Odalar); izni olmayan alan çıkmaz. */
+export function buildAreas(input: AreaInput): Area[] {
+  const t = getMessages().adminOverview.areas;
+  const areas: Area[] = [];
 
-  if (input.applications && input.applications.pending > 0) {
+  if (input.applications) {
     const a = input.applications;
     const parts = [
       a.newSchool > 0 ? format(t.applications.newSchool, { n: a.newSchool }) : "",
       a.answered > 0 ? format(t.applications.answered, { n: a.answered }) : "",
+      a.notes > 0 ? format(t.applications.notes, { n: a.notes }) : "",
     ].filter(Boolean);
-    cards.push({
+    areas.push({
       key: "applications",
-      count: a.pending,
-      title: format(t.applications.title, { n: a.pending }),
-      sub: parts.length ? `${parts.join(", ")}.` : t.applications.none,
+      tone: a.pending > 0 ? "work" : "good",
+      name: t.applications.name,
+      value: thousands(a.pending),
+      unit: t.applications.unit,
+      line: a.pending === 0 ? t.applications.none : parts.length ? `${parts.join(", ")}.` : t.applications.decide,
       href: paths.adminApplications,
       go: t.applications.go,
     });
   }
 
-  if (input.news && input.news.emptyWeeks.length > 0) {
-    const n = input.news;
-    cards.push({
-      key: "news",
-      count: n.emptyWeeks.length,
-      title: format(t.news.title, { n: n.emptyWeeks.length }),
-      sub: `${format(t.news.weeks, { dates: listFormat().format(n.emptyWeeks.map(dayMonth)) })} ${
-        n.drafts > 0 ? format(t.news.drafts, { n: n.drafts }) : t.news.noDrafts
-      }`,
-      href: paths.adminNews,
-      go: t.news.go,
+  const s = input.students;
+  areas.push({
+    key: "students",
+    tone: s.finished < s.finishedBefore ? "watch" : "good",
+    name: t.students.name,
+    value: thousands(s.finished),
+    unit: t.students.unit,
+    line: format(t.students.line, { active: thousands(s.active), versus: versusLastWeek(s.finished, s.finishedBefore) }),
+    href: s.canSeeUsers ? paths.adminUsers : paths.adminPulse,
+    go: s.canSeeUsers ? t.students.goUsers : t.students.goPulse,
+  });
+
+  if (input.news || input.tips) {
+    const repeat = input.tips ? tipRepeatDay(input.tips.pool, input.tips.now) : null;
+    const tipLine = input.tips
+      ? input.tips.pool === 0
+        ? t.content.tipEmpty
+        : repeat
+          ? format(t.content.tipRepeat, { n: input.tips.pool, date: dayMonth(repeat) })
+          : format(t.content.tipPool, { n: input.tips.pool })
+      : "";
+    const tipTrouble = !!input.tips && (input.tips.pool === 0 || !!repeat);
+    const news = input.news;
+    const newsLine = news ? (news.next ? format(t.content.next, { date: dayMonth(news.next) }) : t.content.noNext) : "";
+    areas.push({
+      key: "content",
+      tone: (news && news.emptyWeeks.length > 0) || tipTrouble ? "watch" : "good",
+      name: news && input.tips ? t.content.name : news ? t.content.newsName : t.content.tipsName,
+      value: news ? thousands(news.emptyWeeks.length) : thousands(input.tips!.pool),
+      unit: news ? t.content.newsUnit : t.content.tipsUnit,
+      line: [newsLine, tipLine].filter(Boolean).join(" "),
+      href: news ? paths.adminNews : paths.adminTips,
+      go: news ? t.content.goNews : t.content.goTips,
     });
   }
 
-  if (input.labs && input.labs.drafts.length > 0) {
-    const drafts = input.labs.drafts;
-    const shown = drafts.slice(0, 3).map((d) => format(t.labs.item, d));
-    if (drafts.length > 3) shown.push(format(t.labs.more, { n: drafts.length - 3 }));
-    cards.push({
+  if (input.labs) {
+    const l = input.labs;
+    const shown = l.drafts.slice(0, 3).map((d) => format(t.labs.item, d));
+    if (l.drafts.length > 3) shown.push(format(t.labs.more, { n: l.drafts.length - 3 }));
+    areas.push({
       key: "labs",
-      count: drafts.length,
-      title: format(t.labs.title, { n: drafts.length }),
-      sub: `${shown.join(", ")}.`,
+      tone: l.drafts.length > 0 ? "watch" : "good",
+      name: t.labs.name,
+      value: thousands(l.published),
+      unit: t.labs.unit,
+      line: l.drafts.length > 0 ? format(t.labs.drafts, { n: l.drafts.length, names: listFormat().format(shown) }) : format(t.labs.none, { n: l.hidden }),
       href: paths.adminLabs,
       go: t.labs.go,
     });
   }
+  return areas;
+}
 
-  if (input.notes && input.notes.count > 0) {
-    const notes = input.notes;
-    const single = notes.count === 1 && notes.first;
-    cards.push({
-      key: "notes",
-      count: notes.count,
-      title: format(t.notes.title, { n: notes.count }),
-      sub: single
-        ? format(single.opinion === "ENDORSED" ? t.notes.endorsed : t.notes.notRecognized, { school: single.school ?? t.notes.newSchool })
-        : format(t.notes.many, { n: notes.count }),
-      href: paths.adminApplications,
-      go: single ? t.notes.go : t.notes.goMany,
-    });
-  }
-
-  return cards;
+/** Üstteki tek cümle: kaç alanda iş var, kaçı yolunda; rengi en kötü alanın rengi. */
+export function buildVerdict(areas: readonly Area[], students: AreaInput["students"]): { tone: Tone; title: string; sub: string } {
+  const t = getMessages().adminOverview.verdict;
+  const open = areas.filter((a) => a.tone !== "good").length;
+  const tone: Tone = areas.some((a) => a.tone === "work") ? "work" : open > 0 ? "watch" : "good";
+  return {
+    tone,
+    title: open === 0 ? t.allGood : open === areas.length ? format(t.openAll, { n: open }) : format(t.open, { n: open, good: areas.length - open }),
+    sub: format(t.sub, {
+      active: thousands(students.active),
+      finished: thousands(students.finished),
+      versus: versusLastWeek(students.finished, students.finishedBefore),
+    }),
+  };
 }
 
 /**

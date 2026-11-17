@@ -8,7 +8,7 @@
 
 import type { ReminderKind } from "@/lib/mail/teacher-mail";
 import type { SetupStep, Signal } from "@/lib/school/bulletin-model";
-import type { CalendarCell, PageInfo } from "@/lib/admin/users-model";
+import type { CalendarCell, PageInfo, StudentFilter } from "@/lib/admin/users-model";
 import type { ClassCardView, AttentionView } from "@/components/classroom/types";
 import type { TeacherHint } from "@/components/school/types";
 
@@ -30,13 +30,24 @@ export type StudentRow = {
   avatar: string;
   /** "7-A · Ahmet Çelik"; sınıfı yoksa null. */
   classLabel: string | null;
+  /** Listedeki grubu: sınıfın kimliği, adı ve öğretmeni (ilk katıldığı görünür sınıf); sınıfı yoksa null. */
+  group: { id: string; name: string; teacher: string } | null;
+  /** Son 7 günde girdi mi (süzgeç ve grup başlığındaki "bu hafta aktif"). */
+  activeWeek: boolean;
+  /** Bekleyen öğretmenlik talebi var mı (rozet). */
+  applicant: boolean;
   labs: number;
   joined: string;
   /** "Bugün", "3 gün önce"; hiç girmediyse null. */
   lastSeen: string | null;
 };
 
-export type StudentPage = PageInfo & { rows: StudentRow[] };
+export type StudentPage = PageInfo & {
+  rows: StudentRow[];
+  filter: StudentFilter;
+  /** Süzgeç çiplerindeki sayılar (aramaya uyanlardan). */
+  filterCounts: Record<StudentFilter, number>;
+};
 
 /** Öğretmenin sınıfı (çekmece ve okul kartı): toplamlar; öğrenci adı yok. */
 export type AdminClass = {
@@ -118,6 +129,8 @@ export type StudentProfile = {
   moreClasses: number;
   /** Yönetim ekibindeyse izinlerinin kısa adları. */
   team: string[] | null;
+  /** Bekleyen öğretmenlik talebinin kimliği (rozet ve "Talebi aç"); yoksa null. */
+  application: string | null;
   labs: number;
   lastActive: string | null;
   weekly: string;

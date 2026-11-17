@@ -669,7 +669,12 @@ const adminScreens: Screen<AdminData>[] = [
   {
     name: "Sorumlu atama penceresi",
     path: (d) => `/yonetim/kullanicilar?gorunum=okullar&ara=${encodeURIComponent(d.school)}`,
-    open: (page, d) => page.getByRole("button", { name: `Sorumlu ata: ${d.school}` }).click(),
+    // Sorumlu satırı açık kartta (38 S1): kart kapalıysa önce açılır.
+    open: async (page, d) => {
+      const toggle = page.getByRole("region", { name: d.school }).getByRole("button", { name: new RegExp(`^${d.school.slice(0, 20)}`) });
+      if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+      await page.getByRole("button", { name: `Sorumlu ata: ${d.school}` }).click();
+    },
   },
   { name: "Okul ekleme penceresi", path: "/yonetim/kullanicilar?gorunum=okullar", open: (page) => page.getByRole("button", { name: "Okul ekle" }).first().click() },
   { name: "Odalar", path: "/yonetim/odalar" },

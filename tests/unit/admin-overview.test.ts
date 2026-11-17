@@ -13,20 +13,23 @@ import {
   whenLabel,
 } from "@/lib/admin/calendar";
 import {
+  buildAreas,
   buildChart,
-  buildKpis,
-  buildPendingCards,
-  changeOf,
+  buildVerdict,
   emptyCounts,
   emptyNewsWeeks,
+  noticedFirst,
   overviewWindows,
   rankTraps,
+  tipRepeatDay,
   topMissed,
+  versusLastWeek,
   windowKeys,
+  type AreaInput,
   type WindowCounts,
   type WindowKey,
 } from "@/lib/admin/overview-model";
-import { feedEntry, fillBuckets, type FeedLab } from "@/lib/admin/pulse-model";
+import { feedEntry, fillBuckets, mergeFeed, peakHour, type FeedLab } from "@/lib/admin/pulse-model";
 
 const at = (iso: string) => new Date(iso);
 // Pazartesi 12 Ekim 2026, Türkiye saatiyle 00.30 (UTC'de hâlâ pazar).
@@ -62,15 +65,17 @@ describe("yönetim takvimi (Türkiye saati)", () => {
     expect(whenLabel(at("2025-12-30T08:00:00Z"), sunday).short).toBe("30 Aralık 2025");
   });
 
-  it("canlı nabızdaki kısa süreler", () => {
+  it("canlı nabızdaki süreler tam yazımla", () => {
     const now = at("2026-10-11T12:00:00Z");
     const ago = (seconds: number) => agoLabel(new Date(now.getTime() - seconds * 1000), now);
-    expect(ago(3)).toBe("şimdi");
-    expect(ago(-5)).toBe("şimdi");
-    expect(ago(12)).toBe("12 sn");
-    expect(ago(150)).toBe("2 dk");
-    expect(ago(2 * 3600 + 5)).toBe("2 sa");
-    expect(ago(4 * 86_400)).toBe("4 gün");
+    expect(ago(3)).toBe("az önce");
+    expect(ago(-5)).toBe("az önce");
+    expect(ago(40)).toBe("az önce");
+    expect(ago(50)).toBe("1 dakika önce");
+    expect(ago(150)).toBe("3 dakika önce");
+    expect(ago(2 * 3600 + 5)).toBe("2 saat önce");
+    expect(ago(86_400 + 3600)).toBe("dün");
+    expect(ago(4 * 86_400)).toBe("4 gün önce");
   });
 });
 
@@ -80,7 +85,7 @@ function counts(values: Partial<Record<WindowKey, Partial<WindowCounts>>>) {
 }
 
 describe("özet: sayılar ve grafik", () => {
-  it("pencereler: son 6 hafta pazartesiden, bu ay, geçen ay, tüm zamanlar", () => {
+  it("pencereler: son 6 hafta pazartesiden, geçen haftanın aynı günleri, tüm zamanlar", () => {
     const windows = overviewWindows(sunday);
     expect(windows.map((w) => w.key)).toEqual([...windowKeys]);
     expect(windows[0].start.toISOString()).toBe("2026-08-30T21:00:00.000Z");
@@ -88,108 +93,121 @@ describe("özet: sayılar ve grafik", () => {
     expect(windows[4].end.getTime()).toBe(windows[5].start.getTime());
     // Bitmemiş pencere bir gün sonrasına kadar açık (saat farkı yeni satırı dışarıda bırakmasın).
     expect(windows[5].end.getTime()).toBeGreaterThan(sunday.getTime());
-    expect(windows.find((w) => w.key === "prevMonth")!.end.toISOString()).toBe("2026-09-30T21:00:00.000Z");
+    // Geçen hafta, bu haftada geçen süre kadar: pazartesi 00.00'dan pazar 14.05'e.
+    const lastSame = windows.find((w) => w.key === "lastSame")!;
+    expect(lastSame.start.toISOString()).toBe("2026-09-27T21:00:00.000Z");
+    expect(lastSame.end.toISOString()).toBe("2026-10-04T11:05:00.000Z");
+    // Pazartesi gece yarısı geçen haftanın penceresi boş (yarım haftayı tam haftayla kıyaslamaz).
+    const monday = overviewWindows(weekStart(mondayNight)).find((w) => w.key === "lastSame")!;
+    expect(monday.end.getTime()).toBe(monday.start.getTime());
   });
 
-  it("değişim yüzdesi", () => {
-    expect(changeOf(1180, 1045)).toEqual({ kind: "up", n: 13 });
-    expect(changeOf(149, 186)).toEqual({ kind: "down", n: 20 });
-    expect(changeOf(5, 5)).toEqual({ kind: "same", n: 0 });
-    expect(changeOf(0, 0)).toEqual({ kind: "same", n: 0 });
-    expect(changeOf(3, 0)).toEqual({ kind: "noPrevious", n: 0 });
+  it("adil kıyas cümlesi: yüzde yok, fark sayıyla", () => {
+    expect(versusLastWeek(5, 3)).toBe("geçen hafta aynı günlerde 3, 2 fazla");
+    expect(versusLastWeek(2, 1180)).toBe("geçen hafta aynı günlerde 1.180, 1.178 az");
+    expect(versusLastWeek(4, 4)).toBe("geçen hafta aynı günlerde de 4");
   });
 
-  it("dönem dönem sayı kutuları", () => {
-    const kpis = buildKpis(
-      counts({
-        w4: { finished: 1045, firstTries: 100, firstNoticed: 61, signups: 149 },
-        w5: { finished: 1180, firstTries: 200, firstNoticed: 126, signups: 186, active: 742 },
-        month: { finished: 2225, firstTries: 300, firstNoticed: 186, signups: 270, active: 1016 },
-        prevMonth: { finished: 3110, firstTries: 500, firstNoticed: 300 },
-        all: { finished: 15731, firstTries: 1000, firstNoticed: 610, signups: 1284, active: 1284 },
-      }),
-      { now: sunday, publishedLabs: 20, firstSignup: at("2026-09-07T09:00:00Z") },
-    );
-    expect(kpis.week).toEqual([
-      { key: "newStudents", value: "186", sub: "geçen hafta 149" },
-      { key: "activeStudents", value: "742", sub: "kayıtlı 1.284 öğrenciden" },
-      { key: "finishedLabs", value: "1.180", sub: "geçen haftadan %13 fazla" },
-      { key: "noticedFirst", value: "%63", sub: "geçen hafta %61" },
-    ]);
-    expect(kpis.month.map((k) => k.sub)).toEqual(["Ekim'in ilk 11 günü", "kayıtlı 1.284 öğrenciden", "Eylül'de 3.110", "Eylül'de %60"]);
-    expect(kpis.all.map((k) => k.value)).toEqual(["1.284", "1.284", "15.731", "%61"]);
-    expect(kpis.all.map((k) => k.sub)).toEqual(["7 Eylül'den beri", "kayıtlı 1.284 öğrenciden", "20 yayındaki odada", "bütün senaryo odaları"]);
+  it("ilk denemede fark eden: 10 denemeden azsa yüzde yerine kesir", () => {
+    expect(noticedFirst({ firstTries: 0, firstNoticed: 0 })).toEqual({ value: "—", sub: "henüz ilk deneme yok" });
+    expect(noticedFirst({ firstTries: 3, firstNoticed: 3 })).toEqual({ value: "3/3", sub: "3 ilk denemede 3 kez fark edildi" });
+    expect(noticedFirst({ firstTries: 200, firstNoticed: 126 })).toEqual({ value: "%63", sub: "200 ilk denemeden" });
   });
 
-  it("boş veritabanında sayı kutuları", () => {
-    const kpis = buildKpis(counts({}), { now: at("2026-10-01T06:00:00Z"), publishedLabs: 0, firstSignup: null });
-    expect(kpis.week.map((k) => k.value)).toEqual(["0", "0", "0", "—"]);
-    expect(kpis.week.map((k) => k.sub)).toEqual(["geçen hafta 0", "kayıtlı 0 öğrenciden", "geçen haftayla aynı", "geçen hafta bitiren yok"]);
-    expect(kpis.month[0].sub).toBe("Ekim'in ilk günü");
-    expect(kpis.month[3].sub).toBe("Eylül'de bitiren yok");
-    expect(kpis.all[0].sub).toBe("henüz kayıt yok");
-  });
-
-  it("son 6 haftanın grafiği: üç dizi, son çubuk bu hafta", () => {
-    const series = buildChart(
-      counts({ w0: { finished: 180 }, w3: { finished: 905 }, w4: { finished: 1045, signups: 4 }, w5: { finished: 1180, signups: 2 } }),
-      overviewWindows(sunday),
-    );
-    expect(series.map((s) => s.metric)).toEqual(["finished", "signups", "active"]);
-    const finished = series[0];
-    expect(finished.bars.map((b) => b.label)).toEqual(["31 Ağu", "7 Eyl", "14 Eyl", "21 Eyl", "28 Eyl", "Bu hafta"]);
-    expect(finished.bars.map((b) => b.value)).toEqual([180, 0, 0, 905, 1045, 1180]);
-    expect(finished.bars.at(-1)).toMatchObject({ current: true, display: "1.180" });
-    expect(finished.total).toBe("1.180");
-    expect(finished.change).toBe("+%13 geçen haftaya göre");
-    expect(series[1].change).toBe("-%50 geçen haftaya göre");
-    expect(series[2].change).toBe("geçen haftayla aynı");
+  it("son 6 haftanın grafiği: biten oda, son çubuk bu hafta", () => {
+    const bars = buildChart(counts({ w0: { finished: 180 }, w3: { finished: 905 }, w4: { finished: 1045 }, w5: { finished: 1180 } }), overviewWindows(sunday));
+    expect(bars.map((b) => b.label)).toEqual(["31 Ağu", "7 Eyl", "14 Eyl", "21 Eyl", "28 Eyl", "Bu hafta"]);
+    expect(bars.map((b) => b.value)).toEqual([180, 0, 0, 905, 1045, 1180]);
+    expect(bars.at(-1)).toMatchObject({ current: true, display: "1.180" });
+    expect(bars.filter((b) => b.current)).toHaveLength(1);
   });
 });
 
-describe("özet: bekleyen işler", () => {
-  it("kartlar sırayla; sayısı 0 olan ya da izni olmayan iş çıkmaz", () => {
-    const cards = buildPendingCards({
-      applications: { pending: 6, newSchool: 3, answered: 1 },
-      news: { emptyWeeks: [at("2026-10-22T21:00:00Z"), at("2026-10-29T21:00:00Z"), at("2026-11-05T21:00:00Z")], drafts: 3 },
-      labs: {
-        drafts: [
-          { name: "Sahte antivirüs uyarısı", neighborhood: "Zararlı Yazılım Ormanı" },
-          { name: "Taksitli oyun parası", neighborhood: "Para Çarşısı" },
-        ],
-      },
-      notes: { count: 1, first: { school: "Nilüfer Ortaokulu", opinion: "NOT_RECOGNIZED" } },
-    });
-    expect(cards.map((c) => [c.key, c.count, c.href])).toEqual([
-      ["applications", 6, "/yonetim/talepler"],
-      ["news", 3, "/yonetim/gundem"],
-      ["labs", 2, "/yonetim/odalar"],
-      ["notes", 1, "/yonetim/talepler"],
-    ]);
-    expect(cards[0]).toMatchObject({
-      title: "6 öğretmenlik talebi bekliyor",
-      sub: "3 tanesi listede olmayan okuldan geldi, 1 tanesinde istediğin bilgi geldi.",
-      go: "Taleplere git",
-    });
-    expect(cards[1]).toMatchObject({ title: "Gündemde 3 hafta boş", sub: "23 Ekim, 30 Ekim ve 6 Kasım. 3 taslak bekliyor." });
-    expect(cards[2].sub).toBe("Sahte antivirüs uyarısı (Zararlı Yazılım Ormanı), Taksitli oyun parası (Para Çarşısı).");
-    expect(cards[3]).toMatchObject({
-      title: "Okul sorumlusundan 1 not",
-      sub: 'Nilüfer Ortaokulu: bir talep için "Bu kişiyi tanımıyorum" dendi, karar sende.',
-      go: "Talebi aç",
-    });
+describe("özet: durum karnesi", () => {
+  const students = { active: 12, finished: 5, finishedBefore: 3, canSeeUsers: true };
+  const full: AreaInput = {
+    applications: { pending: 6, newSchool: 3, answered: 1, notes: 0 },
+    students,
+    news: { emptyWeeks: [at("2026-10-22T21:00:00Z"), at("2026-10-29T21:00:00Z")], next: at("2026-10-15T21:00:00Z") },
+    tips: { pool: 6, now: sunday },
+    labs: {
+      published: 20,
+      hidden: 1,
+      drafts: [
+        { name: "Sahte antivirüs uyarısı", neighborhood: "Zararlı Yazılım Ormanı" },
+        { name: "Taksitli oyun parası", neighborhood: "Para Çarşısı" },
+      ],
+    },
+  };
 
-    expect(buildPendingCards({ applications: { pending: 0, newSchool: 0, answered: 0 }, notes: { count: 0, first: null } })).toEqual([]);
-    expect(buildPendingCards({})).toEqual([]);
-    const plain = buildPendingCards({ applications: { pending: 2, newSchool: 0, answered: 0 }, notes: { count: 2, first: null } });
-    expect(plain[0].sub).toBe("Onayla, bilgi iste ya da reddet.");
-    expect(plain[1]).toMatchObject({ sub: "2 talepte okul sorumlusunun görüşü var, karar sende.", go: "Taleplere git" });
+  it("ipucu havuzu 7'den azsa bugünkü ipucunun yeniden çıkacağı gün", () => {
+    expect(dayKey(tipRepeatDay(6, sunday)!)).toBe("2026-10-17");
+    expect(tipRepeatDay(7, sunday)).toBeNull();
+    expect(tipRepeatDay(0, sunday)).toBeNull();
   });
 
-  it("dörtten fazla taslak lab kısaltılır", () => {
-    const drafts = Array.from({ length: 5 }, (_, i) => ({ name: `Lab ${i + 1}`, neighborhood: "Hesap Kalesi" }));
-    expect(buildPendingCards({ labs: { drafts } })[0].sub).toBe(
-      "Lab 1 (Hesap Kalesi), Lab 2 (Hesap Kalesi), Lab 3 (Hesap Kalesi), 2 oda daha.",
+  it("dört alan sırayla; renk, sayı, satır ve gidilecek sayfa", () => {
+    const areas = buildAreas(full);
+    expect(areas.map((a) => [a.key, a.tone, a.value, a.href])).toEqual([
+      ["applications", "work", "6", "/yonetim/talepler"],
+      ["students", "good", "5", "/yonetim/kullanicilar"],
+      ["content", "watch", "2", "/yonetim/gundem"],
+      ["labs", "watch", "20", "/yonetim/odalar"],
+    ]);
+    expect(areas[0]).toMatchObject({ unit: "talep bekliyor", line: "3 tanesi listede olmayan okuldan, 1 tanesinde istediğin bilgi geldi.", go: "Taleplere git" });
+    expect(areas[1]).toMatchObject({ unit: "oda bitti bu hafta", line: "12 öğrenci aktif · geçen hafta aynı günlerde 3, 2 fazla", go: "Kullanıcılara git" });
+    expect(areas[2]).toMatchObject({
+      name: "Gündem ve ipucu",
+      unit: "hafta gündemde boş",
+      line: "Sıradaki haber 16 Ekim. İpucu havuzu azaldı: 6 ipucu, 17 Ekim günü bugünkü ipucu tekrar çıkar.",
+    });
+    expect(areas[3].line).toBe("2 odada yayınlanmamış değişiklik: Sahte antivirüs uyarısı (Zararlı Yazılım Ormanı) ve Taksitli oyun parası (Para Çarşısı).");
+  });
+
+  it("her şey yolundayken alanlar yeşil, üstteki cümle de", () => {
+    const areas = buildAreas({
+      applications: { pending: 0, newSchool: 0, answered: 0, notes: 0 },
+      students: { ...students, finished: 3 },
+      news: { emptyWeeks: [], next: null },
+      tips: { pool: 30, now: sunday },
+      labs: { published: 20, hidden: 0, drafts: [] },
+    });
+    expect(areas.map((a) => a.tone)).toEqual(["good", "good", "good", "good"]);
+    expect(areas[0].line).toBe("Bekleyen talep yok.");
+    expect(areas[1].line).toBe("12 öğrenci aktif · geçen hafta aynı günlerde de 3");
+    expect(areas[2].line).toBe("Planlı haber yok. İpucu havuzunda 30 ipucu.");
+    expect(areas[3].line).toBe("Bekleyen taslak yok. Gizli oda: 0.");
+    expect(buildVerdict(areas, { ...students, finished: 3 })).toEqual({
+      tone: "good",
+      title: "Her şey yolunda.",
+      sub: "Bu hafta 12 öğrenci 3 oda bitirdi; geçen hafta aynı günlerde de 3.",
+    });
+  });
+
+  it("izni olmayan alan çıkmaz; yalnızca ipucu izni olan sorumlu", () => {
+    const areas = buildAreas({ students: { ...students, finished: 1, canSeeUsers: false }, tips: { pool: 0, now: sunday } });
+    expect(areas.map((a) => [a.key, a.tone])).toEqual([
+      ["students", "watch"],
+      ["content", "watch"],
+    ]);
+    expect(areas[0]).toMatchObject({ href: "/yonetim/canli-nabiz", go: "Canlı nabza git" });
+    expect(areas[1]).toMatchObject({ name: "Günün ipucu", value: "0", unit: "ipucu havuzda", line: "İpucu havuzu boş, sabit ipucu görünüyor.", href: "/yonetim/ipucu" });
+    expect(buildVerdict(areas, students).title).toBe("2 iş seni bekliyor.");
+  });
+
+  it("üstteki cümle: en kötü alanın rengi, kaç iş ve kaç alan yolunda", () => {
+    const verdict = buildVerdict(buildAreas(full), students);
+    expect(verdict).toEqual({
+      tone: "work",
+      title: "3 iş seni bekliyor, 1 alan yolunda.",
+      sub: "Bu hafta 12 öğrenci 5 oda bitirdi; geçen hafta aynı günlerde 3, 2 fazla.",
+    });
+  });
+
+  it("üçten fazla taslak oda kısaltılır", () => {
+    const drafts = Array.from({ length: 5 }, (_, i) => ({ name: `Oda ${i + 1}`, neighborhood: "Hesap Kalesi" }));
+    expect(buildAreas({ students, labs: { published: 1, hidden: 0, drafts } })[1].line).toBe(
+      "5 odada yayınlanmamış değişiklik: Oda 1 (Hesap Kalesi), Oda 2 (Hesap Kalesi), Oda 3 (Hesap Kalesi) ve 2 oda daha.",
     );
   });
 
@@ -259,17 +277,57 @@ describe("canlı nabız", () => {
       ["l3", { name: "Oltalama eğitimi", template: "TRAINING", neighborhood: "Oltalama Limanı" }],
     ]);
     const row = (kind: string, labId: string | null = null, a: string | null = null, b: string | null = null) => feedEntry({ kind, at: sunday, labId, a, b }, labs);
-    expect(row("hacked", "l1")).toEqual({ kind: "hacked", text: '"Sahte kargo maili" odasında biri tuzağa düştü, rapor açıldı', where: "Oltalama Limanı" });
+    expect(row("hacked", "l1")).toEqual({ kind: "hacked", text: '"Sahte kargo maili" odasında biri tuzağa düştü, rapor açıldı', where: "Oltalama Limanı", subject: "Sahte kargo maili" });
     expect(row("safe", "l1")?.text).toBe('"Sahte kargo maili" odasında biri güvende kaldı');
     expect(row("reported", "l1")?.text).toBe('"Sahte kargo maili" odasında biri sahte maili fark edip bildirdi');
     expect(row("reported", "l2")?.text).toBe('"Kodu soran arkadaş" odasında biri sahte mesajı fark edip bildirdi');
     expect(row("clicked", "l1")?.text).toBe('"Sahte kargo maili" odasında biri sahte bağlantıya tıkladı');
     expect(row("training", "l3")).toMatchObject({ text: '"Oltalama eğitimi" eğitimini biri bitirdi', where: "Oltalama Limanı" });
-    expect(row("done", "silinmis")).toEqual({ kind: "done", text: '"bir oda" odasını biri bitirdi', where: null });
-    expect(row("signup")).toEqual({ kind: "signup", text: "Yeni kayıt: bir öğrenci aramıza katıldı", where: null });
-    expect(row("application", null, "Ankara", "Çankaya")).toEqual({ kind: "application", text: "Yeni öğretmenlik talebi geldi", where: "Ankara · Çankaya" });
-    expect(row("badge", null, "ilk-rapor")?.text).toBe('Biri "İlk rapor" rozetini kazandı');
+    expect(row("done", "silinmis")).toEqual({ kind: "done", text: '"bir oda" odasını biri bitirdi', where: null, subject: "bir oda" });
+    expect(row("signup")).toEqual({ kind: "signup", text: "Yeni kayıt: bir öğrenci aramıza katıldı", where: null, subject: null });
+    expect(row("application", null, "Ankara", "Çankaya")).toEqual({ kind: "application", text: "Yeni öğretmenlik talebi geldi", where: "Ankara · Çankaya", subject: null });
+    expect(row("badge", null, "ilk-rapor")).toMatchObject({ text: 'Biri "İlk rapor" rozetini kazandı', subject: "İlk rapor" });
     expect(row("badge", null, "olmayan-rozet")).toBeNull();
     expect(row("tip_viewed")).toBeNull();
+  });
+
+  it("art arda aynı hareket tek satır olur, en yenisinin zamanı ve anahtarı kalır", () => {
+    const labs = new Map<string, FeedLab>([["l1", { name: "Sahte kargo maili", template: "INBOX", neighborhood: "Oltalama Limanı" }]]);
+    const entry = (id: string, kind: string, labId: string | null = null, a: string | null = null) => ({ id, ...feedEntry({ kind, at: sunday, labId, a, b: null }, labs)! });
+    const merged = mergeFeed([
+      entry("a", "safe", "l1"),
+      entry("b", "safe", "l1"),
+      entry("c", "safe", "l1"),
+      entry("d", "hacked", "l1"),
+      entry("e", "safe", "l1"),
+      entry("f", "signup"),
+      entry("g", "signup"),
+      entry("h", "badge", null, "ilk-rapor"),
+      entry("i", "badge", null, "ilk-rapor"),
+      entry("j", "application"),
+      entry("k", "application"),
+      entry("l", "reported", "l1"),
+      entry("m", "reported", "l1"),
+    ]);
+    expect(merged.map((m) => [m.id, m.n, m.text])).toEqual([
+      ["a", 3, "Sahte kargo maili: 3 kişi güvende kaldı"],
+      ["d", 1, '"Sahte kargo maili" odasında biri tuzağa düştü, rapor açıldı'],
+      ["e", 1, '"Sahte kargo maili" odasında biri güvende kaldı'],
+      ["f", 2, "2 yeni öğrenci aramıza katıldı"],
+      ["h", 2, '2 kişi "İlk rapor" rozetini kazandı'],
+      ["j", 2, "2 yeni öğretmenlik talebi geldi"],
+      ["l", 2, "Sahte kargo maili: 2 kişi sahte olanı fark etti"],
+    ]);
+    expect(mergeFeed([])).toEqual([]);
+  });
+
+  it("günün en hareketli saati", () => {
+    const hours = Array.from({ length: 24 }, () => 0);
+    expect(peakHour(hours)).toBeNull();
+    hours[9] = 3;
+    hours[14] = 7;
+    hours[15] = 7;
+    expect(peakHour(hours)).toBe("14:00");
+    expect(fillBuckets([{ b: 23, n: 2 }, { b: 24, n: 9 }], 24).at(-1)).toBe(2);
   });
 });

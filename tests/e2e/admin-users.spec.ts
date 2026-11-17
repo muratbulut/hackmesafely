@@ -196,9 +196,10 @@ test.describe("Kullanıcılar", () => {
     await expect(page.getByRole("button", { name: new RegExp(`^${short}`) })).toBeVisible();
 
     await openUsers(page, `?ara=${first.toLowerCase()}`);
-    const row = page.getByRole("button", { name: new RegExp(`^${short}`) });
+    // Öğrenciler sınıfa göre gruplu (38 K2): satır sınıfın bölümünde.
+    const group = page.getByRole("region", { name: `${classroom.name} · ${teacher.name}` });
+    const row = group.getByRole("button", { name: new RegExp(`^${short}`) });
     await expect(row).toBeVisible();
-    await expect(row).toContainText(`${classroom.name} · ${teacher.name}`);
     await expect(row).toContainText("1 oda");
 
     // Soyadı aranmaz.
@@ -217,7 +218,7 @@ test.describe("Kullanıcılar", () => {
     await expect(drawer.getByRole("img", { name: "Son 4 haftada 1 gün oda bitirdi" })).toBeVisible();
     await expect(drawer).toContainText("BİTİRDİĞİ ODALAR");
     await expect(drawer).toContainText("EĞİTİM");
-    await expect(drawer).toContainText("Burada görünmeyenler:");
+    await expect(drawer).toContainText("Bu bakış kayıt defterine yazıldı · e-posta, soyadı, puan ve rapor görünmez");
     await expect(drawer).not.toContainText(surname);
     await expect(page).toHaveURL(new RegExp(`ogrenci=${student.id}`));
 
@@ -428,7 +429,7 @@ test.describe("Kullanıcılar", () => {
     await expect(page).toHaveURL(/gorunum=okullar&ara=/);
     await expect(page.getByRole("region", { name: /^E2E Aaa Okulu/ })).toHaveCount(1);
     const card = page.getByRole("region", { name: school.name });
-    await expect(card).toContainText("1 onaylı öğretmen");
+    await expect(card.getByRole("button", { name: new RegExp(`^${school.name}`) })).toContainText(/1\s*öğretmen/);
     await expect(card).toContainText("1 talep bekliyor");
     await expect(card).toContainText("Okul sorumlusu yok");
     await expect(card.getByRole("img", { name: "Kurulum hunisi: Onaylandı 1, Sınıf kurdu 1, Öğrenciler katıldı 0, Ödev verdi 0, Sınıf bitiriyor 0" })).toBeVisible();

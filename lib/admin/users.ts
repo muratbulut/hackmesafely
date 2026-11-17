@@ -34,6 +34,7 @@ import { effectivePermissions } from "./access";
 import { studentKeySql } from "./person-search";
 import {
   activeDays,
+  activeWeekDays,
   calendarCells,
   dateText,
   daysAgoText,
@@ -47,6 +48,7 @@ import {
   shortName,
   teacherHintOf,
   weeklyAverage,
+  type StudentFilter,
 } from "./users-model";
 
 /** "Öğretmen" sayılan hesaplar: rolü öğretmen, ya da bir okulda öğretmenlik yapan yönetici (Okulum'la aynı). */
@@ -96,36 +98,65 @@ type StudentSqlRow = {
   displayName: string;
   avatar: string | null;
   createdAt: Date;
+  classId: string | null;
   className: string | null;
   teacherName: string | null;
   labs: number;
   lastSeen: Date | null;
+  applicant: boolean;
 };
 
+type FilterCountRow = { all: number; withClass: number; noClass: number; activeWeek: number; applicant: number };
+
 /**
- * Öğrenci listesinin bir sayfası: en yeni üye önce. Arama adda (ilk ad ve soyadın baş harfi),
- * sınıf adında ve öğretmen adında yapılır. Bitirdiği lab sayısı yayındaki lablardan sayılır
- * (yol haritasıyla aynı kural: eğitimde son kart, senaryoda biten deneme).
+ * Öğrenci listesinin bir sayfası (Sınıfa göre gruplu, 17 Kasım): sınıfı olanlar sınıf adına göre
+ * (aynı sınıf art arda gelir, sayfada grup olur), sınıfı olmayanlar en sonda; grubun içinde en
+ * yeni üye önce. Arama adda (ilk ad ve soyadın baş harfi), sınıf adında ve öğretmen adında
+ * yapılır; süzgeç (Sınıfı olan, Sınıfı yok, Bu hafta aktif, Öğretmenlik talebi var) aramanın
+ * üstüne gelir. Bitirdiği lab sayısı yayındaki lablardan sayılır (yol haritasıyla aynı kural:
+ * eğitimde son kart, senaryoda biten deneme).
  */
-export async function getStudentPage(input: { search: string; page: number }, now: Date): Promise<StudentPage> {
+export async function getStudentPage(input: { search: string; page: number; filter?: StudentFilter }, now: Date): Promise<StudentPage> {
   const labIds = (await getPublishedLabs()).map((lab) => lab.id);
   const search = input.search.trim();
+  const filter = input.filter ?? "hepsi";
   const pattern = search ? likePattern(search) : null;
-  const where = pattern
+  const searched = pattern
     ? Prisma.sql`u."role" = 'STUDENT' AND (
         ${studentKeySql} LIKE ${pattern}
         OR EXISTS (SELECT 1 ${visibleMembershipSql}
           AND (translate(lower(cl."name"), 'ı', 'i') LIKE ${pattern} OR translate(lower(tu."displayName"), 'ı', 'i') LIKE ${pattern}))
       )`
     : Prisma.sql`u."role" = 'STUDENT'`;
+  const activeSince = new Date(now.getTime() - activeWeekDays * 86_400_000);
+  const hasClass = Prisma.sql`EXISTS (SELECT 1 ${visibleMembershipSql})`;
+  const active = Prisma.sql`EXISTS (SELECT 1 FROM "Session" s WHERE s."userId" = u."id" AND s."createdAt" >= ${activeSince})`;
+  const applicant = Prisma.sql`EXISTS (SELECT 1 FROM "TeacherApplication" ap WHERE ap."userId" = u."id" AND ap."status" = 'PENDING')`;
+  const filters: Record<StudentFilter, Prisma.Sql> = {
+    hepsi: Prisma.sql`true`,
+    sinifli: hasClass,
+    sinifsiz: Prisma.sql`NOT ${hasClass}`,
+    "bu-hafta": active,
+    talep: applicant,
+  };
+  const where = Prisma.sql`${searched} AND ${filters[filter]}`;
 
-  const [{ total }] = await db.$queryRaw<{ total: number }[]>`SELECT count(*)::int AS "total" FROM "User" u WHERE ${where}`;
+  const [[counts], [{ total }]] = await Promise.all([
+    db.$queryRaw<FilterCountRow[]>`
+      SELECT count(*)::int AS "all",
+        count(*) FILTER (WHERE ${hasClass})::int AS "withClass",
+        count(*) FILTER (WHERE NOT ${hasClass})::int AS "noClass",
+        count(*) FILTER (WHERE ${active})::int AS "activeWeek",
+        count(*) FILTER (WHERE ${applicant})::int AS "applicant"
+      FROM "User" u WHERE ${searched}`,
+    db.$queryRaw<{ total: number }[]>`SELECT count(*)::int AS "total" FROM "User" u WHERE ${where}`,
+  ]);
   const size = pageSizes.students;
   const slice = pageSlice(total, input.page, size);
 
   const rows = await db.$queryRaw<StudentSqlRow[]>`
     SELECT u."id", u."displayName", u."avatar", u."createdAt",
-      c."name" AS "className", t."displayName" AS "teacherName",
+      c."id" AS "classId", c."name" AS "className", t."displayName" AS "teacherName", ${applicant} AS "applicant",
       (SELECT count(*)::int FROM (
         SELECT tp."labId" FROM "TrainingProgress" tp
           WHERE tp."userId" = u."id" AND tp."completedAt" IS NOT NULL AND tp."labId" = ANY(${labIds}::text[])
@@ -136,12 +167,12 @@ export async function getStudentPage(input: { search: string; page: number }, no
       (SELECT max(s."createdAt") FROM "Session" s WHERE s."userId" = u."id") AS "lastSeen"
     FROM "User" u
     LEFT JOIN LATERAL (
-      SELECT cl."name", cl."teacherId" ${visibleMembershipSql}
+      SELECT cl."id", cl."name", cl."teacherId" ${visibleMembershipSql}
       ORDER BY m."joinedAt" ASC LIMIT 1
     ) c ON true
     LEFT JOIN "User" t ON t."id" = c."teacherId"
     WHERE ${where}
-    ORDER BY u."createdAt" DESC, u."id" DESC
+    ORDER BY (c."id" IS NULL) ASC, lower(c."name") ASC, lower(t."displayName") ASC, c."id" ASC, u."createdAt" DESC, u."id" DESC
     LIMIT ${size} OFFSET ${slice.start}`;
 
   const t = getMessages().adminUsers.students;
@@ -151,10 +182,21 @@ export async function getStudentPage(input: { search: string; page: number }, no
       name: shortName(r.displayName),
       avatar: avatarOf(r).emoji,
       classLabel: r.className !== null ? format(t.classLabel, { name: r.className, teacher: r.teacherName ?? "" }) : null,
+      group: r.classId && r.className !== null ? { id: r.classId, name: r.className, teacher: r.teacherName ?? "" } : null,
+      activeWeek: !!r.lastSeen && r.lastSeen >= activeSince,
+      applicant: r.applicant,
       labs: r.labs,
       joined: dateText(r.createdAt, now),
       lastSeen: r.lastSeen ? daysAgoText(r.lastSeen, now) : null,
     })),
+    filter,
+    filterCounts: {
+      hepsi: counts?.all ?? 0,
+      sinifli: counts?.withClass ?? 0,
+      sinifsiz: counts?.noClass ?? 0,
+      "bu-hafta": counts?.activeWeek ?? 0,
+      talep: counts?.applicant ?? 0,
+    },
     total,
     page: slice.page,
     pages: slice.pages,
@@ -345,19 +387,29 @@ export async function getTeacherPage(input: { search: string; page: number }, no
     select: {
       id: true,
       displayName: true,
-      school: { select: { name: true } },
+      school: { select: { id: true, name: true } },
       teacherApplications: { where: { status: "APPROVED" }, orderBy: { decidedAt: "desc" }, take: 1, select: { subject: true } },
     },
   });
+  // Okula göre gruplu (17 Kasım, Murat): okul adına göre, okulu olmayanlar sonda; okulun içinde ad sırası.
+  const collator = new Intl.Collator("tr", { sensitivity: "base" });
   const matched = all
     .filter((u) => matchesTeacher(search, { name: u.displayName, school: u.school?.name ?? null, subject: u.teacherApplications[0]?.subject ?? "" }))
-    .map((u) => ({ id: u.id, name: u.displayName }))
-    .sort(byName);
+    .map((u) => ({ id: u.id, name: u.displayName, school: u.school }))
+    .sort((a, b) =>
+      (a.school === null) !== (b.school === null)
+        ? a.school === null
+          ? 1
+          : -1
+        : collator.compare(a.school?.name ?? "", b.school?.name ?? "") || (a.school?.id ?? "").localeCompare(b.school?.id ?? "") || byName(a, b),
+    );
   const size = pageSizes.teachers;
   const slice = pageSlice(matched.length, input.page, size);
   const ids = matched.slice(slice.start, slice.start + size).map((u) => u.id);
+  const order = new Map(ids.map((id, i) => [id, i]));
+  const rows = (await getAdminTeachers(now, viewerId, { ids })).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   return {
-    rows: await getAdminTeachers(now, viewerId, { ids }),
+    rows,
     total: matched.length,
     page: slice.page,
     pages: slice.pages,
@@ -489,6 +541,7 @@ export async function getStudentProfile(studentId: string, now: Date): Promise<S
         select: { classroom: { select: { name: true, teacher: { select: { displayName: true, school: { select: { name: true } } } } } } },
       },
       sessions: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true } },
+      teacherApplications: { where: { status: "PENDING" }, take: 1, select: { id: true } },
     },
   });
   if (!user || user.role !== "STUDENT") return null;
@@ -526,6 +579,7 @@ export async function getStudentProfile(studentId: string, now: Date): Promise<S
       : null,
     moreClasses: Math.max(0, user.classroomMemberships.length - 1),
     team: permissions.length > 0 ? permissions.map((p) => t.permissions[p]) : null,
+    application: user.teacherApplications[0]?.id ?? null,
     labs: finished.length,
     lastActive: lastActive > 0 ? daysAgoText(new Date(lastActive), now) : null,
     weekly: weeklyAverage(finished.length, user.createdAt, now),

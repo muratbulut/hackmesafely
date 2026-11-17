@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronLeft, HelpCircle, Search } from "lucide-react";
 import { useRevealSelected } from "@/components/common/ScrollStrip";
 import { applicationTabs, applicationsHref, matchesSearch, type ApplicationActionError } from "@/lib/admin/application-rules";
 import { undoApplicationDecision } from "@/lib/admin/application-actions";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { nextToast, UndoToast, type ToastData } from "../UndoToast";
-import { ApplicationDetailView, type Decision } from "./ApplicationDetail";
+import { ApplicationDetailView, type Decision, type DetailNav } from "./ApplicationDetail";
 import { ApplicationList } from "./ApplicationList";
 import type { ApplicationsBoard } from "./types";
 
@@ -21,7 +21,8 @@ const desktopQuery = "(min-width: 1024px)";
  * seçili talebin ayrıntısı. Sekme ve seçili talep adreste durur; seçim değişince sayfanın verisi
  * sunucudan yeniden gelir (istemcideki durum, ör. arama, kalır). Masaüstünde ayrıntı sağda;
  * telefonda adreste talep varsa sağdan kayan tam sayfa olarak açılır. Her karardan sonra
- * 5 saniyelik "Geri al".
+ * 5 saniyelik "Geri al". 17 Kasım (Murat): açıklama tek satır ("Nasıl çalışır?" altında
+ * ayrıntı), telefonda kısa sekme adları, ayrıntının altında Önceki / Sonraki okları.
  */
 export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
   const t = getMessages().adminApplications;
@@ -33,6 +34,16 @@ export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
 
   const rows = board.rows.filter((row) => matchesSearch(row, query));
   const selected = board.selected;
+  const at = selected ? rows.findIndex((row) => row.id === selected.id) : -1;
+  const nav: DetailNav | null =
+    at < 0
+      ? null
+      : {
+          previous: at > 0 ? applicationsHref(board.tab, rows[at - 1].id) : null,
+          next: at < rows.length - 1 ? applicationsHref(board.tab, rows[at + 1].id) : null,
+          n: at + 1,
+          total: rows.length,
+        };
 
   const say = (message: string, undo?: () => void) => setToast(nextToast({ message, undo }));
   const fail = (error: ApplicationActionError) => setToast(nextToast({ message: t.errors[error], tone: "error" }));
@@ -66,11 +77,22 @@ export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
     <main className="flex flex-col gap-4 px-4 pt-6 pb-16 lg:gap-[22px] lg:px-9 lg:pt-8 lg:pb-[72px]">
       <div className="flex flex-col gap-1.5">
         <h1 className="m-0 font-heading text-[26px] leading-[1.1] font-bold lg:text-[34px]">{t.title}</h1>
-        <p className="m-0 max-w-[640px] text-sm leading-[1.55] text-fg-3 lg:text-[15px]">{t.intro}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fg-3 lg:text-[15px]">
+          <p className="m-0">{t.intro}</p>
+          <details className="group relative max-sm:open:basis-full">
+            <summary className="inline-flex min-h-10 cursor-pointer list-none items-center gap-1 text-[13px] font-bold text-accent-fg [&::-webkit-details-marker]:hidden">
+              <HelpCircle className="size-3.5" strokeWidth={2} aria-hidden="true" />
+              {t.how}
+            </summary>
+            <p className="absolute top-full left-0 z-20 m-0 w-[min(520px,calc(100vw-32px))] rounded-xl border border-line bg-surface p-3.5 text-[13px] leading-[1.5] text-fg-2 shadow-lg max-sm:static max-sm:mt-1 max-sm:w-auto">
+              {t.howText}
+            </p>
+          </details>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3.5 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-        <div ref={tabStrip} role="tablist" aria-label={t.tabsLabel} className="flex flex-none gap-2 overflow-x-auto border-b border-line lg:gap-3">
+        <div ref={tabStrip} role="tablist" aria-label={t.tabsLabel} className="flex flex-none gap-1 overflow-x-auto border-b border-line lg:gap-3">
           {applicationTabs.map((tab) => {
             const on = tab === board.tab;
             const count = board.counts[tab];
@@ -83,11 +105,15 @@ export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
                 scroll={false}
                 prefetch={false}
                 className={cn(
-                  "inline-flex h-11 flex-none items-center gap-2 border-b-2 px-1.5 text-sm font-bold no-underline transition-colors lg:px-3.5 lg:text-[15px]",
+                  "inline-flex h-11 flex-1 items-center justify-center gap-1.5 border-b-2 px-1 text-[13px] font-bold whitespace-nowrap no-underline transition-colors lg:flex-none lg:gap-2 lg:px-3.5 lg:text-[15px]",
                   on ? "border-accent text-fg" : "border-transparent text-fg-3 hover:text-fg",
                 )}
               >
-                {t.tabs[tab]}
+                {/* Telefonda kısa ad görünür; ekran okuyucu her ekranda tam adı okur. */}
+                <span aria-hidden="true" className="lg:hidden">
+                  {t.tabsShort[tab]}
+                </span>
+                <span className="max-lg:sr-only">{t.tabs[tab]}</span>
                 <span
                   className={cn(
                     "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 text-xs",
@@ -124,7 +150,7 @@ export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
         />
         {selected ? (
           <DetailPane board={board} onBack={() => router.push(applicationsHref(board.tab), { scroll: false })}>
-            <ApplicationDetailView key={selected.id} app={selected} onDecided={decided} onToast={say} onError={fail} />
+            <ApplicationDetailView key={selected.id} app={selected} nav={nav} onDecided={decided} onToast={say} onError={fail} />
           </DetailPane>
         ) : (
           <div className="hidden rounded-[20px] border border-line bg-surface px-4 py-10 text-center text-[15px] text-fg-3 lg:block">{t.pickOne}</div>
@@ -137,7 +163,7 @@ export function ApplicationsScreen({ board }: { board: ApplicationsBoard }) {
 }
 
 /**
- * Ayrıntının çerçevesi: masaüstünde sağdaki yapışkan kutu; telefonda adreste talep varsa tam
+ * Ayrıntının çerçevesi: masaüstünde sağdaki kutu; telefonda adreste talep varsa tam
  * sayfa (üstte "Talepler" ile listeye dönüş ve durum), yoksa gizli.
  */
 function DetailPane({ board, onBack, children }: { board: ApplicationsBoard; onBack: () => void; children: ReactNode }) {
@@ -158,7 +184,8 @@ function DetailPane({ board, onBack, children }: { board: ApplicationsBoard; onB
         if (e.key === "Escape" && page && !window.matchMedia(desktopQuery).matches) onBack();
       }}
       className={cn(
-        "lg:sticky lg:top-4 lg:block lg:max-h-[calc(100dvh-32px)] lg:overflow-y-auto lg:rounded-[20px] lg:border lg:border-line lg:bg-surface lg:p-6",
+        // Masaüstünde kutu sayfayla kayar: altındaki karar çubuğu ekranın altına yapışır (900 px'te de Onayla görünür).
+        "lg:block lg:rounded-[20px] lg:border lg:border-line lg:bg-surface lg:p-6",
         page
           ? "max-lg:fixed max-lg:inset-0 max-lg:z-40 max-lg:flex max-lg:flex-col max-lg:bg-canvas max-lg:[animation:slide-in-page_.3s_cubic-bezier(.2,.8,.2,1)_both]"
           : "max-lg:hidden",

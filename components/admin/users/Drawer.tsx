@@ -17,6 +17,7 @@ export function Drawer({
   onClose,
   children,
   overlay,
+  className,
 }: {
   open: boolean;
   label: string;
@@ -25,6 +26,8 @@ export function Drawer({
   children: ReactNode;
   /** Pencere açıkken bildirim kutusu pencerenin içinde çizilir (yoksa perdenin altında kalır). */
   overlay?: ReactNode;
+  /** Masaüstü genişliği gibi ek sınıflar (ör. "Ekibe kişi ekle" için lg:w-[860px]). */
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
@@ -35,6 +38,8 @@ export function Drawer({
     if (open && !d.open) {
       setClosing(false);
       d.showModal();
+      // İçerik isterse odak ilk kutusuna gider (Sheet ile aynı kural).
+      d.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     }
     if (!open && d.open) d.close();
   }, [open]);
@@ -82,6 +87,7 @@ export function Drawer({
         closing
           ? "[animation:slide-up_.2s_ease-in_reverse_both] backdrop:[animation:fade-in_.2s_ease-in_reverse_both] lg:[animation:slide-in-page_.2s_ease-in_reverse_both]"
           : "open:[animation:slide-up_.28s_cubic-bezier(.2,.8,.2,1)_both] backdrop:[animation:fade-in_.2s_ease-out_both] lg:open:[animation:slide-in-page_.3s_cubic-bezier(.2,.8,.2,1)_both]",
+        className,
       )}
     >
       {open ? (

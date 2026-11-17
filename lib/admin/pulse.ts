@@ -12,9 +12,7 @@ import "server-only";
 import { createHmac, randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { requestTime } from "@/lib/lab/data";
-import { hasLabAccess, type AdminAccess } from "./access";
-import { agoLabel, minuteMs } from "./calendar";
-import { getTraps, type TrapView } from "./overview";
+import { agoLabel, dayStart, minuteMs, trParts } from "./calendar";
 import {
   bucketCount,
   bucketMinutes,
@@ -22,6 +20,8 @@ import {
   feedSize,
   fillBuckets,
   liveWindowMinutes,
+  mergeFeed,
+  peakHour,
   type FeedKind,
   type FeedLab,
   type FeedRow,
@@ -35,14 +35,32 @@ export type PulseFeedItem = {
   where: string | null;
   at: string;
   ago: string;
+  /** Birleşen hareket sayısı (art arda aynı olay tek satır olur). */
+  n: number;
+};
+
+export type PulseToday = {
+  /** Bugün biten oda (senaryo ve eğitim). */
+  finished: number;
+  safe: number;
+  hacked: number;
+  signups: number;
+  /** Günün 24 saati, Türkiye saatiyle; her saatte biten oda. */
+  hours: number[];
+  /** "14:00" ya da null. */
+  peak: string | null;
+  /** Şu anki saat (0-23), grafikte işaretlenir. */
+  nowHour: number;
 };
 
 export type PulseData = {
   live: number;
-  neighborhoods: { name: string; color: string; count: number }[];
+  neighborhoods: { name: string; color: string; icon: string; count: number }[];
   hour: { finished: number; buckets: number[] };
+  today: PulseToday;
+  /** Akıştaki en yeni hareketin ne kadar önce olduğu ("2 saat önce"); hareket yoksa null. */
+  lastActivity: string | null;
   feed: PulseFeedItem[];
-  traps: TrapView[];
 };
 
 // Akıştaki satırların anahtarı: sunucu her açılışta yeni bir anahtar seçer, özet geri çevrilemez.
@@ -79,6 +97,29 @@ async function hourBuckets(from: Date) {
     )
     SELECT floor(extract(epoch FROM (t - ${from}::timestamp)) / ${bucketMinutes * 60}::int)::int AS b, count(*)::int AS n
     FROM finished GROUP BY 1`;
+}
+
+type TodayRow = { finished: number; safe: number; hacked: number; signups: number };
+
+/** Bugünün toplamları ve saat saat biten oda (senaryo ve eğitim), gün Türkiye saatiyle 00.00'da başlar. */
+async function todayCounts(from: Date) {
+  const [[row], hours] = await Promise.all([
+    db.$queryRaw<TodayRow[]>`
+      SELECT
+        ((SELECT count(*) FROM "LabAttempt" WHERE "status" IN ('COMPLETED', 'HACKED') AND "endedAt" >= ${from})
+          + (SELECT count(*) FROM "TrainingProgress" WHERE "completedAt" >= ${from}))::int AS finished,
+        (SELECT count(*) FROM "LabAttempt" WHERE "status" = 'COMPLETED' AND "resultReport"->>'status' = 'safe' AND "endedAt" >= ${from})::int AS safe,
+        (SELECT count(*) FROM "LabAttempt" WHERE "status" = 'HACKED' AND "endedAt" >= ${from})::int AS hacked,
+        (SELECT count(*) FROM "User" WHERE "role" = 'STUDENT' AND "createdAt" >= ${from})::int AS signups`,
+    db.$queryRaw<{ h: number; n: number }[]>`
+      WITH finished AS (
+        SELECT "endedAt" AS t FROM "LabAttempt" WHERE "status" IN ('COMPLETED', 'HACKED') AND "endedAt" >= ${from}
+        UNION ALL
+        SELECT "completedAt" FROM "TrainingProgress" WHERE "completedAt" >= ${from}
+      )
+      SELECT floor(extract(epoch FROM (t - ${from}::timestamp)) / 3600)::int AS h, count(*)::int AS n FROM finished GROUP BY 1`,
+  ]);
+  return { row: row ?? { finished: 0, safe: 0, hacked: 0, signups: 0 }, hours: fillBuckets(hours.map((r) => ({ b: r.h, n: r.n })), 24) };
 }
 
 type FeedQueryRow = FeedRow & { ref: string };
@@ -127,41 +168,47 @@ async function feedRows() {
     ORDER BY at DESC LIMIT ${feedSize * 2}`;
 }
 
-/** Sayfanın verisi. En çok kaçırılan işaret (lab cevabı) yalnızca lab izni olana (getTraps). */
-export async function getPulse(access: AdminAccess): Promise<PulseData> {
+/**
+ * Sayfanın verisi (Sahne tasarımı, 17 Kasım): şu an, mahalleler, son 1 saat, bugün (toplamlar ve
+ * saat saat), birleşmiş isimsiz akış. En çok tuzağa düşülen odalar yalnızca Özet'te.
+ */
+export async function getPulse(): Promise<PulseData> {
   const now = await requestTime();
   const since = new Date(now.getTime() - liveWindowMinutes * minuteMs);
   const hourFrom = new Date(now.getTime() - bucketCount * bucketMinutes * minuteMs);
 
-  const [live, buckets, rows, neighborhoods, labs, traps] = await Promise.all([
+  const [live, buckets, rows, today, neighborhoods, labs] = await Promise.all([
     liveCounts(since),
     hourBuckets(hourFrom),
     feedRows(),
-    db.neighborhood.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true, color: true } }),
+    todayCounts(dayStart(now)),
+    db.neighborhood.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true, color: true, icon: true } }),
     db.$queryRaw<{ id: string; name: string; template: string; neighborhood: string }[]>`
       SELECT l."id", coalesce(nullif(btrim(l."draftContent"->'meta'->>'name'), ''), l."slug") AS name,
         l."template"::text AS template, n."name" AS neighborhood
       FROM "Lab" l JOIN "Neighborhood" n ON n."id" = l."neighborhoodId"`,
-    getTraps(hasLabAccess(access)),
   ]);
 
   const byNeighborhood = new Map(live.map((r) => [r.neighborhoodId, r.count]));
   const labMap = new Map<string, FeedLab>(labs.map((l) => [l.id, { name: l.name, template: l.template, neighborhood: l.neighborhood }]));
   const counted = fillBuckets(buckets);
 
-  const feed: PulseFeedItem[] = [];
+  const entries: (Omit<PulseFeedItem, "n"> & { subject: string | null })[] = [];
   for (const row of rows) {
     const entry = feedEntry(row, labMap);
     if (!entry) continue;
-    feed.push({ id: feedId(row.kind, row.ref), ...entry, at: row.at.toISOString(), ago: agoLabel(row.at, now) });
-    if (feed.length === feedSize) break;
+    entries.push({ id: feedId(row.kind, row.ref), ...entry, at: row.at.toISOString(), ago: agoLabel(row.at, now) });
+    if (entries.length === feedSize) break;
   }
+  // Birleşmiş satırlarda `subject` (oda ya da rozet adı) tarayıcıya gitmez; cümlede zaten var.
+  const feed: PulseFeedItem[] = mergeFeed(entries).map((m) => ({ id: m.id, kind: m.kind, text: m.text, where: m.where, at: m.at, ago: m.ago, n: m.n }));
 
   return {
     live: byNeighborhood.get(null) ?? 0,
-    neighborhoods: neighborhoods.map((n) => ({ name: n.name, color: n.color, count: byNeighborhood.get(n.id) ?? 0 })),
+    neighborhoods: neighborhoods.map((n) => ({ name: n.name, color: n.color, icon: n.icon, count: byNeighborhood.get(n.id) ?? 0 })),
     hour: { finished: counted.reduce((a, b) => a + b, 0), buckets: counted },
+    today: { ...today.row, hours: today.hours, peak: peakHour(today.hours), nowHour: trParts(now).hour },
+    lastActivity: entries[0] ? entries[0].ago : null,
     feed,
-    traps,
   };
 }

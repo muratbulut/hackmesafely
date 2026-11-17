@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
 
 /**
- * En çok tuzağa düşülen lablar (Özet ve Canlı nabız): hacklenerek bitenlerin payı, mahalle ve en
+ * En çok tuzağa düşülen odalar (yalnızca Özet): hacklenerek bitenlerin payı, mahalle ve en
  * çok kaçırılan işaret. Yalnızca toplam; kimin düştüğü görünmez.
  */
 export function TrapList({ traps, className }: { traps: TrapView[]; className?: string }) {

@@ -129,6 +129,11 @@ async function auditOf(target: string): Promise<Entry[]> {
 }
 
 const teamPage = "/yonetim/kullanicilar?sekme=ekip";
+/**
+ * Kişinin izin matrisindeki yeri (38 E2): masaüstünde tablonun satırı, telefonda kart. Gizli olan
+ * düzen rol aramasına girmez, görünen hangisiyse o döner.
+ */
+const memberOf = (page: Page, name: string) => page.getByRole("row", { name }).or(page.getByRole("article", { name }));
 const schoolsPage = "/yonetim/kullanicilar?gorunum=okullar";
 // Okullar sayfalı ve ada göre sıralı: testin okulu ilk sayfada olmayabilir, adıyla aranır.
 const schoolPage = (name: string) => `${schoolsPage}&ara=${encodeURIComponent(name)}`;
@@ -222,7 +227,7 @@ test.describe("yönetim ekibi ve okullar", () => {
 
     // Yönetim ekibi sekmesi: kendi kartında "sen", düzenleme yok; kayıt defterine bağlantı.
     await page.goto(teamPage);
-    const own = page.getByRole("article", { name: admin.name });
+    const own = memberOf(page, admin.name);
     await expect(own).toContainText("Yönetici");
     await expect(own).toContainText("sen");
     await expect(own.getByRole("button")).toHaveCount(0);
@@ -246,9 +251,11 @@ test.describe("yönetim ekibi ve okullar", () => {
     // Mail geri al süresi bitmeden gitmez.
     expect(await teamMails(member.email)).toHaveLength(0);
 
-    const card = page.getByRole("article", { name: member.name });
+    const card = memberOf(page, member.name);
     await expect(card).toContainText("Sorumlu");
-    await expect(card.getByRole("list", { name: "İzinler" })).toHaveText("Gündem");
+    await expect(card.getByRole("img", { name: "Gündem: açık" })).toBeVisible();
+    await expect(card.getByRole("img", { name: /: açık$/ })).toHaveCount(1);
+    await expect(card.getByRole("img", { name: "Kullanıcılar ve roller: bu kişiye verilmez" })).toBeVisible();
 
     // Sorumlu: Gündem açık; lablar, talepler, kayıt defteri ve kullanıcılar "Bu sayfa yok".
     await expectHeading(memberPage, "/yonetim/gundem", "Gündem");
@@ -279,12 +286,12 @@ test.describe("yönetim ekibi ve okullar", () => {
     const removed = toast(page, `${member.name} ekipten çıkarıldı.`);
     await expect(removed).toBeVisible();
     expect(await permissionsOf(member.id)).toEqual([]);
-    await expect(page.getByRole("article", { name: member.name })).toHaveCount(0);
+    await expect(memberOf(page, member.name)).toHaveCount(0);
     await expectHeading(memberPage, "/yonetim/ipucu", notFoundHeading);
     await removed.getByRole("button", { name: "Geri al" }).click();
     await expect(toast(page, "Geri alındı.")).toBeVisible();
     expect(await permissionsOf(member.id)).toEqual([{ permission: "TIPS", grantedById: admin.id }]);
-    await expect(page.getByRole("article", { name: member.name })).toBeVisible();
+    await expect(memberOf(page, member.name)).toBeVisible();
     await expectHeading(memberPage, "/yonetim/ipucu", "Günün ipucu");
     const entries = await auditOf(`user:${member.id}`);
     expect(entries.map((e) => e.action)).toEqual(["team.added", "team.permissions_changed", "team.removed", "team.added"]);
@@ -350,11 +357,11 @@ test.describe("yönetim ekibi ve okullar", () => {
     await expect(added).toBeVisible();
     const addedAt = Date.now();
     expect(await permissionsOf(student.id)).toEqual([{ permission: "TIPS", grantedById: admin.id }]);
-    await expect(page.getByRole("article", { name: student.name })).toContainText("Sorumlu · öğrenci");
+    await expect(memberOf(page, student.name)).toContainText("Sorumlu · öğrenci");
     await added.getByRole("button", { name: "Geri al" }).click();
     await expect(toast(page, "Geri alındı.")).toBeVisible();
     expect(await permissionsOf(student.id)).toEqual([]);
-    await expect(page.getByRole("article", { name: student.name })).toHaveCount(0);
+    await expect(memberOf(page, student.name)).toHaveCount(0);
     const entries = await auditOf(`user:${student.id}`);
     expect(entries.map((e) => e.action)).toEqual(["team.added", "team.removed"]);
     expect(entries[0]).toMatchObject({ actorId: admin.id, details: { role: "MEMBER", permissions: ["TIPS"], studentAccount: true } });
@@ -404,7 +411,7 @@ test.describe("yönetim ekibi ve okullar", () => {
     await expect(toast(page, `${target.name} için izinler kaydedildi.`)).toBeVisible();
     expect(await roleOf(target.id)).toMatchObject({ role: "ADMIN" });
     expect(await permissionsOf(target.id)).toEqual([]);
-    await expect(page.getByRole("article", { name: target.name })).toContainText("Her şeyi yapar");
+    await expect(memberOf(page, target.name).getByRole("img", { name: "Kullanıcılar ve roller: yöneticide hep açık" })).toBeVisible();
     expect((await auditOf(`user:${target.id}`)).at(-1)).toMatchObject({
       action: "team.permissions_changed",
       actorId: admin.id,

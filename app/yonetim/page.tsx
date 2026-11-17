@@ -11,9 +11,8 @@ export function generateMetadata() {
 }
 
 /**
- * Yönetim · Özet (Ozet-Son): bekleyen işler (izne göre), sayılar, son 6 hafta, en çok tuzağa
- * düşülen lablar, öğrencinin bu hafta gördükleri ve son kayıtlar. Ekipteki herkese açık; yalnızca
- * toplam sayılar.
+ * Yönetim · Özet (Durum karnesi, 17 Kasım): tek cümlelik durum, dört alan (izne göre), son 6
+ * haftada biten oda ve en çok tuzağa düşülen odalar. Ekipteki herkese açık; yalnızca toplam sayılar.
  */
 export default function AdminOverviewPage() {
   return (

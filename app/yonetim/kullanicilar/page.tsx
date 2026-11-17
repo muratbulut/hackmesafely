@@ -1,3 +1,4 @@
+import { HelpCircle } from "lucide-react";
 import { Suspense } from "react";
 import { AddSchoolButton } from "@/components/admin/users/schools/AddSchoolButton";
 import { SchoolsView } from "@/components/admin/users/schools/SchoolsView";
@@ -57,7 +58,18 @@ async function AdminUsers({ searchParams }: { searchParams: PageProps<"/yonetim/
       <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end lg:justify-between">
         <div className="flex flex-col gap-1.5">
           <h1 className="m-0 font-heading text-[26px] leading-[1.1] font-bold lg:text-[34px]">{t.title}</h1>
-          <p className="m-0 max-w-[640px] text-sm leading-[1.55] text-fg-3 lg:text-[15px]">{t.intro}</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fg-3 lg:text-[15px]">
+            <p className="m-0">{t.intro}</p>
+            <details className="relative max-sm:open:basis-full">
+              <summary className="inline-flex min-h-10 cursor-pointer list-none items-center gap-1 text-[13px] font-bold text-accent-fg [&::-webkit-details-marker]:hidden">
+                <HelpCircle className="size-3.5" strokeWidth={2} aria-hidden="true" />
+                {t.how}
+              </summary>
+              <p className="absolute top-full left-0 z-20 m-0 w-[min(520px,calc(100vw-32px))] rounded-xl border border-line bg-surface p-3.5 text-[13px] leading-[1.5] text-fg-2 shadow-lg max-sm:static max-sm:mt-1 max-sm:w-auto">
+                {t.howText}
+              </p>
+            </details>
+          </div>
         </div>
         {general ? <AddTeamMemberButton /> : <AddSchoolButton />}
       </div>
