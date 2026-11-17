@@ -60,7 +60,7 @@ for c in $(privileged grep -RhoE 'ssl_certificate\s+[^;]+' /etc/nginx/sites-enab
 done
 echo "-- Gerçek IP (Cloudflare), yalnızca Cloudflare girişi ve HSTS: hangi dosyada hangi ayar (yalnızca bu yönergeler)"
 privileged nginx -T 2>/dev/null | awk '/^# configuration file /{f=$4; sub(/:$/, "", f)}
-  /set_real_ip_from/{n[f]++} /real_ip_header|real_ip_recursive|cyberguard_from_cloudflare|Strict-Transport-Security/{print "   " f ": " $0}
+  /set_real_ip_from/{n[f]++} /real_ip_header|real_ip_recursive|from_cloudflare|Strict-Transport-Security/{print "   " f ": " $0}
   END{for (k in n) print "   " k ": set_real_ip_from x" n[k]}'
 echo "-- Let's Encrypt"
 privileged ls /etc/letsencrypt/live 2>&1

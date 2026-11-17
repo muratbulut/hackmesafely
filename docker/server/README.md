@@ -15,7 +15,9 @@ değişiklik, testler geçince GitHub Actions ile yüklenir (`.github/workflows/
    iş kırmızı biter. Migration düştüyse önce onu "geri alındı" diye işaretler (aşağıda,
    Migration başarısız olursa).
 4. `install-backup-timer.sh` gece yedeğinin zamanlayıcısını kurar ya da günceller.
-5. `install-nginx.sh` nginx girişini kurar ya da günceller (değişiklik yoksa dokunmaz).
+5. `install-nginx.sh` nginx girişini kurar ya da günceller (değişiklik yoksa dokunmaz); eski
+   adresler (`REDIRECT_DOMAINS`) için yönlendirme girişini, taşınılacak adres (`NEXT_DOMAIN`)
+   için imza isteğini de (aşağıda, Alan adı taşıma).
 6. Uçtan uca testlerin hepsi canlı adreste çalışır.
 
 ## Sunucudaki yerler
@@ -338,6 +340,37 @@ Zamanlaması kapalıdır, yalnızca elle çalışır (Actions → Site izleme �
 (private) olduğu için her çalışma Actions dakikasından düşer ve en az 1 dakika sayılır; 10
 dakikada bir çalışsa ayda ~4.460 dakika eder ve ücretsiz sınırı (2.000) aşar, sınır dolunca CI
 ve yayın da durur. İzinleri yalnızca `issues: write`; sunucuya bağlanmaz, sır kullanmaz.
+
+## Alan adı taşıma
+
+Adresler `deploy.yml`'nin başındadır:
+
+- `DOMAIN`: sitenin adresi. `deploy.sh` `.env`'e `BETTER_AUTH_URL=https://<DOMAIN>` ve
+  `MAIL_FROM_ADDRESS=no-reply@<DOMAIN>` yazar (ikisi de her yayında yeniden yazılır; gönderen
+  alan adı Resend'de doğrulanmış olmalı, yoksa kod mailleri gitmez).
+- `DOMAIN_ALIASES`: ana adrese kalıcı yönlenen ek adlar (`www`), boşlukla ayrılır. Ana adresle
+  aynı sertifikadadır.
+- `REDIRECT_DOMAINS`: eski adresler. Her biri için uygulamaya gitmeyen, her isteği aynı yolla ana
+  adrese yönlendiren bir giriş kurulur (`install-nginx.sh --redirect`, şablon
+  `nginx-redirect.conf`); kendi Origin sertifikası (`<eski-alan>.pem`) kullanılır.
+- `NEXT_DOMAIN` (ve `NEXT_DOMAIN_ALIASES`): taşınılacak adres. Sertifikası depoda yoksa yayın
+  yalnızca imza isteğini (CSR) yazdırır (adım "nginx girişi ve sertifika", `::notice::`); siteye
+  dokunmaz.
+
+Taşıma sırası (bitirme.muratbulut.net → hackmesafely.com, Kasım 2026):
+
+1. Yeni alan adı Cloudflare'e eklenir, kayıt firmasında ad sunucuları Cloudflare'inkiler olur; DNS'te
+   kök `A` kaydı sunucunun IP'si ve `www` `CNAME` kökü gösterir (ikisi de Proxied). SSL/TLS modu
+   **Full (strict)**. Cloudflare'in alan geneli HSTS ayarı açılmaz.
+2. Resend'de yeni alan adı eklenir, istediği kayıtlar Cloudflare'e **DNS only** girilir.
+3. `NEXT_DOMAIN` ile bir yayın: kayıttaki imza isteği Cloudflare > SSL/TLS > Origin Server >
+   Create Certificate > "Use my private key and CSR"e yapıştırılır, çıkan sertifika
+   `docker/server/<yeni-alan>.pem` olarak depoya girer.
+4. Geçiş PR'ı: `DOMAIN` yeni adres, `DOMAIN_ALIASES` `www`, `REDIRECT_DOMAINS` eski adres,
+   `NEXT_DOMAIN` boş; `lib/brand.tsx` `siteUrl`, `uptime.yml` ve belgeler. Eski adresin DNS kaydı
+   ve sertifikası yönlendirme sürdükçe kalır.
+5. UptimeRobot'un adresi değiştirilir. Eski adreste açık oturumlar yeni adrese geçmez (çerez
+   alan adına bağlı); herkes bir kez yeniden giriş yapar.
 
 ## Türkçe adlardan geçiş (Ekim 2026)
 

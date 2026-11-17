@@ -5,6 +5,8 @@
 #   sunucunun kendisi (127.0.0.1) girer (sabah soruları 23).
 # - Cloudflare'den gelen bağlantıda ziyaretçi adresi CF-Connecting-IP'den alınır; listede olmayan
 #   adresin gönderdiği CF-Connecting-IP yok sayılır (güvenlik turu 5).
+# - Ek ad (www) ve eski adres (yönlendirme girişi, nginx-redirect.conf) ana adrese yönlenir; iki
+#   giriş aynı nginx'te birlikte açılır (geo değişkenleri çakışmaz).
 # - Bozuk ya da eksik aralık listesiyle site dosyası üretilmez.
 # Cloudflare'in bir uç sunucusu yerine 127.0.0.2 kullanılır (listeye yalnızca bu denemede eklenir).
 #   bash tests/deploy/nginx-site.sh
@@ -31,6 +33,8 @@ cleanup() {
 trap cleanup EXIT
 
 domain=cyberguard.test
+alias=www.cyberguard.test
+old=eski.cyberguard.test
 http_port=18080
 https_port=18443
 app_port=18090
@@ -57,14 +61,18 @@ python3 "$work/upstream.py" "$app_port" &
 upstream_pid=$!
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=$domain" \
-  -keyout "$work/origin-key.pem" -out "$work/origin-cert.pem" 2> /dev/null
+  -addext "subjectAltName=DNS:$domain,DNS:$alias,DNS:$old" -keyout "$work/origin-key.pem" -out "$work/origin-cert.pem" 2> /dev/null
 mkdir -p "$work/tmp" "$work/logs"
 
-# Site dosyası: üretilir, portlar ve sertifika yolu denemeye göre değiştirilir.
+# Site dosyaları: üretilir, portlar ve sertifika yolu denemeye göre değiştirilir. Ana giriş
+# (ek adıyla) ve eski adresin yönlendirme girişi birlikte açılır.
+local_paths() { # local_paths <alan-adı>
+  sed -e "s|listen 80;|listen 127.0.0.1:$http_port;|" -e "s|listen 443 ssl;|listen 127.0.0.1:$https_port ssl;|" \
+    -e '/listen \[::\]/d' -e "s|/etc/nginx/ssl/$1/|$work/|"
+}
 site() { # site <aralık-dosyası>
-  render_site "$domain" "$app_port" "$root/docker/server/nginx-site.conf" "$1" \
-    | sed -e "s|listen 80;|listen 127.0.0.1:$http_port;|" -e "s|listen 443 ssl;|listen 127.0.0.1:$https_port ssl;|" \
-      -e '/listen \[::\]/d' -e "s|/etc/nginx/ssl/$domain/|$work/|"
+  render_site "$domain" "$app_port" "$root/docker/server/nginx-site.conf" "$1" "$alias" | local_paths "$domain"
+  render_site "$old" 0 "$root/docker/server/nginx-redirect.conf" "$1" "" "$domain" | local_paths "$old"
 }
 start_nginx() { # start_nginx <aralık-dosyası>
   stop_nginx
@@ -87,18 +95,26 @@ CONF
   run_nginx
   sleep 0.5
 }
-# İstek: çıktı "<durum kodu> <gövde>", bağlantı yanıtsız kapanırsa "kesildi".
+# İstek: çıktı "<durum kodu> <gövde>", bağlantı yanıtsız kapanırsa "kesildi". HOST ve REQ_PATH
+# ortam değişkenleriyle başka bir ada ve yola sorulur.
 ask() { # ask <kaynak-adres> <http|https> [curl seçenekleri]
-  local from=$1 scheme=$2 port=$http_port out
+  local from=$1 scheme=$2 port=$http_port out host=${HOST:-$domain}
   shift 2
   [ "$scheme" = https ] && port=$https_port
   # --noproxy: ortamdaki vekil sunucu (HTTPS_PROXY) denemenin isteğini başka yere götürmesin.
-  if out=$(curl -sk --noproxy '*' --max-time 5 --interface "$from" --resolve "$domain:$port:127.0.0.1" \
-    -w ' %{http_code}' "$@" "$scheme://$domain:$port/"); then
+  if out=$(curl -sk --noproxy '*' --max-time 5 --interface "$from" --resolve "$host:$port:127.0.0.1" \
+    -w ' %{http_code}' "$@" "$scheme://$host:$port${REQ_PATH:-/}"); then
     echo "${out##* } ${out% *}"
   else
     echo "kesildi"
   fi
+}
+# Yönlendirme: çıktı "<durum kodu> <Location>".
+where() { # where <kaynak-adres> <http|https> <ad> <yol>
+  local from=$1 scheme=$2 host=$3 path=$4 port=$http_port
+  [ "$scheme" = https ] && port=$https_port
+  curl -sk --noproxy '*' --max-time 5 --interface "$from" --resolve "$host:$port:127.0.0.1" \
+    -o /dev/null -w '%{http_code} %{redirect_url}' "$scheme://$host:$port$path" || echo "kesildi"
 }
 
 echo "Gerçek Cloudflare listesiyle:"
@@ -108,6 +124,14 @@ check "listede olmayan adres kesilir (HTTPS)" "kesildi" "$(ask 127.0.0.2 https)"
 check "listede olmayan adres kesilir (HTTP)" "kesildi" "$(ask 127.0.0.2 http)"
 redirect=$(ask 127.0.0.1 http)
 check "sunucunun kendisi HTTPS'e yönlenir (HTTP)" "301" "${redirect%% *}"
+check "ek ad (www) ana adrese yönlenir (HTTPS)" "301 https://$domain/odalar?x=1" \
+  "$(where 127.0.0.1 https "$alias" '/odalar?x=1')"
+check "ek ad (www) ana adrese yönlenir (HTTP)" "301 https://$domain/odalar" "$(where 127.0.0.1 http "$alias" /odalar)"
+check "eski adres aynı yolla ana adrese yönlenir (HTTPS)" "301 https://$domain/oda/abc?y=2" \
+  "$(where 127.0.0.1 https "$old" '/oda/abc?y=2')"
+check "eski adres ana adrese yönlenir (HTTP)" "301 https://$domain/giris" "$(where 127.0.0.1 http "$old" /giris)"
+check "eski adreste listede olmayan adres kesilir (HTTPS)" "kesildi" "$(HOST=$old ask 127.0.0.2 https)"
+check "eski adreste listede olmayan adres kesilir (HTTP)" "kesildi" "$(HOST=$old ask 127.0.0.2 http)"
 
 echo "127.0.0.2 Cloudflare'in uç sunucusuymuş gibi:"
 grep -v '^#' "$root/docker/server/cloudflare-ips.txt" > "$work/ranges.txt"
@@ -124,6 +148,11 @@ if render_site "$domain" 1 "$root/docker/server/nginx-site.conf" "$work/short.tx
   check "eksik listeyle site dosyası üretilmez" "hata" "üretildi"
 else
   check "eksik listeyle site dosyası üretilmez" "hata" "hata"
+fi
+if render_site "$domain" 1 "$root/docker/server/nginx-site.conf" "$work/ranges.txt" 'www.x; deny all' > /dev/null 2>&1; then
+  check "geçersiz ek adla site dosyası üretilmez" "hata" "üretildi"
+else
+  check "geçersiz ek adla site dosyası üretilmez" "hata" "hata"
 fi
 { cat "$work/ranges.txt"; echo "1.2.3.4/24; deny all"; } > "$work/bad.txt"
 if render_site "$domain" 1 "$root/docker/server/nginx-site.conf" "$work/bad.txt" > /dev/null 2>&1; then
