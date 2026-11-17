@@ -10,7 +10,7 @@ import { getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const inputClass =
-  "h-[50px] w-full rounded-xl border border-line bg-canvas px-3.5 text-base text-fg placeholder:text-fg-4 transition-[border-color,box-shadow] focus:border-accent focus:shadow-[0_0_0_3px_rgb(34_211_238/0.18)] focus:outline-none aria-[invalid=true]:border-danger";
+  "h-[50px] w-full rounded-xl border border-line bg-canvas px-3.5 text-base text-fg placeholder:text-fg-4 transition-[border-color,box-shadow] focus:border-accent focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent)_18%,transparent)] focus:outline-none aria-[invalid=true]:border-danger";
 
 export const selectClass = cn(
   inputClass,

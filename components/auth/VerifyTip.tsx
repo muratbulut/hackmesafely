@@ -7,7 +7,7 @@ export function VerifyTip() {
   const t = getMessages().auth;
   return (
     <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-surface-translucent p-[18px] backdrop-blur-sm lg:gap-5 lg:p-6">
-      <div className="flex items-center gap-2 text-xs font-bold tracking-[0.8px] text-warning">
+      <div className="flex items-center gap-2 text-xs font-bold tracking-[0.8px] text-warning-fg">
         <Lightbulb className="size-4" strokeWidth={2} aria-hidden="true" />
         {t.tipLabel}
       </div>

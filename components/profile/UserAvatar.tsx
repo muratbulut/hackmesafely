@@ -7,7 +7,7 @@ export function UserAvatar({ emoji, ring = false, className }: { emoji: string; 
       aria-hidden="true"
       className={cn(
         "flex flex-none items-center justify-center rounded-full bg-surface-deep leading-none select-none",
-        ring ? "border-[3px] border-accent shadow-[0_0_0_4px_rgb(34_211_238/0.12)]" : "border border-line",
+        ring ? "border-[3px] border-accent shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_12%,transparent)]" : "border border-line",
         className,
       )}
     >

@@ -58,44 +58,45 @@
 
 /*
  * Tema değişkenleri. Bütün renkler buradan gelir; bileşenlerde sabit renk kodu yazılmaz.
- * Koyu tema varsayılandır, gri tema <html data-theme="gray"> ile açılır.
- * Değerler Tema H tahtalarından (Secim2-1 koyu, Secim2-2 gri) alındı.
+ * Koyu tema varsayılandır, açık tema <html data-theme="gray"> ile açılır (iç adı "gray" kaldı).
+ * Değerler renk paleti tuvalinden (17 Kasım, Murat): koyu "B2 Asfalt ve yol çizgisi", açık
+ * "Açık 2 Tamamen açık". Vurgu yol çizgisi sarısıdır; uyarı bu yüzden turuncudur.
  */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --canvas: #0b1020;
-  --canvas-translucent: rgb(11 16 32 / 0.85);
-  --surface: #131a33;
-  --surface-translucent: rgb(19 26 51 / 0.82);
-  --surface-deep: #0e1428;
-  --surface-raised: #10172e;
-  --card: #1c2547;
-  --line: #2a3459;
-  --line-strong: #3a4775;
+  --canvas: #141517;
+  --canvas-translucent: rgb(20 21 23 / 0.85);
+  --surface: #1c1e21;
+  --surface-translucent: rgb(28 30 33 / 0.82);
+  --surface-deep: #17181b;
+  --surface-raised: #191b1e;
+  --card: #26292d;
+  --line: #34373c;
+  --line-strong: #4a4e54;
 
-  --fg: #e8ecf8;
-  --fg-2: #c9d0e4;
-  --fg-3: #a3adc8;
-  --fg-4: #7a85a6;
+  --fg: #f1f2f3;
+  --fg-2: #d2d4d7;
+  --fg-3: #a8acb1;
+  --fg-4: #878b91;
 
-  --accent: #22d3ee;
-  --accent-fg: #22d3ee;
-  --accent-light: #67e8f9;
-  --on-accent: #0b1020;
-  --glow: #67e8f9;
-  --logo: #22d3ee;
-  --logo-eye: #0b1020;
+  --accent: #f5c400;
+  --accent-fg: #f7cd2a;
+  --accent-light: #fadc66;
+  --on-accent: #141517;
+  --glow: #fadc66;
+  --logo: #f5c400;
+  --logo-eye: #141517;
   --logo-white: #ffffff;
 
   --success: #34d399;
   --success-fg: #34d399;
   --success-subtle: #0f2a26;
   --success-subtle-fg: #a7f3d0;
-  --warning: #fbbf24;
-  --warning-fg: #fbbf24;
-  --on-warning: #1a1305;
+  --warning: #ff9a3d;
+  --warning-fg: #ffad5c;
+  --on-warning: #1a0f05;
   --danger: #f87171;
   --danger-fg: #fca5a5;
   --on-danger: #1a0b0b;
@@ -196,8 +197,8 @@
   --board-eraser-wood: #d9ad73;
   --board-eraser-felt: #3a3f4f;
   --board-marker: #fde68a;
-  --board-pen-cap: #22d3ee;
-  --board-pen: #e8ecf8;
+  --board-pen-cap: #f5c400;
+  --board-pen: #f1f2f3;
   --board-shadow: rgb(0 0 0 / 0.4);
   --board-shine: rgb(255 255 255 / 0.18);
   --call-sheet: #ffffff;
@@ -230,25 +231,25 @@
   --scene-product: #e2e8f0;
 
   /* Bildirim kutusu (toast): koyu temada açık zemin */
-  --toast-bg: #e8ecf8;
-  --toast-fg: #0b1020;
+  --toast-bg: #f1f2f3;
+  --toast-fg: #141517;
 
   /* Tahtaya yansıtılan sınıf kodunun QR'ı: okunabilsin diye iki temada da açık zemin, koyu modül */
   --qr-bg: #ffffff;
-  --qr-fg: #0b1020;
+  --qr-fg: #141517;
 
   /* Animasyonlardaki fare imleci (iki temada da beyaz, koyu kenarlı) */
   --cursor-fill: #ffffff;
-  --cursor-stroke: #0b1020;
+  --cursor-stroke: #141517;
 
   /* Aç-kapa düğmesinin topu */
-  --knob: #e8ecf8;
+  --knob: #f1f2f3;
 
   --shadow-color: rgb(0 0 0 / 0.4);
   --shadow-color-soft: rgb(0 0 0 / 0.35);
-  --scrim: rgb(5 8 18 / 0.7);
+  --scrim: rgb(10 11 12 / 0.72);
   --thread-opacity: 0.13;
-  --skeleton-shine: #26305a;
+  --skeleton-shine: #4a4e54;
 
   /* Faz 3 yol haritası, lab detayı ve ana sayfa: lab detayındaki telefon çizimi (çerçeve ve
      kilit ekranı, temayla değişmez) ve profil kartındaki parıltı */
@@ -261,25 +262,25 @@
   /* Tanıtım sayfasının dönen sahneleri (components/landing/scenes): dizüstü ve telefon gövdesi,
      flash bellek, kamera, karartı karakterler, raf kitapları, profil kapağı ve harita.
      Çizimin kendi renkleri; iki temada da aynı. */
-  --scene-bezel: #0e1430;
-  --scene-device: #1a2244;
-  --scene-device-2: #2c3a66;
-  --scene-device-3: #3a4775;
-  --scene-device-foot: #10172e;
-  --scene-port: #05070f;
+  --scene-bezel: #111214;
+  --scene-device: #1f2226;
+  --scene-device-2: #34373c;
+  --scene-device-3: #4a4e54;
+  --scene-device-foot: #191b1e;
+  --scene-port: #0a0b0c;
   --scene-metal: #e2e8f0;
   --scene-metal-2: #94a3b8;
   --scene-metal-3: #475569;
-  --scene-usb: #243055;
-  --scene-camera: #222c55;
-  --scene-camera-edge: #0b1020;
-  --scene-camera-ink: #e8ecf8;
-  --scene-camera-ink-2: #c9d0e4;
-  --scene-qr-paper: #e8ecf8;
-  --scene-person: #2a3a6e;
-  --scene-person-2: #151d3d;
-  --scene-headset: #1fb5cf;
-  --scene-headset-shine: #67e8f9;
+  --scene-usb: #2b2e33;
+  --scene-camera: #2b2e33;
+  --scene-camera-edge: #141517;
+  --scene-camera-ink: #f1f2f3;
+  --scene-camera-ink-2: #d2d4d7;
+  --scene-qr-paper: #f1f2f3;
+  --scene-person: #3d4148;
+  --scene-person-2: #1f2226;
+  --scene-headset: #f5c400;
+  --scene-headset-shine: #fadc66;
   --scene-stranger: #4a3a86;
   --scene-stranger-2: #1d173f;
   --scene-beanie: #7c6bea;
@@ -288,12 +289,12 @@
   --scene-beanie-rib: #5a4bc7;
   --scene-beanie-pompom: #a99cf7;
   --scene-deep-teal: #1f4a52;
-  --scene-deep-navy: #2c3a66;
+  --scene-deep-navy: #34373c;
   --scene-deep-olive: #4a3f1c;
-  --scene-deep-slate: #2a3459;
+  --scene-deep-slate: #34373c;
   --scene-deep-plum: #3b2d6b;
-  --scene-deep-steel: #3a4775;
-  --scene-deep-indigo: #33406e;
+  --scene-deep-steel: #4a4e54;
+  --scene-deep-indigo: #3d4148;
   --scene-cover: #1e3a8a;
   --scene-cover-2: #4c3a96;
   /* Eğitim kartlarının çizimleri (Tur 7): örnek banka kartı, hediye kutusu, 1 TL. İki temada aynı. */
@@ -308,20 +309,20 @@
   --art-gift-2: #7c3aed;
   --art-lid-1: #c4b5fd;
   --art-lid-2: #8b5cf6;
-  --scene-map: #111935;
-  --scene-map-water: #163a5c;
-  --scene-map-park: #123a33;
-  --scene-map-tree: #1a5246;
-  --scene-map-block: #1c2547;
-  --scene-map-road: #2a3459;
-  --scene-map-label: #7a85a6;
+  --scene-map: #17181b;
+  --scene-map-water: #1d3446;
+  --scene-map-park: #1d3328;
+  --scene-map-tree: #27473a;
+  --scene-map-block: #26292d;
+  --scene-map-road: #34373c;
+  --scene-map-label: #878b91;
 
   /* Avatar çerçeveleri ve profil kartı arka planları (29, 16 Kasım; components/profile/frame/).
-     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez (kartlar gri temada da koyu). */
+     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez. */
   --frame-bubble: #7dd3fc;
-  --frame-spark: #22d3ee;
-  --frame-spark-core: #f0fdff;
-  --frame-spark-branch: #a5f3fc;
+  --frame-spark: #f5c400;
+  --frame-spark-core: #fffbea;
+  --frame-spark-branch: #fde68a;
   --frame-ember-dark: #450a0a;
   --frame-ember-deep: #7f1d1d;
   --frame-ember-red: #b91c1c;
@@ -337,7 +338,7 @@
   --frame-gold: #facc15;
   --frame-gold-light: #fff7d6;
   --frame-hero-purple: #a78bfa;
-  --frame-outline: #0b1020;
+  --frame-outline: #141517;
   --card-bg-waves-top: #0b1a33;
   --card-bg-waves-bottom: #0d2231;
   --card-bg-wave-1: #134e4a;
@@ -354,44 +355,44 @@
   --card-bg-aurora-bottom: #0b1a2e;
   --card-bg-aurora-1: #10b981;
   --card-bg-aurora-2: #8b5cf6;
-  --card-bg-aurora-3: #22d3ee;
-  --level-up-scrim: rgb(6 9 20 / 0.9);
+  --card-bg-aurora-3: #f5c400;
+  --level-up-scrim: rgb(10 11 12 / 0.9);
 }
 
 [data-theme="gray"] {
   color-scheme: light;
 
-  --canvas: #dde1e8;
-  --canvas-translucent: rgb(221 225 232 / 0.88);
-  --surface: #eceef2;
-  --surface-translucent: rgb(236 238 242 / 0.92);
-  --surface-deep: #e1e5ec;
-  --surface-raised: #e3e6ed;
-  --card: #d2d7e1;
-  --line: #c2c9d6;
-  --line-strong: #a9b2c3;
+  --canvas: #ecedee;
+  --canvas-translucent: rgb(236 237 238 / 0.88);
+  --surface: #ffffff;
+  --surface-translucent: rgb(255 255 255 / 0.92);
+  --surface-deep: #f4f5f6;
+  --surface-raised: #fbfbfc;
+  --card: #f1f2f3;
+  --line: #d5d8db;
+  --line-strong: #a9aeb3;
 
-  --fg: #0f172a;
-  --fg-2: #334155;
-  --fg-3: #5b6683;
-  --fg-4: #7a859f;
+  --fg: #141517;
+  --fg-2: #33363a;
+  --fg-3: #52565c;
+  --fg-4: #656a70;
 
-  --accent: #22d3ee;
-  --accent-fg: #0e7490;
-  --accent-light: #0e7490;
-  --on-accent: #0b1020;
-  --glow: #67e8f9;
-  --logo: #0891b2;
-  --logo-eye: #0f172a;
+  --accent: #f5c400;
+  --accent-fg: #6b5300;
+  --accent-light: #6b5300;
+  --on-accent: #141517;
+  --glow: #f5c400;
+  --logo: #141517;
+  --logo-eye: #141517;
   --logo-white: #ffffff;
 
   --success: #34d399;
   --success-fg: #047857;
   --success-subtle: #ecfdf5;
   --success-subtle-fg: #065f46;
-  --warning: #d97706;
-  --warning-fg: #b45309;
-  --on-warning: #1a1305;
+  --warning: #ea6a0c;
+  --warning-fg: #a84a00;
+  --on-warning: #1a0f05;
   --danger: #f87171;
   --danger-fg: #b91c1c;
   --on-danger: #1a0b0b;
@@ -487,8 +488,8 @@
   --board-eraser-wood: #d9ad73;
   --board-eraser-felt: #3a3f4f;
   --board-marker: #fde68a;
-  --board-pen-cap: #22d3ee;
-  --board-pen: #e8ecf8;
+  --board-pen-cap: #f5c400;
+  --board-pen: #f1f2f3;
   --board-shadow: rgb(0 0 0 / 0.4);
   --board-shine: rgb(255 255 255 / 0.18);
   --call-sheet: #ffffff;
@@ -520,22 +521,22 @@
   --scene-shop-ink: #ffffff;
   --scene-product: #e2e8f0;
 
-  --toast-bg: #0f172a;
-  --toast-fg: #f8fafc;
+  --toast-bg: #141517;
+  --toast-fg: #f4f5f5;
 
   --qr-bg: #ffffff;
-  --qr-fg: #0b1020;
+  --qr-fg: #141517;
 
   --cursor-fill: #ffffff;
-  --cursor-stroke: #0f172a;
+  --cursor-stroke: #141517;
 
   --knob: #ffffff;
 
-  --shadow-color: rgb(15 23 42 / 0.12);
-  --shadow-color-soft: rgb(15 23 42 / 0.1);
-  --scrim: rgb(15 23 42 / 0.45);
+  --shadow-color: rgb(20 21 23 / 0.12);
+  --shadow-color-soft: rgb(20 21 23 / 0.08);
+  --scrim: rgb(20 21 23 / 0.45);
   --thread-opacity: 0.24;
-  --skeleton-shine: #e6e9ef;
+  --skeleton-shine: #ffffff;
 
   /* Faz 3 yol haritası, lab detayı ve ana sayfa */
   --scene-phone-edge: #1f2937;
@@ -547,25 +548,25 @@
   /* Tanıtım sayfasının dönen sahneleri: dizüstü ve telefon gövdesi, flash bellek, kamera,
      karartı karakterler, raf kitapları, profil kapağı ve harita.
      Çizimin kendi renkleri; harita dışında koyu temayla aynı. */
-  --scene-bezel: #0e1430;
-  --scene-device: #1a2244;
-  --scene-device-2: #2c3a66;
-  --scene-device-3: #3a4775;
-  --scene-device-foot: #10172e;
-  --scene-port: #05070f;
+  --scene-bezel: #111214;
+  --scene-device: #1f2226;
+  --scene-device-2: #34373c;
+  --scene-device-3: #4a4e54;
+  --scene-device-foot: #191b1e;
+  --scene-port: #0a0b0c;
   --scene-metal: #e2e8f0;
   --scene-metal-2: #94a3b8;
   --scene-metal-3: #475569;
-  --scene-usb: #243055;
-  --scene-camera: #222c55;
-  --scene-camera-edge: #0b1020;
-  --scene-camera-ink: #e8ecf8;
-  --scene-camera-ink-2: #c9d0e4;
-  --scene-qr-paper: #e8ecf8;
-  --scene-person: #2a3a6e;
-  --scene-person-2: #151d3d;
-  --scene-headset: #1fb5cf;
-  --scene-headset-shine: #67e8f9;
+  --scene-usb: #2b2e33;
+  --scene-camera: #2b2e33;
+  --scene-camera-edge: #141517;
+  --scene-camera-ink: #f1f2f3;
+  --scene-camera-ink-2: #d2d4d7;
+  --scene-qr-paper: #f1f2f3;
+  --scene-person: #3d4148;
+  --scene-person-2: #1f2226;
+  --scene-headset: #f5c400;
+  --scene-headset-shine: #fadc66;
   --scene-stranger: #4a3a86;
   --scene-stranger-2: #1d173f;
   --scene-beanie: #7c6bea;
@@ -574,12 +575,12 @@
   --scene-beanie-rib: #5a4bc7;
   --scene-beanie-pompom: #a99cf7;
   --scene-deep-teal: #1f4a52;
-  --scene-deep-navy: #2c3a66;
+  --scene-deep-navy: #34373c;
   --scene-deep-olive: #4a3f1c;
-  --scene-deep-slate: #2a3459;
+  --scene-deep-slate: #34373c;
   --scene-deep-plum: #3b2d6b;
-  --scene-deep-steel: #3a4775;
-  --scene-deep-indigo: #33406e;
+  --scene-deep-steel: #4a4e54;
+  --scene-deep-indigo: #3d4148;
   --scene-cover: #1e3a8a;
   --scene-cover-2: #4c3a96;
   /* Eğitim kartlarının çizimleri (Tur 7): örnek banka kartı, hediye kutusu, 1 TL. İki temada aynı. */
@@ -594,21 +595,21 @@
   --art-gift-2: #7c3aed;
   --art-lid-1: #c4b5fd;
   --art-lid-2: #8b5cf6;
-  /* Gri temada harita açık zeminli (koyu kart üstünde koyu harita ağır duruyordu). */
-  --scene-map: #c9d0dc;
-  --scene-map-water: #a9c6e0;
-  --scene-map-park: #b9d6c6;
-  --scene-map-tree: #9cc7b0;
-  --scene-map-block: #b3bccb;
-  --scene-map-road: #e6e9ef;
-  --scene-map-label: #5b6683;
+  /* Açık temada harita açık zeminli. */
+  --scene-map: #dfe2e5;
+  --scene-map-water: #bcd3e6;
+  --scene-map-park: #c8dfcf;
+  --scene-map-tree: #a9cdb6;
+  --scene-map-block: #c6cacf;
+  --scene-map-road: #ffffff;
+  --scene-map-label: #656a70;
 
   /* Avatar çerçeveleri ve profil kartı arka planları (29, 16 Kasım; components/profile/frame/).
-     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez (kartlar gri temada da koyu). */
+     Süsün kendi renkleri: alev, şimşek, altın; temayla değişmez. */
   --frame-bubble: #7dd3fc;
-  --frame-spark: #22d3ee;
-  --frame-spark-core: #f0fdff;
-  --frame-spark-branch: #a5f3fc;
+  --frame-spark: #f5c400;
+  --frame-spark-core: #fffbea;
+  --frame-spark-branch: #fde68a;
   --frame-ember-dark: #450a0a;
   --frame-ember-deep: #7f1d1d;
   --frame-ember-red: #b91c1c;
@@ -624,7 +625,7 @@
   --frame-gold: #facc15;
   --frame-gold-light: #fff7d6;
   --frame-hero-purple: #a78bfa;
-  --frame-outline: #0b1020;
+  --frame-outline: #141517;
   --card-bg-waves-top: #0b1a33;
   --card-bg-waves-bottom: #0d2231;
   --card-bg-wave-1: #134e4a;
@@ -641,43 +642,42 @@
   --card-bg-aurora-bottom: #0b1a2e;
   --card-bg-aurora-1: #10b981;
   --card-bg-aurora-2: #8b5cf6;
-  --card-bg-aurora-3: #22d3ee;
-  --level-up-scrim: rgb(6 9 20 / 0.9);
+  --card-bg-aurora-3: #f5c400;
+  --level-up-scrim: rgb(10 11 12 / 0.9);
 }
 
 /*
- * Gri temada kartlar koyu kalır (4 Kasım, Murat: "açık temada koyu temadaki kartlar koyu, her
- * sayfada"; gri zeminde beyaz kart üstüne beyaz sahne seçilmiyordu). keep-dark, koyu temanın gri
- * temadan farklı değişkenlerini kendi içinde yeniden tanımlar: içindeki her şey koyu temadaki gibi
- * görünür. Değerler yukarıdaki koyu temanınkiyle aynıdır (tests/unit/theme-scope.test.ts denetler).
- * Kart zeminleri (bg-surface, bg-card ...) gri temada kendiliğinden koyu kalır; zemini sınıfla
- * gelmeyen kartlara (tanıtım sahneleri, günün ipucu bandı) keep-dark elle eklenir.
+ * Açık temada kartlar da açıktır (17 Kasım, Murat: "Açık 2 Tamamen açık"; 4 Kasım'daki "kartlar
+ * koyu kalsın" kuralı kalktı). keep-dark yalnızca bilerek koyu kalan yerler için: koyu bir resmin
+ * üstündeki içerik (arka planlı profil kartı) ve koyu örtülü tam ekran kutlama. Koyu temanın açık
+ * temadan farklı her değişkenini koyu temadaki değeriyle yeniden tanımlar ve yazı rengini de
+ * yeniden verir (tests/unit/theme-scope.test.ts denetler).
  */
 @utility keep-dark {
   color-scheme: dark;
-  --canvas: #0b1020;
-  --canvas-translucent: rgb(11 16 32 / 0.85);
-  --surface: #131a33;
-  --surface-translucent: rgb(19 26 51 / 0.82);
-  --surface-deep: #0e1428;
-  --surface-raised: #10172e;
-  --card: #1c2547;
-  --line: #2a3459;
-  --line-strong: #3a4775;
-  --fg: #e8ecf8;
-  --fg-2: #c9d0e4;
-  --fg-3: #a3adc8;
-  --fg-4: #7a85a6;
-  --accent-fg: #22d3ee;
-  --accent-light: #67e8f9;
-  --logo: #22d3ee;
-  --logo-eye: #0b1020;
-  --logo-white: #ffffff;
+  color: var(--fg);
+  --canvas: #141517;
+  --canvas-translucent: rgb(20 21 23 / 0.85);
+  --surface: #1c1e21;
+  --surface-translucent: rgb(28 30 33 / 0.82);
+  --surface-deep: #17181b;
+  --surface-raised: #191b1e;
+  --card: #26292d;
+  --line: #34373c;
+  --line-strong: #4a4e54;
+  --fg: #f1f2f3;
+  --fg-2: #d2d4d7;
+  --fg-3: #a8acb1;
+  --fg-4: #878b91;
+  --accent-fg: #f7cd2a;
+  --accent-light: #fadc66;
+  --glow: #fadc66;
+  --logo: #f5c400;
   --success-fg: #34d399;
   --success-subtle: #0f2a26;
   --success-subtle-fg: #a7f3d0;
-  --warning: #fbbf24;
-  --warning-fg: #fbbf24;
+  --warning: #ff9a3d;
+  --warning-fg: #ffad5c;
   --danger-fg: #fca5a5;
   --purple: #a78bfa;
   --purple-fg: #a78bfa;
@@ -685,39 +685,22 @@
   --orange-fg: #fdba74;
   --pink: #f472b6;
   --pink-fg: #f9a8d4;
-  --toast-bg: #e8ecf8;
-  --toast-fg: #0b1020;
-  --cursor-stroke: #0b1020;
-  --knob: #e8ecf8;
+  --toast-bg: #f1f2f3;
+  --toast-fg: #141517;
+  --knob: #f1f2f3;
   --shadow-color: rgb(0 0 0 / 0.4);
   --shadow-color-soft: rgb(0 0 0 / 0.35);
-  --scrim: rgb(5 8 18 / 0.7);
+  --scrim: rgb(10 11 12 / 0.72);
   --thread-opacity: 0.13;
-  --skeleton-shine: #26305a;
+  --skeleton-shine: #4a4e54;
   --shine: rgb(255 255 255 / 0.07);
-  --scene-map: #111935;
-  --scene-map-water: #163a5c;
-  --scene-map-park: #123a33;
-  --scene-map-tree: #1a5246;
-  --scene-map-block: #1c2547;
-  --scene-map-road: #2a3459;
-  --scene-map-label: #7a85a6;
-}
-
-[data-theme="gray"] :is(.bg-surface, .bg-surface-raised, .bg-surface-deep, .bg-surface-translucent, .bg-card, .bg-surface\/70) {
-  @apply keep-dark;
-}
-
-@media (width >= 48rem) {
-  [data-theme="gray"] :is(.md\:bg-surface, .md\:bg-surface-translucent) {
-    @apply keep-dark;
-  }
-}
-
-@media (width >= 64rem) {
-  [data-theme="gray"] :is(.lg\:bg-surface, .lg\:bg-surface-raised, .lg\:bg-surface-deep, .lg\:bg-surface\/90, .lg\:bg-card) {
-    @apply keep-dark;
-  }
+  --scene-map: #17181b;
+  --scene-map-water: #1d3446;
+  --scene-map-park: #1d3328;
+  --scene-map-tree: #27473a;
+  --scene-map-block: #26292d;
+  --scene-map-road: #34373c;
+  --scene-map-label: #878b91;
 }
 
 /* Yazdırırken (yasal metinler) kâğıt beyaz, yazı koyu; seçili tema ne olursa olsun. */
@@ -728,15 +711,15 @@
     --canvas: #ffffff;
     --surface: #ffffff;
     --surface-deep: #ffffff;
-    --card: #e2e8f0;
-    --line: #cbd5e1;
-    --fg: #0f172a;
-    --fg-2: #334155;
-    --fg-3: #475569;
-    --fg-4: #64748b;
-    --accent-fg: #0e7490;
-    --accent-light: #0e7490;
-    --warning-fg: #b45309;
+    --card: #f1f2f3;
+    --line: #d5d8db;
+    --fg: #141517;
+    --fg-2: #33363a;
+    --fg-3: #52565c;
+    --fg-4: #656a70;
+    --accent-fg: #6b5300;
+    --accent-light: #6b5300;
+    --warning-fg: #a84a00;
   }
 }
 
@@ -927,7 +910,7 @@
   }
 
   ::selection {
-    background: rgb(34 211 238 / 0.3);
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
   }
 }
 
@@ -1011,8 +994,8 @@
   to { stroke-dashoffset: 113; }
 }
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(34 211 238 / 0), 0 20px 40px var(--shadow-color-soft); }
-  50% { box-shadow: 0 0 0 10px rgb(34 211 238 / 0.08), 0 20px 40px var(--shadow-color-soft); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent), 0 20px 40px var(--shadow-color-soft); }
+  50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 8%, transparent), 0 20px 40px var(--shadow-color-soft); }
 }
 
 /* Adım kartları (9 sn döngü) */
@@ -1046,7 +1029,7 @@
 }
 @keyframes row-select {
   0%, 30% { background: transparent; }
-  33%, 92% { background: rgb(34 211 238 / 0.1); }
+  33%, 92% { background: color-mix(in srgb, var(--accent) 10%, transparent); }
   100% { background: transparent; }
 }
 @keyframes alert-pop {
@@ -1111,7 +1094,7 @@
 }
 @keyframes spot {
   0%, 2% { border-color: var(--line); transform: translateY(0); box-shadow: none; }
-  8%, 30% { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 18px 40px rgb(34 211 238 / 0.12); }
+  8%, 30% { border-color: var(--accent); transform: translateY(-6px); box-shadow: 0 18px 40px color-mix(in srgb, var(--accent) 12%, transparent); }
   36%, 100% { border-color: var(--line); transform: translateY(0); box-shadow: none; }
 }
 

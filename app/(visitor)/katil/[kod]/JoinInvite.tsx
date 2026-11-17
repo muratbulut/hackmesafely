@@ -35,7 +35,7 @@ export function JoinInvite({ code }: { code: string }) {
     return (
       <>
         <div role="status" className="flex items-start gap-3 rounded-2xl border border-success/40 bg-success/8 px-4 py-3.5 motion-safe:anim-pop">
-          <Check className="mt-0.5 size-5 flex-none text-success" strokeWidth={2.6} aria-hidden="true" />
+          <Check className="mt-0.5 size-5 flex-none text-success-fg" strokeWidth={2.6} aria-hidden="true" />
           <span className="flex min-w-0 flex-col gap-0.5">
             <b className="text-base break-words">{result.message}</b>
             <span className="text-[13px] text-fg-3">

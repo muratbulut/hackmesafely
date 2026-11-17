@@ -150,9 +150,10 @@ export function ProfileView({
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 pt-4 pb-28 lg:gap-5 lg:px-6 lg:pt-8 lg:pb-16">
       {/* Profil kartı */}
-      <section className="relative overflow-hidden rounded-3xl border border-line bg-surface-raised p-4 lg:p-7">
+      {/* Arka plan resmi koyu: üstündeki yazı iki temada da açık renkli (keep-dark). */}
+      <section className={cn("relative overflow-hidden rounded-3xl border border-line bg-surface-raised p-4 lg:p-7", user.cardBackground !== "plain" && "keep-dark")}>
         {user.cardBackground === "plain" ? (
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgb(34_211_238/0.10),transparent_60%)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,color-mix(in_srgb,var(--accent)_10%,transparent),transparent_60%)]" />
         ) : (
           <CardBackdrop code={user.cardBackground} />
         )}

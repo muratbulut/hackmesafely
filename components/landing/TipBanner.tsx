@@ -12,9 +12,9 @@ export function TipBanner({ text, reason }: { text: string; reason: string }) {
 
   return (
     <section aria-label={t.label} className="relative mx-auto max-w-[1200px] px-4 pb-4 lg:px-6">
-      <div className="flex flex-wrap items-center gap-4 keep-dark rounded-[18px] border border-warning/32 bg-[color-mix(in_oklab,var(--warning)_7%,var(--canvas))] px-4 py-4 lg:px-5">
+      <div className="flex flex-wrap items-center gap-4 rounded-[18px] border border-warning/32 bg-[color-mix(in_oklab,var(--warning)_7%,var(--canvas))] px-4 py-4 lg:px-5">
         <div className="flex size-11 flex-none items-center justify-center rounded-xl bg-warning/16">
-          <Lightbulb className="size-[22px] text-warning" strokeWidth={2} aria-hidden="true" />
+          <Lightbulb className="size-[22px] text-warning-fg" strokeWidth={2} aria-hidden="true" />
         </div>
         <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5 lg:flex-[1_1_520px]">
           <div className="text-xs font-bold tracking-[0.8px] text-warning-fg">{t.heading}</div>
@@ -41,7 +41,7 @@ export function TipBanner({ text, reason }: { text: string; reason: string }) {
 export function TipBannerSkeleton() {
   return (
     <div aria-hidden="true" className="relative mx-auto max-w-[1200px] px-4 pb-4 lg:px-6">
-      <div className="flex items-center gap-4 keep-dark rounded-[18px] border border-warning/32 bg-[color-mix(in_oklab,var(--warning)_7%,var(--canvas))] px-4 py-4 lg:px-5">
+      <div className="flex items-center gap-4 rounded-[18px] border border-warning/32 bg-[color-mix(in_oklab,var(--warning)_7%,var(--canvas))] px-4 py-4 lg:px-5">
         <span className="size-11 flex-none rounded-xl bg-warning/16" />
         <span className="flex min-w-0 flex-1 flex-col gap-2">
           <span className="skeleton block h-3 w-24 rounded-lg" />
