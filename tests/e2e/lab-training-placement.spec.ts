@@ -37,8 +37,14 @@ async function answerVideo(page: Page, at: number, option: string) {
     return !video || video.readyState >= 1 || video.error !== null;
   });
   const video = player.locator("video");
-  if (await video.count()) await video.evaluate((v: HTMLVideoElement, second) => void (v.currentTime = second), at);
-  await player.getByRole("button", { name: option, exact: true }).click();
+  const button = player.getByRole("button", { name: option, exact: true });
+  // Atlama sayfa React'e bağlanmadan olursa "timeupdate" kaçar ve soru açılmaz: soru görünene kadar
+  // yeniden atlatılır (yük altındaki CI'da telefonda görüldü).
+  await expect(async () => {
+    if (await video.count()) await video.evaluate((v: HTMLVideoElement, second) => void (v.currentTime = second), at);
+    await expect(button).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 20_000 });
+  await button.click();
 }
 
 /** Kutulara ayırma: önce bilgiye, sonra kutuya dokunarak. `bins` her bilginin konacağı kutu. */
