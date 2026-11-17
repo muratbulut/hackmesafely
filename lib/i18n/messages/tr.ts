@@ -4226,6 +4226,16 @@ export const tr = {
       ready: "Yayına hazır",
       partlyReady: "{done}/{total} hazır · eksik: {missing}",
       emptyTab: "Bu sekmede haber yok.",
+      // Listenin üstündeki takvim şeridi (hoca öncesi kontrol, 41)
+      calendar: {
+        title: "Önümüzdeki 6 Cuma",
+        filled: "{n}/{total} hafta dolu",
+        friday: "{date} Cuma",
+        empty: "Boş",
+        write: "Haber yaz",
+        writeLabel: "{date} Cuma için haber yaz",
+        openLabel: "{date} Cuma: {title}",
+      },
       edit: "Düzenle: {title}",
       deleteDraft: "Taslağı sil",
       deleteDraftLabel: "Taslağı sil: {title}",
@@ -4246,7 +4256,7 @@ export const tr = {
         summary: "Özet",
         summaryPlaceholder: "Tek cümle: kimi, nasıl etkiliyor?",
         whatsHappening: "Ne oluyor?",
-        whatsHappeningHint: "Her satır ayrı bir paragraf olur. En az 2 cümle.",
+        whatsHappeningHint: "Her satır ayrı bir paragraf olur. En az 2 cümle. Kalın yazmak için iki yıldız arasına yaz: **sahte sayfa**",
         signsSection: "Nasıl anlarsın? ve öneriler",
         exampleSender: "Örnek mesaj · gönderen",
         exampleSenderPlaceholder: "İsteğe bağlı",
@@ -4295,6 +4305,7 @@ export const tr = {
         checklist: "Yayına hazır mı?",
         checklistCount: "{done}/{total}",
         checklistReady: "{done}/{total} hazır",
+        checklistHint: "Bir maddeye bas, form o alana gider.",
         checkState: { ok: "Tamam", missing: "Eksik", optional: "Önerilir" },
         checks: {
           titleSummary: "Başlık ve özet",

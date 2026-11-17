@@ -171,6 +171,15 @@ test.describe("gündem", () => {
 
       await page.goto("/yonetim/gundem");
       await expect(page.getByRole("heading", { level: 1, name: "Gündem" })).toBeVisible();
+      // Takvim şeridi: boş Cuma "Haber yaz" ile o hafta seçili yeni habere gider.
+      const calendar = page.getByRole("region", { name: "Önümüzdeki 6 Cuma" });
+      await expect(calendar.getByRole("listitem")).toHaveCount(6);
+      await expect(calendar.getByRole("link", { name: /Cuma için haber yaz$/ }).first()).toHaveAttribute("href", /^\/yonetim\/gundem\/yeni\?hafta=\d{4}-\d{2}-\d{2}$/);
+      await page.goto("/yonetim/gundem/yeni");
+      const lastWeek = await page.getByLabel("Yayın haftası").locator("option").last().getAttribute("value");
+      await page.goto(`/yonetim/gundem/yeni?hafta=${lastWeek}`);
+      await expect(page.getByLabel("Yayın haftası")).toHaveValue(lastWeek!);
+      await page.goto("/yonetim/gundem");
       await page.getByRole("link", { name: "Yeni haber" }).click();
       await page.waitForURL("/yonetim/gundem/yeni");
       await expect(page.getByRole("heading", { level: 1, name: "Yeni haber" })).toBeVisible();
@@ -187,6 +196,9 @@ test.describe("gündem", () => {
       const checklist = page.getByRole("region", { name: "Yayına hazır mı?" });
       await expect(checklist.locator('[data-check="trustedSource"]')).toContainText("Eksik");
       await expect(checklist.locator('[data-check="titleSummary"]')).toContainText("Tamam");
+      // Listedeki madde formda kendi alanına götürür.
+      await checklist.getByRole("button", { name: /Kaynak adresi güvenilir listede/ }).click();
+      await expect(page.getByLabel("Kaynak adresi")).toBeFocused();
       const planButton = page.getByRole("button", { name: /için planla$/ });
       await expect(planButton).toBeDisabled();
 
@@ -260,6 +272,8 @@ test.describe("gündem", () => {
       await page.goto("/yonetim/gundem?sekme=planli");
       await expect(page.getByRole("tab", { name: /Planlı/ })).toHaveAttribute("aria-selected", "true");
       await expect(page.getByRole("link", { name: `Düzenle: ${title}` })).toBeVisible();
+      // Masaüstü haberi 6. Cumaya planlar: takvim şeridinde görünür (telefonunki 7. Cuma, şeridin dışında).
+      if (!isMobile) await expect(calendar.getByRole("link", { name: new RegExp(`Cuma: ${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`) })).toBeVisible();
       await page.getByRole("tab", { name: /Taslak/ }).click();
       await page.getByRole("button", { name: `Taslağı sil: ${second.title}` }).click();
       const deleted = toast(page, "Taslak silindi");

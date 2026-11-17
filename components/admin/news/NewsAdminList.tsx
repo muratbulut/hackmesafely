@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
-import { CalendarX2, Plus, Trash2 } from "lucide-react";
+import { CalendarX2, PenLine, Plus, Trash2 } from "lucide-react";
+import { CoverImage } from "@/components/news/CoverImage";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
 import { format, getMessages } from "@/lib/i18n";
 import { deleteDraft, restoreDraft, undoUnschedule, unscheduleArticle, type NewsActionError, type NewsResult } from "@/lib/news/actions";
 import type { ArticleState } from "@/lib/news/content";
-import type { AdminArticleRow } from "@/lib/news/data";
+import type { AdminArticleRow, CalendarWeek } from "@/lib/news/data";
 import { paths } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { nextToast, UndoToast, type ToastData } from "../UndoToast";
@@ -20,8 +21,10 @@ const tabs: NewsTab[] = ["live", "scheduled", "draft"];
  * Gündem listesi (Gundem-Son, E1): Yayında / Planlı / Taslak sekmeleri; yayındaki haberde okuma
  * sayısı, diğerlerinde "Yayına hazır" ya da eksikler. Satıra dokununca düzenleyici açılır.
  * Planlı haberin planı kaldırılır, taslak silinir; ikisinin de 5 saniyelik "Geri al"ı var.
+ * Hoca öncesi kontrol (41): üstte önümüzdeki 6 Cuma (dolu olanda haber, boş olanda "Haber yaz"),
+ * satırlarda küçük kapak (görsel yoksa konunun çizimi).
  */
-export function NewsAdminList({ rows, initialTab }: { rows: AdminArticleRow[]; initialTab: NewsTab }) {
+export function NewsAdminList({ rows, weeks, initialTab }: { rows: AdminArticleRow[]; weeks: CalendarWeek[]; initialTab: NewsTab }) {
   const t = getMessages();
   const n = t.news.admin;
   const router = useRouter();
@@ -93,6 +96,8 @@ export function NewsAdminList({ rows, initialTab }: { rows: AdminArticleRow[]; i
         </Link>
       </div>
 
+      <Calendar weeks={weeks} rows={rows} />
+
       <div className="flex max-w-[980px] flex-col gap-3.5">
         <div role="tablist" aria-label={n.tabsLabel} className="flex gap-3 border-b border-card">
           {tabs.map((key) => {
@@ -155,7 +160,14 @@ function Row({ row, onDelete, onUnschedule, disabled }: { row: AdminArticleRow; 
         aria-label={format(t.edit, { title })}
         className="flex min-w-0 flex-1 items-stretch gap-3.5 rounded-[14px] border border-line bg-surface px-4 py-3.5 text-fg no-underline transition-colors hover:border-accent"
       >
-        <span aria-hidden="true" className={cn("w-1.5 flex-none rounded-full", tone ? tone.fill : "bg-line-strong")} />
+        <span aria-hidden="true" className="flex-none self-center">
+          <CoverImage
+            cover={row.cover}
+            topic={row.topic}
+            className="aspect-[4/3] w-16 rounded-[10px] lg:w-[84px]"
+            glyphClassName="right-auto left-1/2 h-[58%] -translate-x-1/2 rotate-0"
+          />
+        </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2 text-xs font-bold">
             <span className={tone ? tone.text : "text-fg-3"}>{row.topic?.topic ?? t.noTopic}</span>
@@ -179,6 +191,68 @@ function Row({ row, onDelete, onUnschedule, disabled }: { row: AdminArticleRow; 
         </ActionButton>
       ) : null}
     </li>
+  );
+}
+
+/** Önümüzdeki 6 Cuma: dolu olanda planlanan haber, boş olanda "Haber yaz" (o hafta seçili açılır). */
+function Calendar({ weeks, rows }: { weeks: CalendarWeek[]; rows: AdminArticleRow[] }) {
+  const c = getMessages().news.admin.calendar;
+  const t = getMessages().news.admin;
+  const planned = new Map(rows.filter((r) => r.state !== "draft" && r.week).map((r) => [r.week as string, r]));
+  const filled = weeks.filter((w) => planned.has(w.key)).length;
+  return (
+    <section aria-labelledby="news-calendar" className="flex flex-col gap-2.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 id="news-calendar" className="m-0 text-base font-bold">
+          {c.title}
+        </h2>
+        <span className={cn("text-[13px] font-bold", filled < weeks.length ? "text-warning-fg" : "text-success-fg")}>
+          {format(c.filled, { n: filled, total: weeks.length })}
+        </span>
+      </div>
+      <ul className="-mx-4 m-0 flex list-none gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-6 lg:overflow-visible lg:p-0">
+        {weeks.map((week) => {
+          const row = planned.get(week.key);
+          const friday = format(c.friday, { date: week.day });
+          if (!row) {
+            return (
+              <li key={week.key} className="flex w-[180px] flex-none lg:w-auto lg:min-w-0">
+                <Link
+                  href={paths.adminNewArticleFor(week.key)}
+                  aria-label={format(c.writeLabel, { date: week.day })}
+                  className="relative flex min-w-0 flex-1 flex-col gap-1.5 rounded-2xl border border-dashed border-warning/50 bg-warning/6 p-3.5 text-fg no-underline transition-colors hover:border-warning"
+                >
+                  <b className="text-sm">{friday}</b>
+                  <span className="text-xs font-bold text-warning-fg">{c.empty}</span>
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[13px] font-bold text-accent-fg">
+                    <PenLine className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                    {c.write}
+                  </span>
+                </Link>
+              </li>
+            );
+          }
+          const tone = row.topic ? toneOf(row.topic.color) : null;
+          const title = row.title || t.untitled;
+          return (
+            <li key={week.key} className="flex w-[180px] flex-none lg:w-auto lg:min-w-0">
+              <Link
+                href={paths.adminArticle(row.id)}
+                aria-label={format(c.openLabel, { date: week.day, title })}
+                className="relative flex min-w-0 flex-1 flex-col gap-1.5 rounded-2xl border border-line bg-surface p-3.5 text-fg no-underline transition-colors hover:border-accent"
+              >
+                <b className="text-sm">{friday}</b>
+                <span aria-hidden="true" className={cn("h-[3px] w-7 rounded-full", tone ? tone.fill : "bg-line-strong")} />
+                <span className="line-clamp-3 text-[13px] leading-[1.45] text-fg-2">{title}</span>
+                <span className={cn("mt-auto pt-1 text-xs font-bold", row.readiness.contentReady ? "text-success-fg" : "text-warning-fg")}>
+                  {row.readiness.contentReady ? t.ready : missingText(row.readiness.missing)}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
