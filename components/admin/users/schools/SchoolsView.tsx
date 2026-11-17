@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardList, Info, School, User, Users, type LucideIcon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { ChevronRight, ClipboardList, Info, School, User, Users, type LucideIcon } from "lucide-react";
+import { useState } from "react";
 import { format, getMessages } from "@/lib/i18n";
 import { paths } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ const tones = {
 } as const;
 
 /**
- * Okullar görünümü (Kullanicilar-Son-Okullar): dört sayı (talep bekleyen Talepler'e gider),
+ * Okullar görünümü (38 S1 sade kart, 17 Kasım): tek satırda dört sayı (talep bekleyen Talepler'e gider),
  * "Okul sorumlusu ne görür?" kutusu, okul araması ve okul kartları (ad sırasıyla sayfa sayfa;
  * sayfanın ilki açık gelir). Öğrenci adı yok, yalnızca toplamlar.
  */
@@ -28,20 +28,20 @@ export function SchoolsView({ overview }: { overview: SchoolsOverview }) {
 
   return (
     <div className="flex flex-col gap-3.5 [animation:fade-in_.2s_ease-out_both] lg:gap-[22px]">
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3.5">
+      <ul className="m-0 flex list-none flex-wrap items-center gap-x-5 gap-y-2 rounded-[18px] border border-line bg-surface px-4 py-3 text-sm text-fg-3">
         <Count Icon={School} tone="accent" value={overview.summary.schools} label={t.schools.summary.schools} />
         <Count Icon={Users} tone="success" value={overview.summary.teachers} label={t.schools.summary.teachers} />
-        <Link href={paths.adminApplications} className="flex no-underline">
-          <Count
-            Icon={ClipboardList}
-            tone="warning"
-            value={overview.summary.pending}
-            label={t.schools.summary.pending}
-            className="flex-1 border-warning/35 hover:border-warning/60"
-          />
-        </Link>
+        <li>
+          <Link
+            href={paths.adminApplications}
+            className="-my-1.5 inline-flex min-h-10 items-center gap-2 rounded-lg text-fg-3 no-underline hover:text-fg"
+          >
+            <CountBody Icon={ClipboardList} tone="warning" value={overview.summary.pending} label={t.schools.summary.pending} />
+            <ChevronRight className="size-4 text-warning-fg" strokeWidth={2.2} aria-hidden="true" />
+          </Link>
+        </li>
         <Count Icon={User} tone="purple" value={overview.summary.students} label={t.schools.summary.students} />
-      </div>
+      </ul>
 
       <p className="m-0 flex gap-3 rounded-[14px] border border-card bg-surface-deep px-4 py-3.5 text-[13px] leading-[1.55] text-fg-2">
         <Info className="mt-0.5 size-4 flex-none text-accent-fg" strokeWidth={2} aria-hidden="true" />
@@ -92,28 +92,23 @@ function SchoolList({ schools }: { schools: AdminSchool[] }) {
   );
 }
 
-function Count({
-  Icon,
-  tone,
-  value,
-  label,
-  className,
-}: {
-  Icon: LucideIcon;
-  tone: keyof typeof tones;
-  value: ReactNode;
-  label: string;
-  className?: string;
-}) {
+function Count(props: { Icon: LucideIcon; tone: keyof typeof tones; value: number; label: string }) {
   return (
-    <div className={cn("flex min-w-0 items-center gap-3 rounded-[18px] border border-line bg-surface p-3 text-fg lg:p-4", className)}>
-      <span className={cn("flex size-9 flex-none items-center justify-center rounded-xl lg:size-[42px]", tones[tone])}>
-        <Icon className="size-[18px] lg:size-5" strokeWidth={2} aria-hidden="true" />
+    <li className="inline-flex items-center gap-2">
+      <CountBody {...props} />
+    </li>
+  );
+}
+
+function CountBody({ Icon, tone, value, label }: { Icon: LucideIcon; tone: keyof typeof tones; value: number; label: string }) {
+  return (
+    <>
+      <span className={cn("flex size-7 flex-none items-center justify-center rounded-lg", tones[tone])}>
+        <Icon className="size-4" strokeWidth={2} aria-hidden="true" />
       </span>
-      <span className="flex min-w-0 flex-col">
-        <b className="font-heading text-[22px] leading-[1.1] lg:text-[26px]">{value}</b>
-        <span className="text-xs text-fg-3">{label}</span>
+      <span>
+        <b className="font-heading text-[18px] text-fg tabular-nums">{value.toLocaleString("tr-TR")}</b> {label}
       </span>
-    </div>
+    </>
   );
 }

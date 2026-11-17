@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, ChevronDown, Eye, School, ShieldCheck } from "lucide-react";
+import { Bell, Check, ChevronDown, Eye, MapPin, School, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { SetupBar, SignalChip, TeacherAvatar } from "@/components/school/TeacherList";
 import { hintText } from "@/lib/admin/users-model";
@@ -12,9 +12,9 @@ import type { AdminSchool, AdminTeacher } from "../types";
 import { CoordinatorControl } from "./CoordinatorControl";
 
 /**
- * Okul kartı (Kullanicilar-Son-Okullar): ad, il · ilçe, onaylı öğretmen ve sınıflardaki öğrenci,
- * bekleyen talep; okul sorumlusu satırı (atama E2b'de, CoordinatorControl); 5 adımlık kurulum
- * hunisi; açılınca öğretmen satırları (çekmece, sınıflar, gözünden bak, hatırlat).
+ * Okul kartı, sade kart (38 S1, 17 Kasım, Murat): başlıkta ad, il · ilçe ve üç sayı (öğretmen,
+ * öğrenci, bekleyen talep). Açılınca okul sorumlusu satırı (CoordinatorControl), etiketli 5 adımlık
+ * kurulum hunisi ve öğretmen satırları (çekmece, sınıflar, gözünden bak, hatırlat).
  */
 export function SchoolCard({
   school,
@@ -36,7 +36,7 @@ export function SchoolCard({
         aria-expanded={open}
         aria-controls={listId}
         onClick={onToggle}
-        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent p-3.5 text-left font-[inherit] text-fg lg:p-[18px]"
+        className="flex w-full cursor-pointer flex-wrap items-center gap-3 border-0 bg-transparent p-3.5 text-left font-[inherit] text-fg lg:flex-nowrap lg:p-[18px]"
       >
         <ChevronDown
           className={cn("size-[18px] flex-none text-fg-3 transition-transform motion-reduce:transition-none", open ? "rotate-0" : "-rotate-90")}
@@ -47,55 +47,73 @@ export function SchoolCard({
           <School className="size-5" strokeWidth={2} aria-hidden="true" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
-          <b className="font-heading text-[17px] break-words lg:text-[19px]">{school.name}</b>
-          <span className="text-[13px] text-fg-3">{format(t.meta, { place: school.place, teachers: teachers.length, students: school.students })}</span>
-          {/* Telefonda bekleyen talep rozeti adın altında: sağda dururken uzun okul adını sıkıştırıyordu. */}
-          {school.pending > 0 ? <PendingBadge n={school.pending} className="mt-1 self-start lg:hidden" /> : null}
-        </span>
-        {school.pending > 0 ? <PendingBadge n={school.pending} className="max-lg:hidden" /> : null}
-      </button>
-
-      <div className="mx-3.5 mb-3.5 flex flex-wrap items-center gap-3 rounded-[14px] border border-card bg-surface-deep px-3.5 py-3 lg:mx-[18px]">
-        <span className="flex size-[34px] flex-none items-center justify-center rounded-[10px] bg-warning/12 text-warning-fg">
-          <ShieldCheck className="size-[18px]" strokeWidth={2} aria-hidden="true" />
-        </span>
-        <span className="flex min-w-[180px] flex-1 flex-col gap-0.5">
-          {school.coordinator ? (
-            <b className="text-sm">
-              {format(t.coordinator, { name: school.coordinator.name })}
-              {school.coordinator.isTeacher ? <span className="font-medium text-fg-3">{t.coordinatorTeaches}</span> : null}
-            </b>
-          ) : (
-            <b className="text-sm text-fg-2">{t.noCoordinator}</b>
-          )}
-          <span className="text-xs leading-[1.45] text-fg-3">
-            {school.coordinator ? (school.coordinatorApproves ? t.coordinatorApproves : t.coordinatorViews) : t.noCoordinatorText}
+          <span className="flex flex-wrap items-center gap-2">
+            <b className="font-heading text-[17px] break-words lg:text-[19px]">{school.name}</b>
+            {school.pending > 0 ? <PendingBadge n={school.pending} /> : null}
+          </span>
+          <span className="inline-flex items-center gap-1 text-[13px] text-fg-3">
+            <MapPin className="size-3.5 flex-none" strokeWidth={2} aria-hidden="true" />
+            {school.place}
           </span>
         </span>
-        <CoordinatorControl
-          schoolId={school.id}
-          schoolName={school.name}
-          coordinator={school.coordinator}
-          coordinatorApproves={school.coordinatorApproves}
-        />
-      </div>
-
-      {teachers.length === 0 ? (
-        <p className="mx-3.5 mt-0 mb-3.5 rounded-xl border border-dashed border-line px-3.5 py-3 text-[13px] leading-normal text-fg-3 lg:mx-[18px]">
-          {t.noTeachers}
-        </p>
-      ) : null}
-
-      <Funnel funnel={school.funnel} />
+        <span className="flex gap-5 text-right max-lg:w-full max-lg:justify-start max-lg:gap-6 max-lg:pl-[52px] max-lg:text-left">
+          <Figure value={teachers.length} label={t.numbers.teachers} />
+          <Figure value={school.students} label={t.numbers.students} />
+          <Figure value={school.pending} label={t.numbers.pending} tone={school.pending > 0 ? "text-warning-fg" : undefined} />
+        </span>
+      </button>
 
       {open ? (
-        <ul id={listId} className="m-0 list-none p-0 [animation:fade-in_.2s_ease-out_both]">
-          {teachers.map((teacher) => (
-            <TeacherRow key={teacher.id} teacher={teacher} />
-          ))}
-        </ul>
+        <div id={listId} className="flex flex-col gap-3.5 border-t border-line p-3.5 [animation:fade-in_.2s_ease-out_both] lg:p-[18px]">
+          <div className="flex flex-wrap items-center gap-3 rounded-[14px] border border-card bg-surface-deep px-3.5 py-3">
+            <span className="flex size-[34px] flex-none items-center justify-center rounded-[10px] bg-warning/12 text-warning-fg">
+              <ShieldCheck className="size-[18px]" strokeWidth={2} aria-hidden="true" />
+            </span>
+            <span className="flex min-w-[180px] flex-1 flex-col gap-0.5">
+              {school.coordinator ? (
+                <b className="text-sm">
+                  {format(t.coordinator, { name: school.coordinator.name })}
+                  {school.coordinator.isTeacher ? <span className="font-medium text-fg-3">{t.coordinatorTeaches}</span> : null}
+                </b>
+              ) : (
+                <b className="text-sm text-fg-2">{t.noCoordinator}</b>
+              )}
+              <span className="text-xs leading-[1.45] text-fg-3">
+                {school.coordinator ? (school.coordinatorApproves ? t.coordinatorApproves : t.coordinatorViews) : t.noCoordinatorText}
+              </span>
+            </span>
+            <CoordinatorControl
+              schoolId={school.id}
+              schoolName={school.name}
+              coordinator={school.coordinator}
+              coordinatorApproves={school.coordinatorApproves}
+            />
+          </div>
+
+          {teachers.length === 0 ? (
+            <p className="m-0 rounded-xl border border-dashed border-line px-3.5 py-3 text-[13px] leading-normal text-fg-3">{t.noTeachers}</p>
+          ) : (
+            <>
+              <Funnel funnel={school.funnel} />
+              <ul className="m-0 -mx-3.5 -mb-3.5 list-none p-0 lg:-mx-[18px] lg:-mb-[18px]">
+                {teachers.map((teacher) => (
+                  <TeacherRow key={teacher.id} teacher={teacher} />
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
       ) : null}
     </section>
+  );
+}
+
+function Figure({ value, label, tone }: { value: number; label: string; tone?: string }) {
+  return (
+    <span className="flex flex-col gap-0.5">
+      <b className={cn("font-heading text-[20px] leading-none tabular-nums", tone)}>{value.toLocaleString("tr-TR")}</b>
+      <span className="text-[11px] text-fg-4">{label}</span>
+    </span>
   );
 }
 
@@ -109,32 +127,35 @@ function PendingBadge({ n, className }: { n: number; className?: string }) {
   );
 }
 
-/** Kurulum hunisi: her adıma ulaşan öğretmen sayısı ve çubuğu. */
+/** Kurulum hunisi: beş adım, her birinde o adıma ulaşan öğretmen sayısı (n/toplam) ve adı. */
 function Funnel({ funnel }: { funnel: AdminSchool["funnel"] }) {
   const t = getMessages().adminUsers.schools;
   const steps = getMessages().school.drawer.steps;
   const total = funnel[0];
   const list = steps.map((step, i) => format(t.funnelItem, { step: step.title, n: funnel[i] })).join(", ");
   return (
-    <div role="img" aria-label={format(t.funnelLabel, { list })} className="flex gap-1.5 px-3.5 pb-4 lg:gap-2.5 lg:px-[18px]">
-      {steps.map((step, i) => {
-        const n = funnel[i];
-        const width = total > 0 && n > 0 ? Math.max(8, Math.round((n / total) * 100)) : 0;
-        return (
-          <span key={step.title} className="flex min-w-0 flex-1 flex-col gap-[5px]">
-            <span className="block h-2 overflow-hidden rounded-full bg-card">
+    <div className="flex flex-col gap-2">
+      <span className="text-xs font-bold tracking-[0.8px] text-fg-4">{format(t.setupLabel, { n: total })}</span>
+      <ol role="img" aria-label={format(t.funnelLabel, { list })} className="m-0 grid list-none grid-cols-5 gap-1.5 p-0 lg:gap-2.5">
+        {steps.map((step, i) => {
+          const n = funnel[i];
+          const full = total > 0 && n === total;
+          return (
+            <li key={step.title} className="flex min-w-0 flex-col gap-1.5">
               <span
-                className={cn("block h-full rounded-full transition-[width] duration-400 motion-reduce:transition-none", n === total ? "bg-success" : "bg-accent")}
-                style={{ width: `${width}%` }}
-              />
-            </span>
-            <span className="flex justify-between gap-1 text-[11px] text-fg-3">
-              <span className="truncate">{step.title}</span>
-              <b className="text-fg">{n}</b>
-            </span>
-          </span>
-        );
-      })}
+                className={cn(
+                  "flex h-9 items-center justify-between gap-1 rounded-lg px-2",
+                  n === 0 ? "bg-card text-fg-4" : full ? "bg-success/15 text-success-fg" : "bg-accent/12 text-accent-fg",
+                )}
+              >
+                <b className="font-heading text-[17px] tabular-nums">{n}</b>
+                <span className="text-[10px] font-bold opacity-70">{format(t.stepTotal, { total })}</span>
+              </span>
+              <span className="truncate text-[11px] text-fg-3">{step.title}</span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

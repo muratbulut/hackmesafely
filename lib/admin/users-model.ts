@@ -94,6 +94,7 @@ export const usersParams = {
   page: "sayfa",
   student: "ogrenci",
   teacher: "ogretmen",
+  filter: "suzgec",
 } as const;
 
 export const userViews = ["genel", "okullar"] as const;
@@ -101,11 +102,21 @@ export type UserView = (typeof userViews)[number];
 export const userTabs = ["ogrenciler", "ogretmenler", "ekip"] as const;
 export type UserTab = (typeof userTabs)[number];
 
+/**
+ * Öğrenci süzgeçleri (17 Kasım, Murat): Hepsi, Sınıfı olan, Sınıfı yok, Bu hafta aktif (son 7 günde
+ * girdi), Öğretmenlik talebi var (bekleyen talep). Adres: ?suzgec=...
+ */
+export const studentFilters = ["hepsi", "sinifli", "sinifsiz", "bu-hafta", "talep"] as const;
+export type StudentFilter = (typeof studentFilters)[number];
+/** "Bu hafta aktif": son bu kadar günde girişi olan öğrenci. */
+export const activeWeekDays = 7;
+
 export type UsersQuery = {
   view: UserView;
   tab: UserTab;
   search: string;
   page: number;
+  filter: StudentFilter;
   student: string | null;
   teacher: string | null;
 };
@@ -122,11 +133,13 @@ export function parseUsersQuery(params: RawParams): UsersQuery {
   const page = Number.parseInt(first(params[usersParams.page]) ?? "", 10);
   const student = first(params[usersParams.student]);
   const teacher = first(params[usersParams.teacher]);
+  const filter = first(params[usersParams.filter]);
   return {
     view: (userViews as readonly string[]).includes(view ?? "") ? (view as UserView) : "genel",
     tab: (userTabs as readonly string[]).includes(tab ?? "") ? (tab as UserTab) : "ogrenciler",
     search: (first(params[usersParams.search]) ?? "").slice(0, 80),
     page: Number.isFinite(page) && page > 1 ? Math.min(page, 10_000) : 1,
+    filter: (studentFilters as readonly string[]).includes(filter ?? "") ? (filter as StudentFilter) : "hepsi",
     student: isId(student) ? student : null,
     teacher: isId(teacher) ? teacher : null,
   };
@@ -137,6 +150,9 @@ export function usersHref(query: Partial<UsersQuery>): string {
   const params = new URLSearchParams();
   if (query.view && query.view !== "genel") params.set(usersParams.view, query.view);
   if (query.view !== "okullar" && query.tab && query.tab !== "ogrenciler") params.set(usersParams.tab, query.tab);
+  if (query.view !== "okullar" && (query.tab ?? "ogrenciler") === "ogrenciler" && query.filter && query.filter !== "hepsi") {
+    params.set(usersParams.filter, query.filter);
+  }
   if (query.search) params.set(usersParams.search, query.search);
   if (query.page && query.page > 1) params.set(usersParams.page, String(query.page));
   if (query.student) params.set(usersParams.student, query.student);

@@ -88,27 +88,30 @@ test("geçersiz oturum çereziyle üç sayfa da yok der", async ({ page, context
 test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
   test.skip(isLive, "hesap açan testler canlı sitede çalışmaz");
 
-
   test("öğrenci üç sayfayı da göremez: sayfa yok der", async ({ page }) => {
     await signUpVerified(page, uniqueEmail("ogrenci"));
     for (const path of pages) await expectNotFound(page, path);
   });
 
-  test("yalnızca ipucu izni olan sorumlu özeti ve canlı nabzı görür; iş kartları, son kayıtlar ve kayıt defteri yok", async ({ page }) => {
+  test("yalnızca ipucu izni olan sorumlu özette yalnızca kendi alanlarını görür; canlı nabız açık, kayıt defteri yok", async ({ page }) => {
     await signUpTeamMember(page, ["TIPS"]);
 
     await page.goto("/yonetim");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Merhaba Deneme");
-    for (const key of ["applications", "news", "labs", "notes"]) await expect(page.getByTestId(`pending-${key}`)).toHaveCount(0);
-    await expect(page.getByText("Bugünlük bekleyen iş kalmadı.")).toBeVisible();
-    await expect(page.getByText("Bekleyen iş yok, her şey yolunda. Sayılar aşağıda.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Son kayıtlar" })).toHaveCount(0);
-    await expect(page.getByRole("tab", { name: "Bu hafta" })).toHaveAttribute("aria-selected", "true");
-    await page.getByRole("tab", { name: "Tüm zamanlar" }).click();
-    await expect(page.getByTestId("overview-kpis")).toContainText("Biten oda");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Özet");
+    await expect(page.getByTestId("overview-verdict")).toBeVisible();
+    for (const key of ["applications", "labs"]) await expect(page.getByTestId(`area-${key}`)).toHaveCount(0);
+    // Öğrenciler herkese; Kullanıcılar sayfası olmayan Canlı nabza gider.
+    await expect(page.getByTestId("area-students").getByText("Canlı nabza git")).toBeVisible();
+    await expect(page.getByTestId("area-students")).toHaveAttribute("href", "/yonetim/canli-nabiz");
+    // Gündem izni yok: alan yalnızca günün ipucu.
+    await expect(page.getByTestId("area-content")).toContainText("Günün ipucu");
+    await expect(page.getByTestId("area-content")).toHaveAttribute("href", "/yonetim/ipucu");
+    await expect(page.getByTestId("overview-chart")).toContainText("Biten oda · son 6 hafta");
+    await expect(page.getByTestId("overview-noticed")).toContainText("İlk denemede tuzağı fark eden:");
 
     await page.goto("/yonetim/canli-nabiz");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Canlı nabız");
+    await expect(page.getByTestId("trap-list")).toHaveCount(0);
     await expect(page.getByTestId("pulse-state")).toHaveText("CANLI · ŞU AN");
     await page.getByRole("button", { name: "Duraklat" }).click();
     await expect(page.getByTestId("pulse-state")).toHaveText("DURAKLATILDI");
@@ -118,7 +121,7 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     await expectNotFound(page, "/yonetim/kayit-defteri");
   });
 
-  test("yönetici bekleyen talep kartını görür; Bugün değil saklar, Geri al geri getirir", async ({ page }) => {
+  test("yönetici bekleyen talebi turuncu Talepler alanında görür ve taleplere gider", async ({ page }) => {
     await signUpAdmin(page);
     const applicant = await insertStudent(`Talep Sahibi ${stamp()}`);
     await withDb((client) =>
@@ -130,23 +133,15 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     );
     try {
       await page.goto("/yonetim");
-      const card = page.getByTestId("pending-applications");
-      await expect(card).toBeVisible();
-      await expect(card).toContainText("öğretmenlik talebi bekliyor");
-      await expect(card.getByRole("link", { name: "Taleplere git" })).toHaveAttribute("href", "/yonetim/talepler");
-
-      await card.getByRole("button", { name: /^Bugün değil: / }).click();
-      await expect(card).toHaveCount(0);
-      await expect(toast(page, "Yarın tekrar gösterilecek")).toBeVisible();
-      await toast(page, "Yarın tekrar gösterilecek").getByRole("button", { name: "Geri al" }).click();
-      await expect(page.getByTestId("pending-applications")).toBeVisible();
-
-      // Seçim bu tarayıcıda gün boyu durur: sayfa yenilenince kart yine saklı.
-      await page.getByTestId("pending-applications").getByRole("button", { name: /^Bugün değil: / }).click();
-      await expect(page.getByTestId("pending-applications")).toHaveCount(0);
-      await page.reload();
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Merhaba Deneme");
-      await expect(page.getByTestId("pending-applications")).toHaveCount(0);
+      const area = page.getByTestId("area-applications");
+      await expect(area).toHaveAttribute("data-tone", "work");
+      await expect(area).toContainText("talep bekliyor");
+      await expect(area).toContainText("listede olmayan okuldan");
+      await expect(page.getByTestId("overview-verdict")).toHaveAttribute("data-tone", "work");
+      await expect(page.getByTestId("overview-verdict")).toContainText("iş seni bekliyor");
+      await expect(page.getByTestId("area-students")).toHaveAttribute("href", "/yonetim/kullanicilar");
+      await area.click();
+      await expect(page).toHaveURL(/\/yonetim\/talepler$/);
     } finally {
       await deleteStudent(applicant.id);
     }
@@ -180,8 +175,8 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     const secrets = [name, `Zümrüt${tag}`, tag, student.email, student.id];
     try {
       await page.goto("/yonetim");
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Merhaba Deneme");
-      await expect(page.getByTestId("recent-audit")).toContainText("Öğrenci profiline bakıldı: bir öğrenci");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Özet");
+      await expect(page.getByTestId("trap-list")).toBeVisible();
       for (const html of [await page.content(), await (await page.request.get("/yonetim")).text()]) {
         for (const secret of secrets) expect(html).not.toContain(secret);
       }
@@ -278,9 +273,5 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     await expect(me).toBeVisible();
     await expect(me).toContainText("Sorumlu · izinli");
     await expect(seers.getByRole("listitem").filter({ hasText: "Yönetici", visible: true }).first()).toBeVisible();
-
-    // Kayıt defterini gören özette son kayıtları da görür.
-    await page.goto("/yonetim");
-    await expect(page.getByRole("heading", { name: "Son kayıtlar" })).toBeVisible();
   });
 });

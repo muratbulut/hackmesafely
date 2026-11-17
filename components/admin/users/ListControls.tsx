@@ -9,8 +9,8 @@ import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { SearchBox } from "./TeacherBits";
 
-/** Listenin adresteki yeri: görünüm ve sekme (arama ve sayfa bunun üstüne yazılır). */
-type ListBase = Pick<Partial<UsersQuery>, "view" | "tab">;
+/** Listenin adresteki yeri: görünüm, sekme ve öğrenci süzgeci (arama ve sayfa bunun üstüne yazılır). */
+type ListBase = Pick<Partial<UsersQuery>, "view" | "tab" | "filter">;
 
 /**
  * Adrese yazılan arama (?ara=): yazınca kısa bir bekleme sonra liste sunucudan yeniden gelir ve

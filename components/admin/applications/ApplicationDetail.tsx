@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState, useTransition, type ReactNode } from "react";
 import {
   AlertTriangle,
   Check,
+  ChevronLeft,
+  ChevronRight,
   CircleUser,
   Clock,
   FileText,
@@ -37,21 +40,27 @@ import type { ApplicationDetail, SimilarSchool } from "./types";
 
 export type Decision = { id: string; kind: "approved" | "rejected" | "info" };
 
+/** Listede önceki ve sonraki talebin adresi ve bu talebin sırası (karar çubuğundaki oklar). */
+export type DetailNav = { previous: string | null; next: string | null; n: number; total: number };
+
 type DialogKind = "reject" | "info" | "document" | null;
 
 /**
- * Seçili talebin ayrıntısı (Talepler-Son sağ kutu, telefonda ayrıntı sayfası): bilgiler,
- * sinyaller, "Yeni okul" kutusu ("Bu okul mu?" eşlemesi ya da düzeltilen ad), soru-cevap geçmişi,
- * 4 maddelik kontrol listesi ve Onayla / Bilgi iste / Reddet. Kontroller ve eşleme yalnızca
- * tarayıcıda durur; onaylarken sunucuya gider ve sunucu yeniden denetler.
+ * Seçili talebin ayrıntısı (Talepler-Son sağ kutu, telefonda ayrıntı sayfası): en üstte okul
+ * sorumlusunun görüşü, bilgiler, sinyaller, "Yeni okul" kutusu ("Bu okul mu?" eşlemesi ya da
+ * düzeltilen ad), soru-cevap geçmişi, 4 maddelik kontrol listesi ve altta hep görünen karar
+ * çubuğu (17 Kasım, Murat: Önceki / Sonraki, kontrol sayısı, Bilgi iste / Reddet / Onayla).
+ * Kontroller ve eşleme yalnızca tarayıcıda durur; onaylarken sunucuya gider ve sunucu yeniden denetler.
  */
 export function ApplicationDetailView({
   app,
+  nav,
   onDecided,
   onToast,
   onError,
 }: {
   app: ApplicationDetail;
+  nav: DetailNav | null;
   onDecided: (decision: Decision, message: string) => void;
   onToast: (message: string, undo?: () => void) => void;
   onError: (error: ApplicationActionError) => void;
@@ -152,6 +161,26 @@ export function ApplicationDetailView({
         </span>
       </div>
 
+      {app.opinion ? (
+        <div
+          data-testid="application-opinion"
+          className={cn(
+            "flex items-start gap-3 rounded-[14px] border px-4 py-3",
+            app.opinion.kind === "ENDORSED" ? "border-success/40 bg-success/8" : "border-warning/40 bg-warning/8",
+          )}
+        >
+          {app.opinion.kind === "ENDORSED" ? (
+            <ShieldCheck className="mt-0.5 size-5 flex-none text-success-fg" strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <AlertTriangle className="mt-0.5 size-5 flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
+          )}
+          <span className="flex flex-col gap-0.5">
+            <b className="text-sm">{t.opinion.title}</b>
+            <span className="text-[13px] leading-[1.45] text-fg-2">{format(t.opinion[app.opinion.kind], { name: app.opinion.by ?? t.opinion.someone })}</span>
+          </span>
+        </div>
+      ) : null}
+
       <div>
         <FieldRow Icon={School} label={t.fields.school}>
           <span className="flex flex-wrap items-center gap-2">
@@ -162,11 +191,6 @@ export function ApplicationDetailView({
           {open && app.school?.coordinator ? (
             <Note Icon={ShieldCheck} tone="text-warning-fg">
               {format(app.school.coordinatorApproves ? t.coordinator.approves : t.coordinator.sees, { name: app.school.coordinator })}
-            </Note>
-          ) : null}
-          {app.opinion ? (
-            <Note Icon={app.opinion.kind === "ENDORSED" ? Check : AlertTriangle} tone={app.opinion.kind === "ENDORSED" ? "text-success-fg" : "text-warning-fg"}>
-              {format(t.opinion[app.opinion.kind], { name: app.opinion.by ?? t.opinion.someone })}
             </Note>
           ) : null}
         </FieldRow>
@@ -418,39 +442,59 @@ export function ApplicationDetailView({
         </div>
       ) : null}
 
-      {canDecide ? (
-        <div className="flex flex-col gap-2.5 lg:flex-row">
-          <button
-            type="button"
-            onClick={approve}
-            disabled={busy}
-            aria-disabled={!enough}
-            className={cn(
-              "inline-flex h-12 items-center justify-center gap-2 rounded-xl px-3.5 text-[15px] font-bold transition-colors lg:order-last lg:flex-[1.3]",
-              enough ? "bg-success text-on-accent" : "bg-card text-fg-4",
-              busy && "opacity-60",
-            )}
-          >
-            <Check className="size-[17px]" strokeWidth={2.6} aria-hidden="true" />
-            {newSchool && !match ? t.actions.approveNewSchool : t.actions.approve}
-          </button>
-          <div className="flex gap-2.5 lg:contents">
-            <ActionButton
-              Icon={Mail}
-              onClick={() => setDialog("info")}
-              disabled={busy || app.status !== "PENDING"}
-              className="border-line bg-surface-raised text-fg"
-              iconClass="text-accent-fg"
-            >
-              {t.actions.info}
-            </ActionButton>
-            <ActionButton Icon={X} onClick={() => setDialog("reject")} disabled={busy} className="border-danger/45 text-danger-fg" iconClass="">
-              {t.actions.reject}
-            </ActionButton>
-          </div>
+      {/* Karar çubuğu hep görünür; telefonda kaydırma kutusunun alt boşluğu (pb-8) yüzünden -bottom-8. */}
+      {canDecide || (nav && nav.total > 1) ? (
+        <div
+          data-testid="decision-bar"
+          className="sticky -bottom-8 z-10 -mx-4 -mb-8 flex flex-col gap-2.5 border-t border-line bg-canvas/95 px-4 pt-3 pb-4 backdrop-blur lg:bottom-0 lg:-mx-6 lg:-mb-6 lg:rounded-b-[20px] lg:bg-surface/95 lg:px-6 lg:pb-5"
+        >
+          {nav && nav.total > 1 ? (
+            <div className="flex items-center gap-2">
+              <NavLink href={nav.previous} label={t.nav.previous} Icon={ChevronLeft} />
+              <NavLink href={nav.next} label={t.nav.next} Icon={ChevronRight} />
+              <span className="text-xs font-bold text-fg-4 tabular-nums">{format(t.nav.position, { n: nav.n, total: nav.total })}</span>
+              {canDecide ? (
+                <span className={cn("ml-auto text-[13px] font-bold", enough ? "text-success-fg" : "text-warning-fg")}>
+                  {format(t.checklist.count, { n: counted.length, total: checkKeys.length })}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+          {canDecide ? (
+            <div className="flex flex-col gap-2.5 lg:flex-row">
+              <button
+                type="button"
+                onClick={approve}
+                disabled={busy}
+                aria-disabled={!enough}
+                className={cn(
+                  "inline-flex h-12 items-center justify-center gap-2 rounded-xl px-3.5 text-[15px] font-bold transition-colors lg:order-last lg:flex-[1.3]",
+                  enough ? "bg-success text-on-accent" : "bg-card text-fg-4",
+                  busy && "opacity-60",
+                )}
+              >
+                <Check className="size-[17px]" strokeWidth={2.6} aria-hidden="true" />
+                {newSchool && !match ? t.actions.approveNewSchool : t.actions.approve}
+              </button>
+              <div className="flex gap-2.5 lg:contents">
+                <ActionButton
+                  Icon={Mail}
+                  onClick={() => setDialog("info")}
+                  disabled={busy || app.status !== "PENDING"}
+                  className="border-line bg-surface-raised text-fg"
+                  iconClass="text-accent-fg"
+                >
+                  {t.actions.info}
+                </ActionButton>
+                <ActionButton Icon={X} onClick={() => setDialog("reject")} disabled={busy} className="border-danger/45 text-danger-fg" iconClass="">
+                  {t.actions.reject}
+                </ActionButton>
+              </div>
+            </div>
+          ) : null}
+          {canDecide && app.status === "INFO_REQUESTED" ? <span className="text-xs text-fg-4">{t.actions.infoWaiting}</span> : null}
         </div>
       ) : null}
-      {canDecide && app.status === "INFO_REQUESTED" ? <span className="-mt-2 text-xs text-fg-4">{t.actions.infoWaiting}</span> : null}
 
       {canDecide ? (
         <>
@@ -462,6 +506,23 @@ export function ApplicationDetailView({
         <DocumentDialog open={dialog === "document"} applicationId={app.id} document={app.document} onClose={() => setDialog(null)} />
       ) : null}
     </div>
+  );
+}
+
+/** Karar çubuğundaki ok: önceki ya da sonraki talep (yoksa soluk, tıklanmaz). */
+function NavLink({ href, label, Icon }: { href: string | null; label: string; Icon: LucideIcon }) {
+  const box = "flex size-10 flex-none items-center justify-center rounded-xl border border-line";
+  if (!href) {
+    return (
+      <span aria-hidden="true" className={cn(box, "text-fg-4 opacity-40")}>
+        <Icon className="size-[18px]" strokeWidth={2} />
+      </span>
+    );
+  }
+  return (
+    <Link href={href} scroll={false} prefetch={false} aria-label={label} className={cn(box, "bg-surface text-fg no-underline hover:border-line-strong")}>
+      <Icon className="size-[18px]" strokeWidth={2} aria-hidden="true" />
+    </Link>
   );
 }
 

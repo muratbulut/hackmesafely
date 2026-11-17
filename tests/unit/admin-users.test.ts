@@ -100,7 +100,7 @@ describe("arama", () => {
 
 describe("adres", () => {
   it("varsayılan: Genel, Öğrenciler, 1. sayfa, çekmece yok", () => {
-    expect(parseUsersQuery({})).toEqual({ view: "genel", tab: "ogrenciler", search: "", page: 1, student: null, teacher: null });
+    expect(parseUsersQuery({})).toEqual({ view: "genel", tab: "ogrenciler", filter: "hepsi", search: "", page: 1, student: null, teacher: null });
   });
 
   it("sabit değerler: ?sekme=ogretmenler, ?sekme=ekip, ?gorunum=okullar", () => {
@@ -129,7 +129,13 @@ describe("adres", () => {
     expect(usersHref({ view: "okullar", tab: "ogretmenler" })).toBe("/yonetim/kullanicilar?gorunum=okullar");
     const href = usersHref({ tab: "ogretmenler", search: "ayşe y", page: 2, teacher: "t1" });
     const params = Object.fromEntries(new URL(href, "https://ornek.com").searchParams);
-    expect(parseUsersQuery(params)).toEqual({ view: "genel", tab: "ogretmenler", search: "ayşe y", page: 2, student: null, teacher: "t1" });
+    expect(parseUsersQuery(params)).toEqual({ view: "genel", tab: "ogretmenler", filter: "hepsi", search: "ayşe y", page: 2, student: null, teacher: "t1" });
+    // Öğrenci süzgeci (38 K2): yalnızca Öğrenciler sekmesinde ve "hepsi" değilse adrese yazılır.
+    expect(usersHref({ filter: "sinifsiz" })).toBe("/yonetim/kullanicilar?suzgec=sinifsiz");
+    expect(usersHref({ tab: "ogretmenler", filter: "sinifsiz" })).toBe("/yonetim/kullanicilar?sekme=ogretmenler");
+    expect(usersHref({ filter: "hepsi" })).toBe("/yonetim/kullanicilar");
+    expect(parseUsersQuery({ suzgec: "bu-hafta" }).filter).toBe("bu-hafta");
+    expect(parseUsersQuery({ suzgec: "x" }).filter).toBe("hepsi");
   });
 
   it("sayfa sayısı en az 1; öğrenci ve öğretmen 25, okul 20", () => {

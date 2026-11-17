@@ -92,13 +92,18 @@ export function whenLabel(date: Date, now: Date): { short: string; full: string 
   return { short: format(t.dateYear, { date: dayMonth(date), year: p.year }), full };
 }
 
-/** Canlı nabızdaki kısa süre: "şimdi", "12 sn", "3 dk", "2 sa", "4 gün". */
+/**
+ * Canlı nabızdaki süre, tam yazımla: "az önce", "3 dakika önce", "2 saat önce", "dün", "4 gün önce"
+ * ("2 sa" kısaltması belirsizdi; 17 Kasım, Murat).
+ */
 export function agoLabel(date: Date, now: Date): string {
   const t = getMessages().adminPulse.ago;
-  const seconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
-  if (seconds < 10) return t.now;
-  if (seconds < 60) return format(t.seconds, { n: seconds });
-  if (seconds < 3600) return format(t.minutes, { n: Math.floor(seconds / 60) });
-  if (seconds < 86_400) return format(t.hours, { n: Math.floor(seconds / 3600) });
-  return format(t.days, { n: Math.floor(seconds / 86_400) });
+  const seconds = Math.max(0, Math.round((now.getTime() - date.getTime()) / 1000));
+  if (seconds < 45) return t.now;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return format(t.minutes, { n: minutes });
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return format(t.hours, { n: hours });
+  const days = Math.round(hours / 24);
+  return days === 1 ? t.yesterday : format(t.days, { n: days });
 }

@@ -40,7 +40,8 @@ export type FeedRow = {
 
 export type FeedLab = { name: string; template: string; neighborhood: string };
 
-export type FeedEntry = { kind: FeedKind; text: string; where: string | null };
+/** Hareketin cümlesi; `subject` birleştirmede kullanılır (odanın ya da rozetin adı; kayıt ve talepte yok). */
+export type FeedEntry = { kind: FeedKind; text: string; where: string | null; subject: string | null };
 
 const isFeedKind = (kind: string): kind is FeedKind => (feedKinds as readonly string[]).includes(kind);
 const isBadge = (code: string | null): code is BadgeCode => !!code && (badgeCodes as readonly string[]).includes(code);
@@ -60,22 +61,65 @@ export function feedEntry(row: FeedRow, labs: ReadonlyMap<string, FeedLab>): Fee
     case "hacked":
     case "clicked":
     case "training":
-      return { kind: row.kind, text: format(e[row.kind], { lab: name }), where };
+      return { kind: row.kind, text: format(e[row.kind], { lab: name }), where, subject: name };
     case "reported": {
       const template = lab?.template === "MESSAGING" ? "MESSAGING" : "INBOX";
-      return { kind: "reported", text: format(e.reported[template], { lab: name }), where };
+      return { kind: "reported", text: format(e.reported[template], { lab: name }), where, subject: name };
     }
     case "signup":
-      return { kind: "signup", text: e.signup, where: null };
+      return { kind: "signup", text: e.signup, where: null, subject: null };
     case "application":
       return {
         kind: "application",
         text: e.application,
         where: row.a && row.b ? format(t.place, { province: row.a, district: row.b }) : (row.a ?? null),
+        subject: null,
       };
     case "badge": {
       if (!isBadge(row.a)) return null;
-      return { kind: "badge", text: format(e.badge, { badge: getMessages().progress.badges[row.a].name }), where: null };
+      const badge = getMessages().progress.badges[row.a].name;
+      return { kind: "badge", text: format(e.badge, { badge }), where: null, subject: badge };
     }
   }
+}
+
+export type FeedMergeInput<T> = T & FeedEntry;
+export type FeedMerged<T> = FeedMergeInput<T> & { n: number };
+
+/**
+ * Art arda gelen aynı hareket tek satır olur (17 Kasım, Murat): "Sahte kargo maili: 3 kişi güvende
+ * kaldı", "2 yeni öğrenci aramıza katıldı". Satırın zamanı ve anahtarı en yenisininkidir; `n` kaç
+ * hareketin birleştiğini söyler. Liste en yeni en üstte verilir.
+ */
+export function mergeFeed<T extends { kind: FeedKind; text: string }>(items: readonly FeedMergeInput<T>[]): FeedMerged<T>[] {
+  const t = getMessages().adminPulse.merged;
+  const out: FeedMerged<T>[] = [];
+  for (const item of items) {
+    const last = out.at(-1);
+    if (last && last.kind === item.kind && last.text === item.text) {
+      last.n += 1;
+      continue;
+    }
+    out.push({ ...item, n: 1 });
+  }
+  return out.map((m) => {
+    if (m.n === 1) return m;
+    switch (m.kind) {
+      case "signup":
+        return { ...m, text: format(t.signup, { n: m.n }) };
+      case "application":
+        return { ...m, text: format(t.application, { n: m.n }) };
+      case "badge":
+        return { ...m, text: format(t.badge, { n: m.n, badge: m.subject ?? "" }) };
+      default:
+        return { ...m, text: format(t.lab, { lab: m.subject ?? getMessages().adminPulse.events.unknownLab, n: m.n, verb: t.verbs[m.kind] }) };
+    }
+  });
+}
+
+/** Günün 24 saatinden en hareketlisi: "14:00"; hiç biten yoksa null. */
+export function peakHour(hours: readonly number[]): string | null {
+  let best = 0;
+  for (let h = 1; h < hours.length; h++) if (hours[h] > hours[best]) best = h;
+  return hours[best] > 0 ? `${String(best).padStart(2, "0")}:00` : null;
 }

@@ -1,37 +1,35 @@
-// Yönetim özetinin (Ozet-Son) verisi. Bütün sayılar veritabanında toplanır (count, FILTER, GROUP BY);
-// sayfaya yalnızca toplamlar ve hazır metinler gider: öğrenci adı, e-postası ya da kimliği yok.
-// Bekleyen iş kartları kişinin izinlerine göre seçilir (izni olmayan işin sayısı sayfaya hiç gönderilmez).
-// Yalnızca sunucuda; çağıran sayfa önce erişimi denetler (lib/admin/access.ts).
+// Yönetim özetinin (Durum karnesi, 17 Kasım) verisi. Bütün sayılar veritabanında toplanır (count,
+// FILTER, GROUP BY); sayfaya yalnızca toplamlar ve hazır metinler gider: öğrenci adı, e-postası ya
+// da kimliği yok. Alanlar kişinin izinlerine göre seçilir (izni olmayan alanın sayısı sayfaya hiç
+// gönderilmez). Yalnızca sunucuda; çağıran sayfa önce erişimi denetler (lib/admin/access.ts).
 
 import "server-only";
-import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { format, getMessages } from "@/lib/i18n";
 import { schemaFor, type ScenarioContent, type Template } from "@/lib/lab/content";
 import { requestTime } from "@/lib/lab/data";
 import { can, hasLabAccess, type AdminAccess } from "./access";
-import { getRecentAudit, type AuditEntryView } from "./audit-log";
 import { clip } from "./audit-sentences";
-import { dayKey, dayMonth, trParts, upcomingFridays, weekMs, weekStart, whenLabel } from "./calendar";
+import { dayMonth, trParts, upcomingFridays, weekMs, weekStart } from "./calendar";
 import { readContent, sameContent } from "./lab-data";
 import {
+  buildAreas,
   buildChart,
-  buildKpis,
-  buildPendingCards,
+  buildVerdict,
   emptyCounts,
   emptyNewsWeeks,
+  noticedFirst,
   overviewWindows,
   rankTraps,
   topMissed,
   trapMinSample,
   windowKeys,
-  type ChartSeries,
-  type Kpi,
+  type Area,
+  type AreaInput,
+  type ChartBar,
   type MissRow,
-  type PendingCard,
-  type PendingInput,
-  type Period,
+  type Tone,
   type TrapStat,
   type WindowCounts,
   type WindowKey,
@@ -41,7 +39,7 @@ import {
 // Sayılar ve grafik
 // ---------------------------------------------------------------------------------------
 
-type CountRow = { i: number; finished: number; firstTries: number; firstNoticed: number; signups: number; active: number; firstSignup: Date | null };
+type CountRow = { i: number; finished: number; firstTries: number; firstNoticed: number; signups: number; active: number };
 
 /**
  * Bütün pencerelerin sayıları tek sorguda. Biten lab: biten senaryo denemesi (tamamlandı ya da
@@ -52,7 +50,7 @@ type CountRow = { i: number; finished: number; firstTries: number; firstNoticed:
 async function windowCounts(now: Date) {
   const windows = overviewWindows(now);
   const values = Prisma.join(windows.map((w, i) => Prisma.sql`(${i}::int, ${w.start}::timestamp, ${w.end}::timestamp)`));
-  // Olay tablosu büyür: yalnızca hafta ve ay pencerelerinin aralığına bakılır. "Tüm zamanlar"
+  // Olay tablosu büyür: yalnızca son 6 haftanın aralığına bakılır. "Tüm zamanlar"
   // penceresi için deneme ve eğitim satırları zaten herkesi kapsar (her olayın bir denemesi var).
   const eventsFrom = new Date(Math.min(...windows.filter((w) => w.key !== "all").map((w) => w.start.getTime())));
   const rows = await db.$queryRaw<CountRow[]>`
@@ -76,8 +74,7 @@ async function windowCounts(now: Date) {
       (SELECT count(*)::int FROM finished f WHERE f.first AND f.t >= win.s AND f.t < win.e) AS "firstTries",
       (SELECT count(*)::int FROM finished f WHERE f.first AND f.noticed AND f.t >= win.s AND f.t < win.e) AS "firstNoticed",
       (SELECT count(*)::int FROM students s WHERE s."createdAt" >= win.s AND s."createdAt" < win.e) AS signups,
-      (SELECT count(DISTINCT x.u)::int FROM activity x JOIN students s ON s."id" = x.u WHERE x.t >= win.s AND x.t < win.e) AS active,
-      (SELECT min("createdAt") FROM students) AS "firstSignup"
+      (SELECT count(DISTINCT x.u)::int FROM activity x JOIN students s ON s."id" = x.u WHERE x.t >= win.s AND x.t < win.e) AS active
     FROM win ORDER BY win.i`;
 
   const counts = Object.fromEntries(windowKeys.map((key) => [key, { ...emptyCounts }])) as Record<WindowKey, WindowCounts>;
@@ -85,20 +82,18 @@ async function windowCounts(now: Date) {
     const key = windows[row.i]?.key;
     if (key) counts[key] = { finished: row.finished, firstTries: row.firstTries, firstNoticed: row.firstNoticed, signups: row.signups, active: row.active };
   }
-  return { counts, windows, firstSignup: rows[0]?.firstSignup ?? null };
+  return { counts, windows };
 }
 
 // ---------------------------------------------------------------------------------------
-// Lablar: durum sayıları, bekleyen taslaklar, son değişiklik
+// Odalar: yayındaki, gizli ve yayınlanmamış değişikliği olanlar
 // ---------------------------------------------------------------------------------------
 
 type LabSummary = {
   published: number;
-  drafts: number;
   hidden: number;
   /** Taslakta ya da yayınlanmamış değişikliği olan lablar (Lablar-Son "Yayınlanmamış değişiklik var"). */
   pending: { name: string; neighborhood: string }[];
-  last: { name: string; at: Date } | null;
 };
 
 async function labSummary(): Promise<LabSummary> {
@@ -111,7 +106,6 @@ async function labSummary(): Promise<LabSummary> {
       status: true,
       publishedVersion: true,
       draftContent: true,
-      updatedAt: true,
       neighborhood: { select: { name: true } },
     },
   });
@@ -124,24 +118,21 @@ async function labSummary(): Promise<LabSummary> {
     : [];
   const live = new Map(versions.map((v) => [v.labId, v.content]));
 
-  const rows = labs.map((lab) => {
+  const pending = labs.flatMap((lab) => {
     const content = readContent(lab.template, lab.draftContent, lab.slug);
     const current = live.get(lab.id);
     const changed = current !== undefined && !sameContent(content, schemaFor(lab.template).safeParse(current).data ?? current);
-    return { lab, name: content.meta.name || lab.slug, pending: lab.status === "DRAFT" || changed };
+    return lab.status === "DRAFT" || changed ? [{ name: content.meta.name || lab.slug, neighborhood: lab.neighborhood.name }] : [];
   });
-  const last = rows.reduce<(typeof rows)[number] | null>((a, b) => (!a || b.lab.updatedAt > a.lab.updatedAt ? b : a), null);
   return {
     published: labs.filter((l) => l.status === "PUBLISHED").length,
-    drafts: labs.filter((l) => l.status === "DRAFT").length,
     hidden: labs.filter((l) => l.status === "HIDDEN").length,
-    pending: rows.filter((r) => r.pending).map((r) => ({ name: r.name, neighborhood: r.lab.neighborhood.name })),
-    last: last ? { name: last.name, at: last.lab.updatedAt } : null,
+    pending,
   };
 }
 
 // ---------------------------------------------------------------------------------------
-// En çok tuzağa düşülen lablar (Özet ve Canlı nabız)
+// En çok tuzağa düşülen lablar (yalnızca Özet; 17 Kasım Canlı nabızdan kalktı)
 // ---------------------------------------------------------------------------------------
 
 export type TrapView = {
@@ -230,10 +221,10 @@ function missedLabel(template: Template, content: ScenarioContent, miss: MissRow
 }
 
 // ---------------------------------------------------------------------------------------
-// Bekleyen işler
+// Sayfanın bütün verisi
 // ---------------------------------------------------------------------------------------
 
-type Counters = { pending: number; newSchool: number; answered: number; notes: number; newsDrafts: number; tipPool: number };
+type Counters = { pending: number; newSchool: number; answered: number; notes: number; tipPool: number };
 
 async function counters(): Promise<Counters> {
   const [row] = await db.$queryRaw<Counters[]>`
@@ -242,62 +233,17 @@ async function counters(): Promise<Counters> {
       (SELECT count(*)::int FROM "TeacherApplication" WHERE "status" = 'PENDING' AND "schoolId" IS NULL) AS "newSchool",
       (SELECT count(*)::int FROM "TeacherApplication" WHERE "status" = 'PENDING' AND "answeredAt" IS NOT NULL) AS answered,
       (SELECT count(*)::int FROM "TeacherApplication" WHERE "status" = 'PENDING' AND "coordinatorOpinion" IS NOT NULL) AS notes,
-      (SELECT count(*)::int FROM "NewsArticle" WHERE "status" = 'DRAFT') AS "newsDrafts",
       (SELECT count(*)::int FROM "DailyTip" WHERE "status" = 'POOL') AS "tipPool"`;
   return row;
 }
 
-/** Kartları kişinin izinlerine göre hazırlar: izni olmayan işin girdisi hiç verilmez. */
-function pendingInput(
-  access: AdminAccess,
-  c: Counters,
-  note: { coordinatorOpinion: "ENDORSED" | "NOT_RECOGNIZED" | null; newSchoolName: string | null; school: { name: string } | null } | null,
-  newsWeeks: Date[] | null,
-  labs: LabSummary,
-): PendingInput {
-  const input: PendingInput = {};
-  if (can(access, "APPLICATIONS")) {
-    input.applications = { pending: c.pending, newSchool: c.newSchool, answered: c.answered };
-    input.notes = {
-      count: c.notes,
-      first: note?.coordinatorOpinion ? { school: note.school?.name ?? note.newSchoolName, opinion: note.coordinatorOpinion } : null,
-    };
-  }
-  if (can(access, "NEWS") && newsWeeks) input.news = { emptyWeeks: newsWeeks, drafts: c.newsDrafts };
-  if (hasLabAccess(access)) input.labs = { drafts: labs.pending };
-  return input;
-}
-
-// ---------------------------------------------------------------------------------------
-// Bu hafta öğrenciler ne görüyor?
-// ---------------------------------------------------------------------------------------
-
-export type SeeingView = {
-  news: { label: string; title: string | null; sub: string };
-  tip: { text: string | null; sub: string };
-  labs: { counts: string; last: string | null };
-};
-
-const visibleNews = ["SCHEDULED", "PUBLISHED"] as const;
-
-type TipRow = { text: string; seen: number; reason: number };
-
-// ---------------------------------------------------------------------------------------
-// Sayfanın bütün verisi
-// ---------------------------------------------------------------------------------------
-
 export type OverviewData = {
-  name: string;
   eyebrow: string;
-  /** "Bugün değil" seçimlerinin tarayıcıdaki anahtarı: kişiye özel, Türkiye gününe bağlı. */
-  snoozeKey: string;
-  cards: PendingCard[];
-  kpis: Record<Period, Kpi[]>;
-  chart: ChartSeries[];
+  verdict: { tone: Tone; title: string; sub: string };
+  areas: Area[];
+  chart: ChartBar[];
+  noticed: { value: string; sub: string };
   traps: TrapView[];
-  seeing: SeeingView;
-  /** Kayıt defterini görebilen için son kayıtlar; göremeyen için null. */
-  log: AuditEntryView[] | null;
 };
 
 export async function getOverview(access: AdminAccess): Promise<OverviewData> {
@@ -306,82 +252,44 @@ export async function getOverview(access: AdminAccess): Promise<OverviewData> {
   const fridays = upcomingFridays(now, 4);
   const newsFrom = weekStart(fridays[0]);
   const newsTo = new Date(weekStart(fridays[fridays.length - 1]).getTime() + weekMs);
+  const withNews = can(access, "NEWS");
 
-  const [numbers, labs, c, note, upcoming, latest, tip, traps, log] = await Promise.all([
+  const [numbers, labs, c, upcoming, traps] = await Promise.all([
     windowCounts(now),
-    labSummary(),
+    hasLabAccess(access) ? labSummary() : null,
     counters(),
-    can(access, "APPLICATIONS")
-      ? db.teacherApplication.findFirst({
-          where: { status: "PENDING", coordinatorOpinion: { not: null } },
-          orderBy: { updatedAt: "desc" },
-          select: { coordinatorOpinion: true, newSchoolName: true, school: { select: { name: true } } },
+    withNews
+      ? db.newsArticle.findMany({
+          where: { status: { in: ["SCHEDULED", "PUBLISHED"] }, publishedAt: { gte: newsFrom } },
+          orderBy: { publishedAt: "asc" },
+          select: { publishedAt: true },
+          take: 20,
         })
-      : null,
-    db.newsArticle.findMany({
-      where: { status: { in: [...visibleNews] }, publishedAt: { gte: newsFrom } },
-      orderBy: { publishedAt: "asc" },
-      select: { publishedAt: true },
-      take: 20,
-    }),
-    db.newsArticle.findFirst({
-      where: { status: { in: [...visibleNews] }, publishedAt: { lte: now } },
-      orderBy: { publishedAt: "desc" },
-      select: { title: true, publishedAt: true, readCount: true },
-    }),
-    db.$queryRaw<TipRow[]>`
-      SELECT t."text",
-        (SELECT count(*)::int FROM "TipView" v WHERE v."tipId" = t."id" AND v."date" = d."date") AS seen,
-        (SELECT count(*)::int FROM "TipView" v WHERE v."tipId" = t."id" AND v."date" = d."date" AND v."reasonViewed") AS reason
-      FROM "TipDay" d JOIN "DailyTip" t ON t."id" = d."tipId"
-      WHERE d."date" = ${dayKey(now)}::date`,
+      : [],
     getTraps(hasLabAccess(access)),
-    can(access, "AUDIT_LOG") ? getRecentAudit(now, 5) : null,
   ]);
 
-  const published = upcoming.flatMap((a) => (a.publishedAt && a.publishedAt < newsTo ? [a.publishedAt] : []));
-  const next = upcoming.find((a) => a.publishedAt && a.publishedAt > now)?.publishedAt ?? null;
-  const cards = buildPendingCards(pendingInput(access, c, note, emptyNewsWeeks(fridays, published), labs));
-  const publishedLabs = labs.published;
-  const today = trParts(now);
-  const s = t.seeing;
-  const todayTip = tip[0] ?? null;
+  // İzni olmayan alanın girdisi hiç verilmez: alan çıkmaz, sayısı sayfaya gitmez.
+  const week = numbers.counts.w5;
+  const students = { active: week.active, finished: week.finished, finishedBefore: numbers.counts.lastSame.finished, canSeeUsers: can(access, "ROLES") };
+  const input: AreaInput = { students };
+  if (can(access, "APPLICATIONS")) input.applications = { pending: c.pending, newSchool: c.newSchool, answered: c.answered, notes: c.notes };
+  if (withNews) {
+    const published = upcoming.flatMap((a) => (a.publishedAt && a.publishedAt < newsTo ? [a.publishedAt] : []));
+    const next = upcoming.find((a) => a.publishedAt && a.publishedAt > now)?.publishedAt ?? null;
+    input.news = { emptyWeeks: emptyNewsWeeks(fridays, published), next };
+  }
+  if (can(access, "TIPS")) input.tips = { pool: c.tipPool, now };
+  if (labs) input.labs = { published: labs.published, hidden: labs.hidden, drafts: labs.pending };
+  const areas = buildAreas(input);
 
   return {
-    name: access.name.trim().split(/\s+/)[0] ?? access.name,
-    eyebrow: format(t.eyebrow, { weekday: t.weekdays[today.weekday], date: dayMonth(now) }).toLocaleUpperCase("tr"),
-    snoozeKey: `cg.admin.snooze.${createHash("sha256").update(access.userId).digest("base64url").slice(0, 16)}.${dayKey(now)}`,
-    cards,
-    kpis: buildKpis(numbers.counts, { now, publishedLabs, firstSignup: numbers.firstSignup }),
+    eyebrow: format(t.eyebrow, { weekday: t.weekdays[trParts(now).weekday], date: dayMonth(now) }).toLocaleUpperCase("tr"),
+    verdict: buildVerdict(areas, students),
+    areas,
     chart: buildChart(numbers.counts, numbers.windows),
+    noticed: noticedFirst(week),
     traps,
-    seeing: {
-      news: {
-        label: latest?.publishedAt ? format(s.news, { date: dayMonth(latest.publishedAt) }).toLocaleUpperCase("tr") : s.newsLabel,
-        title: latest?.title || null,
-        // Haber yoksa başlık zaten "Yayında haber yok."; alt satır yalnızca sıradaki haftayı söyler.
-        sub: [
-          latest ? format(s.reads, { n: latest.readCount.toLocaleString("tr-TR") }) : null,
-          next ? format(s.next, { date: dayMonth(next) }) : s.noNext,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      },
-      tip: {
-        text: todayTip?.text ?? null,
-        sub: [
-          todayTip ? (todayTip.seen > 0 ? format(s.tipViews, { seen: todayTip.seen, reason: todayTip.reason }) : s.tipNoViews) : null,
-          format(s.pool, { n: c.tipPool }),
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      },
-      labs: {
-        counts: format(s.labCounts, { published: labs.published, drafts: labs.drafts, hidden: labs.hidden }),
-        last: labs.last ? format(s.lastChange, { name: clip(labs.last.name, 50), when: whenLabel(labs.last.at, now).short }) : null,
-      },
-    },
-    log,
   };
 }
 

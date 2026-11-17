@@ -195,12 +195,6 @@ async function toViews(rows: readonly Row[], now: Date, options: SentenceOptions
 // Sayfalar
 // ---------------------------------------------------------------------------------------
 
-/** Özet'teki "Son kayıtlar": en yeni kayıtlar, öğrenci adı olmadan. */
-export async function getRecentAudit(now: Date, take: number): Promise<AuditEntryView[]> {
-  const rows = await selectRows(Prisma.sql`true`, take);
-  return toViews(rows, now, { anonymizeStudents: true });
-}
-
 export type Seer = { name: string; avatar: string; admin: boolean };
 export type AuditPerson = { id: string; name: string };
 

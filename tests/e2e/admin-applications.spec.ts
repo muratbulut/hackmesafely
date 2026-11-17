@@ -254,7 +254,9 @@ test.describe("Yönetim · Öğretmen talepleri", () => {
     // Tek kontrolle düğme kullanılamaz görünür (aria-disabled); basılırsa yalnızca uyarı sallanır.
     await expect(approve).toHaveAttribute("aria-disabled", "true");
     await approve.click({ force: true });
-    await expect(box.getByText("1/4 kontrol")).toBeVisible();
+    // Sayı hem kontrol listesinde hem karar çubuğunda (37 T1) görünür.
+    await expect(box.getByRole("region", { name: "Kontrol listesi" }).getByText("1/4 kontrol")).toBeVisible();
+    await expect(box.getByTestId("decision-bar").getByText("1/4 kontrol")).toBeVisible();
     await expect(box.getByText("Onaylamak için en az 2 kontrolü işaretle. Reddetmek için gerekmez.")).toBeVisible();
     expect((await applicationOf(applicationId)).status).toBe("PENDING");
 
