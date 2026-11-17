@@ -66,7 +66,7 @@ function SignOutScene() {
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-canvas/95 animate-[tip-done-a_5s_ease-out_both]">
         <span className="flex size-10 items-center justify-center rounded-full bg-success/16">
-          <Check className="size-[18px] text-success" strokeWidth={2.8} aria-hidden="true" />
+          <Check className="size-[18px] text-success-fg" strokeWidth={2.8} aria-hidden="true" />
         </span>
         <span className="text-sm font-bold text-success-subtle-fg">{t.done}</span>
       </div>
@@ -86,7 +86,7 @@ function SavePasswordScene() {
       </div>
       <div className="absolute top-[30px] right-2.5 flex w-[196px] flex-col gap-2 rounded-[10px] border border-line-strong bg-card p-2.5 shadow-floating animate-[tip-prompt-b_5s_ease-out_both] motion-reduce:hidden">
         <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
-          <KeyRound className="size-3.5 text-warning" strokeWidth={2.2} aria-hidden="true" />
+          <KeyRound className="size-3.5 text-warning-fg" strokeWidth={2.2} aria-hidden="true" />
           {t.prompt}
         </div>
         <div className="flex justify-end gap-1.5">
@@ -100,7 +100,7 @@ function SavePasswordScene() {
         </div>
       </div>
       <div className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-[10px] border border-success/45 bg-success/10 px-2.5 py-2 text-xs font-bold text-success-subtle-fg animate-[tip-done-b_5s_ease-out_both]">
-        <Check className="size-[18px] flex-none text-success" strokeWidth={2.8} aria-hidden="true" />
+        <Check className="size-[18px] flex-none text-success-fg" strokeWidth={2.8} aria-hidden="true" />
         {t.done}
       </div>
     </MiniWindow>
@@ -124,7 +124,7 @@ function ShoulderScene() {
       </div>
       <div className="absolute top-[26px] right-3.5 flex flex-col items-center gap-1.5 animate-[tip-peek-c_5s_ease-out_both]">
         <span className="relative flex size-[58px] items-center justify-center rounded-full border border-line-strong bg-card">
-          <Eye className="size-[30px] text-warning" strokeWidth={2} aria-hidden="true" />
+          <Eye className="size-[30px] text-warning-fg" strokeWidth={2} aria-hidden="true" />
           <span className="absolute -inset-1.5 rounded-full border-2 border-danger animate-[tip-ring-c_5s_ease-out_both]" />
         </span>
         <span className="rounded-full bg-danger/14 px-2 py-1 text-[11px] font-bold text-danger-fg animate-[tip-ring-c_5s_ease-out_both]">
@@ -157,7 +157,7 @@ export function SignInTips() {
   return (
     <div className="flex flex-col gap-3 rounded-[18px] border border-line bg-surface-translucent p-[18px] backdrop-blur-sm lg:justify-between lg:p-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-bold tracking-[0.8px] text-warning">
+        <div className="flex items-center gap-2 text-xs font-bold tracking-[0.8px] text-warning-fg">
           <Lightbulb className="size-4" strokeWidth={2} aria-hidden="true" />
           {t.tipLabel}
         </div>

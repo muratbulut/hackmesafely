@@ -1,19 +1,19 @@
 import { expect, test } from "@playwright/test";
 
-const DARK_BG = "rgb(11, 16, 32)";
-const GRAY_BG = "rgb(221, 225, 232)";
+const DARK_BG = "rgb(20, 21, 23)";
+const GRAY_BG = "rgb(236, 237, 238)";
 
 const background = (page: import("@playwright/test").Page) =>
   page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
-test.describe("koyu / gri tema", () => {
+test.describe("koyu / açık tema", () => {
   test("varsayılan tema koyu", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(await background(page)).toBe(DARK_BG);
   });
 
-  test("düğmeyle gri temaya geçer, yenileyince tercih kalır", async ({ page, context }) => {
+  test("düğmeyle açık temaya geçer, yenileyince tercih kalır", async ({ page, context }) => {
     await page.goto("/");
     await page.getByTestId("theme-toggle").filter({ visible: true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "gray");
@@ -29,7 +29,7 @@ test.describe("koyu / gri tema", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   });
 
-  test("gri tema ilk boyamadan önce uygulanır (yanıp sönme yok)", async ({ page, context, baseURL }) => {
+  test("açık tema ilk boyamadan önce uygulanır (yanıp sönme yok)", async ({ page, context, baseURL }) => {
     await context.addCookies([{ name: "theme", value: "gray", url: baseURL! }]);
     // Sayfanın kendi betiklerinden önce, HTML ayrıştırılırken temayı kaydet.
     await page.addInitScript(() => {

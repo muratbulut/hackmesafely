@@ -34,10 +34,10 @@ export function TipCard({ text, reason, date, tipId, className }: { text: string
   }
 
   return (
-    <section className={cn("flex flex-col gap-3 keep-dark rounded-[18px] border border-warning/35 bg-[color-mix(in_oklab,var(--warning)_8%,var(--canvas))] p-4 lg:p-5", className)}>
+    <section className={cn("flex flex-col gap-3 rounded-[18px] border border-warning/35 bg-[color-mix(in_oklab,var(--warning)_8%,var(--canvas))] p-4 lg:p-5", className)}>
       <div className="flex items-center gap-3">
         <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-warning/16">
-          <Lightbulb className="size-5 text-warning" strokeWidth={2} aria-hidden="true" />
+          <Lightbulb className="size-5 text-warning-fg" strokeWidth={2} aria-hidden="true" />
         </span>
         <span className="flex flex-col">
           <h3 className="m-0 text-base font-bold">{t.title}</h3>

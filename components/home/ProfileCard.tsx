@@ -54,6 +54,8 @@ export function ProfileCard({ data, className }: { data: ProfileCardData; classN
       aria-labelledby="home-name"
       className={cn(
         "relative flex flex-col gap-4 overflow-hidden rounded-[22px] border border-line bg-linear-135 from-card via-surface to-surface-raised p-[18px] lg:gap-6 lg:rounded-3xl lg:px-8 lg:py-7",
+        // Arka plan resmi koyu (dalgalar, gece...): üstündeki yazı iki temada da koyu kart gibi açık renkli.
+        data.cardBackground !== "plain" && "keep-dark",
         className,
       )}
     >
