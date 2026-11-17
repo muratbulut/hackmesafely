@@ -1,26 +1,28 @@
-# Eğitim odası: Kişisel veri ve para güvenliği
+# Eğitim odası: Kişisel veri
 
 | Alan | Değer |
 | --- | --- |
 | Mahalle | Para Çarşısı |
 | Tür | Temel eğitim |
-| Oda adresi | `/oda/kisisel-veri-ve-para-guvenligi` |
+| Oda adresi | `/oda/kisisel-veri-ve-para-guvenligi` (eski adıyla kaldı: adres değişirse ilerleme kopar) |
 | Yazan | Murat |
-| Durum | PR açık; oda dosyası yayında (`labs/rooms/para-carsisi/kisisel-veri-ve-para-guvenligi.json`, `PUBLISHED`), PR birleşince öğrenciler görür |
-| Plan | `docs/labs/room-plan.md` içindeki "Temel eğitim: Kişisel veri ve para güvenliği" |
+| Durum | Yayında (`labs/rooms/para-carsisi/kisisel-veri-ve-para-guvenligi.json`, `PUBLISHED`); 17 Kasım'da ikiye bölündü |
+| Açtığı odalar | İleri eğitim "Kart ve para güvenliği"; senaryo "Yayıncının çekilişi" (yazılınca) |
+| Plan | `docs/labs/room-plan.md` içindeki "Temel eğitim: Kişisel veri" |
 
 ## Kapak
 
-- **Oda adı** (80): Kişisel veri ve para güvenliği
-- **Esprili başlık** (80, isteğe bağlı): Bedava peynir sadece fare kapanında
-- **Kısa açıklama** (200): Kimseye verilmeyen bilgiler, "bedava ama 1 TL" tuzağı ve şüphelendiğinde atacağın üç adım.
-- **Hikâye** (800): Oyunlar, uygulamalar ve çekilişler senden sürekli bir şey istiyor: adını, okulunu, bazen de ailenin kart bilgisini. Bunların bir kısmı zararsız, bir kısmı ise birinin eline geçince ailenin hesabından para çekilmesine yetiyor. Bu odada hangi bilginin neden değerli olduğunu, sahte bir hediye mailinin nasıl anlaşıldığını ve para ya da bilgi istendiğinde ne yapacağını öğreneceksin.
+- **Oda adı** (80): Kişisel veri
+- **Esprili başlık** (80, isteğe bağlı): Kimseye verilmeyenler
+- **Kısa açıklama** (200): Hangi bilgin herkese açık, hangisi kimseye verilmez? Bir bilgi yanlış ele geçerse ne olur ve biri senden bilgi istediğinde ne yaparsın?
+- **Hikâye** (800): Oyunlar, uygulamalar ve çekilişler senden sürekli bir şey istiyor: adını, okulunu, adresini, bazen kimlik numaranı. Bunların bir kısmı zararsız, bir kısmı ise birinin eline geçince seni bulmasına ya da kandırmasına yetiyor. Bu odada bilgilerini üç kutuya ayırmayı ve biri senden bilgi istediğinde soracağın soruları öğreneceksin.
 - **Zorluk:** Kolay
-- **Süre (dk):** 9
+- **Süre (dk):** 5
+- **Çizim:** `public/odalar/kisisel-veri-ve-para-guvenligi.svg`: Ayşegül ve Ayça, aralarında yeşil, sarı ve kırmızı üç kutu (17 Kasım; kartlı eski çizim ikinci eğitime geçti).
 - **Bu odada ne öğreneceksin** (en fazla 3; başlık 80, açıklama 240):
-  1. **Kimseye verilmeyenler:** T.C. kimlik numarası, kart numarası, son kullanma tarihi, CVV, SMS onay kodu ve şifre neden kimseye verilmez?
-  2. **"Bedava ama küçük bir ücret":** 1 TL'lik "doğrulama" neden aslında kartın tamamını ister?
-  3. **Dur, sor, kontrol et:** Para ya da bilgi istendiğinde atacağın üç adım.
+  1. **Üç kutu:** Herkesle, tanıdıklarla, kimseyle. Hangi bilgi hangi kutuya girer?
+  2. **Küçük bilgiler birleşir:** Adres, okul ve çıkış saati bir araya gelince ne anlatır?
+  3. **Kim, neden, gerekli mi?:** Biri senden bilgi istediğinde soracağın üç soru.
 
 ## Kartlar
 
@@ -46,7 +48,7 @@ Bazı bilgiler arkadaşlarınla paylaşılabilir, bazıları ise hiç kimseyle. 
 - **Kimlik:** Adın soyadın, doğum tarihin, T.C. kimlik numaran. Kimlik numarası resmî işlerde kullanılır; oyuna, çekilişe ya da yarışmaya gerekmez.
 - **İletişim:** Telefon numaran, mail adresin, ailenin telefonu. Dolandırıcı aileni "kargo ücreti" ya da "ödül vergisi" diye bu numaradan arar.
 - **Konum ve okul:** Ev adresin, okulun, sınıfın. Seni çevrim dışı dünyada bulmayı kolaylaştırır.
-- **Para:** Kart bilgileri, SMS onay kodu, banka şifresi. Bunlar kimseye verilmez, sonraki kartta neden olduğunu göreceksin.
+- **Para:** Kart bilgileri, SMS onay kodu, banka şifresi. Bunlar kimseye verilmez; nedenini "Kart ve para güvenliği" eğitiminde göreceksin.
 
 ### 3. Kutulara ayırma: Hangi bilgi hangi kutuya girer?
 
@@ -88,83 +90,31 @@ Videodaki üç kutunun alıştırması. Öğrenci ikonlu bilgileri renkli kutula
 - **Yanıltıcı kelimeler** (en fazla 6): hemen, herkese, şifre
 - **Açıklama** (400): Kişisel veriyi korumak, tek tek bilgilerin bir araya gelince ne anlattığını görmekle başlar. Kim istiyor, neden istiyor, gerçekten gerekli mi? Emin değilsen önce ailene ya da öğretmenine danış.
 
-### 6. Video: Ayşegül ve Ayça: bedava elmas
-
-- **Video dosyası:** `/videolar/kartin-onu-arkasi-sms-kodu.mp4` (1:33). Ayça kartın önünü, arkasını ve SMS kodunu anlatıyor; bir oyun "Bedava elmas!" diyerek kartın arkasındaki 3 rakamı istiyor.
-- **Soru** (64. saniyede video durur): Bir oyun "Bedava elmas!" diyor ve kartın arkasındaki 3 rakamı istiyor. Ne yaparsın?
-  - Yazarım, elmas bedava
-  - **Yazmam, önce ailemle konuşurum** (doğru)
-  - Sadece iki rakamını yazarım
-- **Açıklama:** Kartın arkasındaki 3 rakam CVV'dir; bilen biri kart elinde olmadan alışveriş yapabilir. Hiçbir oyun onu istemez, iki rakamı bile verilmez. Önce ailenle konuş.
-
-### 7. Bilgi: Kartın önü, arkası ve SMS kodu
-
-- **Düzen:** Banka kartı. Örnek kart çizimi: 1. madde kartın önünü (numara ve tarih parlar), 2. madde arkasını (kart döner, CVV), 3. madde SMS kodunu (telefon ve imza), 4. madde veli iznini (kilit) gösterir. Dördü gezilmeden Devam yok; ikinci paragraf SMS maddesinden sonra çıkar (Tur 7, 1 Kasım).
-
-> Videodan (6. kart) sonra gelir; video anlatır, bu kart dört parçayı tek tek gezdirir (1 Kasım, Murat).
-
-Bir banka kartıyla internetten alışveriş yapmak için üç şey yeter: kartın önündeki 16 haneli numara, son kullanma tarihi ve arkadaki 3 haneli güvenlik kodu (CVV). Bu üçünü bilen biri, kart elinde olmasa da alışveriş yapabilir.
-
-Çoğu ödemede bir de karta bağlı telefona SMS onay kodu gelir. Bu kod "Bu ödemeyi ben yapıyorum" demektir; bir imza gibidir. Kodu söylediğin kişi, senin adına imza atmış olur.
-
-- **Kart numarası ve son kullanma tarihi:** Kartın önünde. Fotoğrafını bile paylaşma.
-- **CVV:** Kartın arkasındaki 3 hane. Hiçbir oyun, çekiliş ya da "doğrulama" bunu istemez.
-- **SMS onay kodu:** İmzadır. Banka, mağaza, öğretmen, arkadaş; kim sorarsa sorsun söylenmez.
-- **Kart ailenin ise:** Velinin izni olmadan hiçbir yere girilmez, "sonra söylerim" de olmaz.
-
-### 8. Mini test: Bir okul çekilişi formu hangisini istemez?
+### 6. Mini test: Bir okul çekilişi formu hangisini istemez?
 
 - [ ] Adını ve sınıfını
-- [x] T.C. kimlik numaranı ve velinin kartının CVV'sini
+- [x] T.C. kimlik numaranı ve ev adresini
 - [ ] Hangi hediyeyi seçtiğini
 - [ ] Hediyeyi okulda hangi gün alabileceğini
 - **Çizim:** hediye kutusu
-- **Açıklama** (400): Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve kart bilgisi isteyen "çekiliş" ödül vermek için değil, bilgini ya da paranı almak için kurulmuştur.
+- **Açıklama** (400): Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve ev adresi isteyen "çekiliş" ödül vermek için değil, bilgini toplamak için kurulmuştur.
 
-### 9. Tıkla-bul: Bu "hediye" mailindeki 4 şüpheli yeri bul
+> 17 Kasım: doğru şıktaki "velinin kartının CVV'si" kart bilgisi olduğu için ikinci eğitime ait; yerine "ev adresi" geldi.
 
-- **İpucu satırı** (160): Mailde 4 şüpheli yer var. Bul bakalım.
-- **Mail:**
-  - Gönderen adı (60): Mega Kampanya
-  - Adres (80): hediye@mega-kampanya-odul.xyz
-  - Konu (120): TEBRİKLER! Kablosuz kulaklık kazandınız 🎧
-  - Saat: 16:05
-  - Metin (en fazla 6 paragraf, her biri 400):
-    1. Merhaba,
-    2. Bu ayın şanslı kazananı sizsiniz! Kablosuz kulaklığınız depomuzda sizi bekliyor.
-    3. Hediyeniz tamamen ücretsizdir. Sadece kargo için 1 TL'lik kart doğrulaması yapmanız gerekir.
-    4. Formda kart numaranızı, son kullanma tarihini, CVV kodunu ve telefonunuza gelecek onay kodunu yazmanız yeterli.
-    5. Ödül 2 saat içinde alınmazsa sıradaki kişiye verilecektir.
-  - Düğme yazısı (40): Hediyemi al
-  - Alt satır (200): Mega Kampanya · Bu mail kampanyaya katılan kullanıcılara gönderilmiştir.
-- **Şüpheli parçalar** (en fazla 5; yer: gönderen adı, adres, konu, 1.–6. paragraf, düğme, alt satır):
-  1. Yer: adres · Açıklama (300): "mega-kampanya-odul.xyz" bilinen bir mağazanın adresi değil. Hiç katılmadığın bir kampanyanın seni bulması da tuhaf.
-  2. Yer: 3. paragraf · Açıklama (300): "Ücretsiz ama 1 TL." Bedava bir şey için kart istenmez. 1 TL sadece bahane, asıl istenen kartın kendisi.
-  3. Yer: 4. paragraf · Açıklama (300): CVV ve SMS onay kodu bir arada istenmiş. Bu ikisini alan kişi karttan istediği kadar harcama yapabilir.
-  4. Yer: 5. paragraf · Açıklama (300): "2 saat içinde" diye acele ettiriyor. Acele, düşünüp birine sormanı engellemek içindir.
+### 7. Bilgi: Dur, sor, kontrol et
 
-### 10. Mini test: "Bedava hediye, sadece 1 TL doğrulama" diyen bir sayfa ne ister aslında?
+- **Düzen:** Adım adım. Dört adım sırayla açılır, açılmamış adım kilitli; dördü açılmadan Bitir yok. Bilgi isteyen mesaj için yazılmış kısa hâli (17 Kasım); kart ve para için olanı "Kart ve para güvenliği"nin son kartı.
 
-- [ ] Sadece 1 TL, başka bir şey değil
-- [x] Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir
-- [ ] Kartın gerçek olup olmadığını kontrol etmek ister
-- [ ] Sonraki alışverişinde sana indirim yapmak ister
-- **Çizim:** oltadaki 1 TL
-- **Açıklama** (400): 1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart "doğrulamaz".
+Bilgi isteyen bir mesaj, form ya da çekiliş gördüğünde acele etme. Bir kez verdiğin bilgiyi geri alamazsın.
 
-### 11. Bilgi: Dur, sor, kontrol et
-
-- **Düzen:** Adım adım. Dört adım sırayla açılır, açılmamış adım kilitli; dördü açılmadan Bitir yok (Tur 7, 1 Kasım).
-
-Para ya da bilgi isteyen bir mesaj, mail ya da sayfa gördüğünde acele etme. Dolandırıcının en büyük silahı, düşünmeden hareket etmendir.
-
-- **Dur:** Formu doldurma, bağlantıya dokunma, kodu kimseye söyleme. Beklemekle hiçbir şey kaybetmezsin.
-- **Sor:** Ailene ya da öğretmenine göster. Kart ailenindir, karar da onlarındır.
-- **Kontrol et:** Oyunun, okulun ya da mağazanın resmî uygulamasını kendin aç. Gerçek bir hediye ya da duyuru varsa orada da görürsün.
-- **Bildir:** Postam'da "Oltalama olarak bildir", Mesajlar'da "Bildir ve engelle". Kart bilgisi girildiyse aile hemen bankayı arar.
+- **Dur:** Formu doldurma, bilgini yazma. Beklemekle hiçbir şey kaybetmezsin.
+- **Sor:** Kendine sor: Kim istiyor, neden istiyor, gerçekten gerekli mi? Emin değilsen ailene ya da öğretmenine göster.
+- **Kontrol et:** Okulun, oyunun ya da yarışmanın resmî hesabına kendin bak. Gerçek bir çekiliş varsa orada da duyurulur.
+- **Bildir:** Mesajlar'da "Bildir ve engelle". Bilgini yazdıysan hemen ailene anlat.
 
 ## Notlar
 
+- 17 Kasım (Murat): tek eğitim ikiye bölündü (A yolu: mevcut kartlar bölündü, yeni kart yazılmadı). Bu oda "Kişisel veri" oldu (adresi değişmedi, bitirenlerin ilerlemesi kalır); 6.–7. ve 9.–11. kartlar yeni "Kart ve para güvenliği" eğitimine geçti ([`kart-ve-para-guvenligi.md`](kart-ve-para-guvenligi.md)). 17 Kasım'dan önceki notlardaki kart numaraları eski 11 kartlık sırayı gösterir.
 - 1 Kasım (Murat): kişisel veri videosundan sonra, kartlara geçmeden önce eşleştirme ve boşluk doldurma alıştırmaları (2.-4. kartlar). Bu iki kart türü aynı PR'da koda eklendi (`docs/guides/new-lab.md` 1.6 ve 2.10); sonraki eğitimlerde de kullanılabilir.
 - 1 Kasım (Murat, Tur 6 tuvali): 2. kart daha görsel olsun: renkli kutular, ikonlu bilgiler, sürükle bırak ve ilk girişte nasıl oynandığını gösteren animasyonlu pencere. Kart yeni "Kutulara ayırma" türüne geçti (aynı PR).
 - 1 Kasım (Murat): iki video (kişisel veri, kartın önü ve arkası) yazılı kartların yerine geçmedi, önlerine geldi; kartlar kaldı. Oda 11 kart oldu, süre 9 dakika. Bu tarihten önceki notlardaki kart numaraları eski sırayı gösterir (videolar yokken).

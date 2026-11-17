@@ -1,0 +1,172 @@
+{
+  "slug": "kart-ve-para-guvenligi",
+  "neighborhood": "para-carsisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 1,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Kart ve para güvenliği",
+      "title": "Bedava peynir sadece fare kapanında",
+      "summary": "Kartın önü, arkası ve SMS kodu neden kimseye verilmez, \"bedava ama 1 TL\" tuzağı nasıl işler ve şüphelendiğinde atacağın adımlar.",
+      "story": "Oyunlar \"bedava elmas\", mailler \"bedava hediye\" diyor; karşılığında yalnızca kartın arkasındaki üç rakamı ya da telefona gelen kodu istiyor. Bu bilgiler ailenin hesabından para çekilmesine yeter. Bu odada kart bilgilerinin neden değerli olduğunu, sahte bir hediye mailinin nasıl anlaşıldığını ve para istendiğinde ne yapacağını öğreneceksin.",
+      "learn": [
+        {
+          "title": "Kart bilgisi ve SMS kodu",
+          "text": "Kart numarası, son kullanma tarihi, CVV ve onay kodu neden kimseye verilmez?"
+        },
+        {
+          "title": "\"Bedava ama küçük bir ücret\"",
+          "text": "1 TL'lik \"doğrulama\" neden aslında kartın tamamını ister?"
+        },
+        {
+          "title": "Dur, sor, kontrol et",
+          "text": "Para ya da bilgi istendiğinde atacağın adımlar."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 5
+    },
+    "cards": [
+      {
+        "id": "kart-videosu",
+        "type": "video",
+        "title": "Ayşegül ve Ayça: bedava elmas",
+        "src": "/videolar/kartin-onu-arkasi-sms-kodu.mp4",
+        "duration": "1:33",
+        "question": {
+          "at": 64,
+          "question": "Bir oyun \"Bedava elmas!\" diyor ve kartın arkasındaki 3 rakamı istiyor. Ne yaparsın?",
+          "options": [
+            "Yazarım, elmas bedava",
+            "Yazmam, önce ailemle konuşurum",
+            "Sadece iki rakamını yazarım"
+          ],
+          "answer": 1,
+          "explain": "Kartın arkasındaki 3 rakam CVV'dir; bilen biri kart elinde olmadan alışveriş yapabilir. Hiçbir oyun onu istemez, iki rakamı bile verilmez. Önce ailenle konuş."
+        }
+      },
+      {
+        "id": "kartin-onu-arkasi",
+        "type": "info",
+        "title": "Kartın önü, arkası ve SMS kodu",
+        "layout": "bankCard",
+        "paragraphs": [
+          "Bir banka kartıyla internetten alışveriş yapmak için üç şey yeter: kartın önündeki 16 haneli numara, son kullanma tarihi ve arkadaki 3 haneli güvenlik kodu (CVV). Bu üçünü bilen biri, kart elinde olmasa da alışveriş yapabilir.",
+          "Çoğu ödemede bir de karta bağlı telefona SMS onay kodu gelir. Bu kod \"Bu ödemeyi ben yapıyorum\" demektir; bir imza gibidir. Kodu söylediğin kişi, senin adına imza atmış olur."
+        ],
+        "points": [
+          {
+            "title": "Kart numarası ve son kullanma tarihi",
+            "icon": "card",
+            "text": "Kartın önünde. Fotoğrafını bile paylaşma."
+          },
+          {
+            "title": "CVV",
+            "icon": "flip",
+            "text": "Kartın arkasındaki 3 hane. Hiçbir oyun, çekiliş ya da \"doğrulama\" bunu istemez."
+          },
+          {
+            "title": "SMS onay kodu",
+            "icon": "message",
+            "text": "İmzadır. Banka, mağaza, öğretmen, arkadaş; kim sorarsa sorsun söylenmez."
+          },
+          {
+            "title": "Kart ailenin ise",
+            "icon": "users",
+            "text": "Velinin izni olmadan hiçbir yere girilmez, \"sonra söylerim\" de olmaz."
+          }
+        ]
+      },
+      {
+        "id": "hediye-maili",
+        "type": "clickFind",
+        "title": "Bu \"hediye\" mailindeki 4 şüpheli yeri bul",
+        "hint": "Mailde 4 şüpheli yer var. Bul bakalım.",
+        "mail": {
+          "sender": "Mega Kampanya",
+          "address": "hediye@mega-kampanya-odul.xyz",
+          "subject": "TEBRİKLER! Kablosuz kulaklık kazandınız 🎧",
+          "time": "16:05",
+          "paragraphs": [
+            "Merhaba,",
+            "Bu ayın şanslı kazananı sizsiniz! Kablosuz kulaklığınız depomuzda sizi bekliyor.",
+            "Hediyeniz tamamen ücretsizdir. Sadece kargo için 1 TL'lik kart doğrulaması yapmanız gerekir.",
+            "Formda kart numaranızı, son kullanma tarihini, CVV kodunu ve telefonunuza gelecek onay kodunu yazmanız yeterli.",
+            "Ödül 2 saat içinde alınmazsa sıradaki kişiye verilecektir."
+          ],
+          "button": "Hediyemi al",
+          "footer": "Mega Kampanya · Bu mail kampanyaya katılan kullanıcılara gönderilmiştir."
+        },
+        "spots": [
+          {
+            "part": "address",
+            "text": "\"mega-kampanya-odul.xyz\" bilinen bir mağazanın adresi değil. Hiç katılmadığın bir kampanyanın seni bulması da tuhaf.",
+            "hint": "Gönderenin e-posta adresine harf harf bak: bu adresi daha önce gördün mü?"
+          },
+          {
+            "part": "p2",
+            "text": "\"Ücretsiz ama 1 TL.\" Bedava bir şey için kart istenmez. 1 TL sadece bahane, asıl istenen kartın kendisi.",
+            "hint": "\"Tamamen ücretsiz\" diyen cümlenin devamını oku: gerçekten hiçbir şey istemiyor mu?"
+          },
+          {
+            "part": "p3",
+            "text": "CVV ve SMS onay kodu bir arada istenmiş. Bu ikisini alan kişi karttan istediği kadar harcama yapabilir.",
+            "hint": "Formda hangi bilgilerin istendiğine bak. Bunlardan biri kimseye söylenmiyordu, hatırla."
+          },
+          {
+            "part": "p4",
+            "text": "\"2 saat içinde\" diye acele ettiriyor. Acele, düşünüp birine sormanı engellemek içindir.",
+            "hint": "Mail sana ne kadar zaman tanıyor? Acele ettiren cümleyi bul."
+          }
+        ]
+      },
+      {
+        "id": "bir-tl",
+        "type": "quiz",
+        "question": "\"Bedava hediye, sadece 1 TL doğrulama\" diyen bir sayfa ne ister aslında?",
+        "art": "coin",
+        "options": [
+          "Sadece 1 TL, başka bir şey değil",
+          "Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir",
+          "Kartın gerçek olup olmadığını kontrol etmek ister",
+          "Sonraki alışverişinde sana indirim yapmak ister"
+        ],
+        "answer": 1,
+        "explain": "1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart \"doğrulamaz\"."
+      },
+      {
+        "id": "dur-sor-kontrol",
+        "type": "info",
+        "title": "Dur, sor, kontrol et",
+        "layout": "steps",
+        "paragraphs": [
+          "Para ya da bilgi isteyen bir mesaj, mail ya da sayfa gördüğünde acele etme. Dolandırıcının en büyük silahı, düşünmeden hareket etmendir."
+        ],
+        "points": [
+          {
+            "title": "Dur",
+            "icon": "stop",
+            "text": "Formu doldurma, bağlantıya dokunma, kodu kimseye söyleme. Beklemekle hiçbir şey kaybetmezsin."
+          },
+          {
+            "title": "Sor",
+            "icon": "ask",
+            "text": "Ailene ya da öğretmenine göster. Kart ailenindir, karar da onlarındır."
+          },
+          {
+            "title": "Kontrol et",
+            "icon": "search",
+            "text": "Oyunun, okulun ya da mağazanın resmî uygulamasını kendin aç. Gerçek bir hediye ya da duyuru varsa orada da görürsün."
+          },
+          {
+            "title": "Bildir",
+            "icon": "flag",
+            "text": "Postam'da \"Oltalama olarak bildir\", Mesajlar'da \"Bildir ve engelle\". Kart bilgisi girildiyse aile hemen bankayı arar."
+          }
+        ]
+      }
+    ]
+  }
+}

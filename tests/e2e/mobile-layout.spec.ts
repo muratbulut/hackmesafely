@@ -624,7 +624,7 @@ type AdminData = {
   teacher: string;
   member: string;
   school: string;
-  labs: Record<"inbox" | "messaging" | "training" | "placement" | "mission" | "sale", string>;
+  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale", string>;
   article: string;
 };
 
@@ -739,21 +739,23 @@ const adminScreens: Screen<AdminData>[] = [
   { name: "Oda önizleme, boşluk doldurma", open: (page) => page.getByRole("button", { name: /Anladım, başla/ }).click() },
   { name: "Oda önizleme, boşluk doldurma sürüklendi", open: (page) => dragFirstOption(page) },
   { name: "Oda önizleme, boşluk doldurma kontrol edildi", open: (page) => solvePlacement(page) },
-  { name: "Oda önizleme, ikinci video", open: next },
-  { name: "Oda önizleme, ikinci video sorusu cevaplandı", open: (page) => answerVideo(page, 64, "Yazmam, önce ailemle konuşurum") },
-  { name: "Oda önizleme, banka kartı", open: next },
-  { name: "Oda önizleme, banka kartı SMS", open: (page) => openPoints(page, "Kartın bölümleri", 3) },
-  { name: "Oda önizleme, banka kartı gezildi", open: (page) => openPoints(page, "Kartın bölümleri") },
   { name: "Oda önizleme, 4 şıklı test", open: next },
   {
     name: "Oda önizleme, 4 şıklı test cevaplandı",
     open: (page) => page.getByTestId("training-player").getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(3).click(),
   },
+  { name: "Oda önizleme, adım adım kart", open: next },
+  { name: "Oda önizleme, adım adım kart açıldı", open: (page) => openPoints(page, "Adımlar") },
+  // Banka kartı ve tıkla-bul: Para Çarşısı ileri eğitimi "Kart ve para güvenliği" (17 Kasım'da temel eğitimden ayrıldı).
+  { name: "Oda önizleme, ikinci eğitimin videosu", path: (d) => `/yonetim/odalar/${d.labs.money}/onizle` },
+  { name: "Oda önizleme, ikinci video sorusu cevaplandı", open: (page) => answerVideo(page, 64, "Yazmam, önce ailemle konuşurum") },
+  { name: "Oda önizleme, banka kartı", open: next },
+  { name: "Oda önizleme, banka kartı SMS", open: (page) => openPoints(page, "Kartın bölümleri", 3) },
+  { name: "Oda önizleme, banka kartı gezildi", open: (page) => openPoints(page, "Kartın bölümleri") },
   { name: "Oda önizleme, tıkla-bul", open: next },
   { name: "Oda önizleme, ikinci test", open: next },
   { name: "Oda önizleme, ikinci test cevaplandı", open: (page) => page.getByTestId("training-player").getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(1).click() },
-  { name: "Oda önizleme, adım adım kart", open: next },
-  { name: "Oda önizleme, adım adım kart açıldı", open: (page) => openPoints(page, "Adımlar") },
+  { name: "Oda önizleme, ikinci eğitimin adım adım kartı", open: next },
   // Görevli oda: annenin görüntülü araması, görev kartı, mağaza ve SMS (Para Çarşısı "Kulaklık için veli kartı", oda dosyası, taslak).
   // Önce perde ve "Başlamadan önce", arama "Hazırım"dan sonra çalar (18. revize).
   { name: "Oda önizleme, görev araması", path: (d) => `/yonetim/odalar/${d.labs.mission}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
@@ -970,7 +972,7 @@ test.describe("telefon düzeni", () => {
     const labs = Object.fromEntries(
       (
         await query(
-          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat')`,
+          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat')`,
         )
       ).map((r) => [r.slug, r.id]),
     );
@@ -989,6 +991,7 @@ test.describe("telefon düzeni", () => {
           messaging: labs["kodu-soran-arkadas"],
           training: labs["oltalama-egitimi"],
           placement: labs["kisisel-veri-ve-para-guvenligi"],
+          money: labs["kart-ve-para-guvenligi"],
           mission: labs["kulaklik-icin-veli-karti"],
           sale: labs["eski-telefonunu-sat"],
         },

@@ -1624,6 +1624,8 @@ export const tr = {
         text: "Bu eğitimin açtığı senaryo odaları artık açık. Öğrendiklerini kendin dene. Senaryo odasında kimse sana anında doğru ya da yanlış demeyecek, ne yaptığını sonunda raporda göreceksin.",
         unlocked: "Açıldı",
         first: "İlk senaryo odasına geç",
+        trainingText: "Sıradaki eğitim odası artık açık. Öğrendiklerinin üstüne yenisini koy, senaryo odaları da orada seni bekliyor.",
+        nextTraining: "Sıradaki eğitime geç",
         again: "Kartlara baştan bak",
         none: "Bu eğitimin henüz senaryo odası yok. Yakında eklenecek.",
         roadmap: "Yol haritasına dön",

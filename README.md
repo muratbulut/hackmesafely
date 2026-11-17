@@ -44,7 +44,7 @@ Odalar beş mahalleli bir yol haritasında durur. Her mahallede önce temel eği
 | Para Çarşısı | Kişisel veri ve para: alışveriş, çekilişler, ikinci el satış |
 | Dostluk Parkı | Güvenli iletişim: siber zorbalık, yabancılar, mahremiyet |
 
-Plan 5 mahallede 18 eğitim ve 43 senaryo, toplam 61 oda. Bütün odaların planı (hikâye, tuzak, doğru karar): [docs/labs/room-plan.md](docs/labs/room-plan.md).
+Plan 5 mahallede 19 eğitim ve 43 senaryo, toplam 62 oda. Bütün odaların planı (hikâye, tuzak, doğru karar): [docs/labs/room-plan.md](docs/labs/room-plan.md).
 
 ## Özellikler
 

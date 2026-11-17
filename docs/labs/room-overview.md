@@ -18,16 +18,16 @@ Dilek 25, Murat 24 oda. Her mahallenin bütün odaları (eğitimler ve senaryola
 
 ## Özet
 
-Plan 5 mahalle, 18 eğitim odası ve 43 senaryo odası, toplam 61 oda. Her mahallede bir temel eğitim ve 2 ya da 3 ileri eğitim var. Her senaryo odasını kendi eğitimi açıyor. Plan 17 Ekim'deki oda kurguları sunumundan geliyor (metin hâli [`room-plan.md`](room-plan.md)). Yapı ise 15 Ekim'de Murat'la kararlaştırıldı ve 16 Ekim'de siteye girdi.
+Plan 5 mahalle, 19 eğitim odası ve 43 senaryo odası, toplam 62 oda. Her mahallede bir temel eğitim ve 2 ya da 3 ileri eğitim var. Her senaryo odasını kendi eğitimi açıyor. Plan 17 Ekim'deki oda kurguları sunumundan geliyor (metin hâli [`room-plan.md`](room-plan.md)). Yapı ise 15 Ekim'de Murat'la kararlaştırıldı ve 16 Ekim'de siteye girdi.
 
 | Mahalle | Konu | Eğitim odası | Senaryo odası | Toplam |
 | --- | --- | --- | --- | --- |
 | Hesap Kalesi | Hesap güvenliği | 3 | 9 | 12 |
 | Oltalama Limanı | Oltalama ve sahte içerik | 4 | 10 | 14 |
 | Yazılım Ormanı | Zararlı yazılım | 4 | 9 | 13 |
-| Para Çarşısı | Kişisel veri ve para | 3 | 7 | 10 |
+| Para Çarşısı | Kişisel veri ve para | 4 | 7 | 11 |
 | Dostluk Parkı | Güvenli iletişim | 4 | 8 | 12 |
-| **Toplam** |  | **18** | **43** | **61** |
+| **Toplam** |  | **19** | **43** | **62** |
 
 Sitede bugün 3 oda var: Oltalama eğitimi ve "Sahte kargo maili" yayında, "Kodu soran arkadaş" taslakta. İlk dalga 16 oda olarak planlandı: her mahallenin temel eğitimi ve onun açtığı 11 senaryo. Bu 16 oda bitince 5 mahalle rozeti ve Şehir turu kazanılabilir hâle gelir.
 
@@ -118,12 +118,13 @@ Yazan: **Murat**.
 
 | Oda | Tür | Sahne | Yazmak için gereken | Durum |
 | --- | --- | --- | --- | --- |
-| **Kişisel veri ve para güvenliği** | Temel eğitim | Eğitim kartları, iki video, kutulara ayırma, eşleştirme, boşluk doldurma | Tur 7 kart düzenleri ve iki video (bu PR'da) | PR açık |
-| Kulaklık için veli kartı | Senaryo | Postam + görev | Görev, kart, mağaza sayfası, onay kodu adımı, telefonla açılış (yazıldı) | Kod yazıldı, taslak |
-| Okul çekilişinde tablet kazandın | Senaryo | Mesajlar | Hazır (M1) | Yazılacak |
+| **Kişisel veri** | Temel eğitim | Eğitim kartları, video, kutulara ayırma, eşleştirme, boşluk doldurma | Hazır | Yayında (17 Kasım'da ikiye bölündü) |
+| Okul çekilişinde tablet kazandın ("Yayıncının çekilişi" kurgusu seçildi) | Senaryo | Mesajlar | Hazır (M1) | Tuvalde, yazılacak |
+| **Kart ve para güvenliği** | İleri eğitim | Eğitim kartları, video, banka kartı, tıkla-bul | Hazır | Yayında |
+| Kulaklık için veli kartı | Senaryo | Postam + görev | Görev, kart, mağaza sayfası, onay kodu adımı, telefonla açılış (yazıldı) | Yayında |
 | **Online alışveriş ve ikinci el** | İleri eğitim | Eğitim kartları | Resimde tıkla-bul | Yazılacak |
 | Yarı fiyatına telefon | Senaryo | Akış | Akış şablonu | Yazılacak |
-| Eski telefonunu sat | Senaryo | Mesajlar + satış görevi | Satış görevi, ödeme isteği, sipariş ve kargo, babanın çizimi (yazıldı) | Kod yazıldı, taslak |
+| Eski telefonunu sat | Senaryo | Mesajlar + satış görevi | Satış görevi, ödeme isteği, sipariş ve kargo, babanın çizimi (yazıldı) | Kod yazıldı, taslak; şimdilik Kart ve para güvenliği açar |
 | **Kolay para tuzakları** | İleri eğitim | Eğitim kartları | Hazır | Yazılacak |
 | Hesabını kirala | Senaryo | Mesajlar | Yeni sonuç ekranı (M1 hazır) | Yazılacak |
 | Beğen, kazan | Senaryo | Mesajlar | Hazır (M1) | Yazılacak |

@@ -5,6 +5,7 @@
   "template": "MESSAGING",
   "sortOrder": 2,
   "status": "DRAFT",
+  "unlockedBy": "kart-ve-para-guvenligi",
   "content": {
     "meta": {
       "name": "Eski telefonunu sat",

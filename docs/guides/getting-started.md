@@ -32,7 +32,7 @@ Harita bir **siber şehir**dir. 5 mahalle var: Hesap Kalesi (hesap güvenliği),
 - Öğretmen ödevde odaları tek tek seçer; seçilen senaryoyu açan eğitim ödeve kendiliğinden girer.
 - Odalar içeriktir, asıl yerleri depodaki **oda dosyasıdır** (`labs/rooms/<mahalle>/<oda-adresi>.json`). Dosya PR'la girer, birleşince odayı sitede ekler ya da günceller. **Yönetim > Odalar**'da form yoktur: odayı orada dener, yayınlar, gizler ve sırasını değiştirirsin. Sahne türleri (Postam, Mesajlar, eğitim kartları) koddadır.
 
-Plan 18 eğitim ve 43 senaryo, toplam 61 oda. **İlk dalga** her mahallenin temel yoludur (16 oda); sitede 3'ü var. Hangi odanın bugün yazılabildiği, hangisinin kod işi beklediği `docs/labs/room-plan.md`'de.
+Plan 19 eğitim ve 43 senaryo, toplam 62 oda. **İlk dalga** her mahallenin temel yoludur (16 oda); sitede 3'ü var. Hangi odanın bugün yazılabildiği, hangisinin kod işi beklediği `docs/labs/room-plan.md`'de.
 
 ## Çalışma düzeni
 

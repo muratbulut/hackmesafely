@@ -11,7 +11,7 @@ Murat Bulut'un bitirme projesidir. Ekip iki kişidir; fikirleri ve lab senaryola
 ## Önce bunları oku
 
 - `docs/guides/getting-started.md`: projeye yeni katılan için tek sayfalık giriş (proje, mahalle ve oda yapısı, çalışma düzeni, oda yazma kuralları).
-- `docs/labs/room-plan.md`: bütün odaların planı (5 mahalle, 18 eğitim, 43 senaryo; her odanın hikâyesi, tuzağı, doğru kararı, ana sorusu ve beklediği kod işi). Oda yazılınca ya da plan değişince aynı PR'da güncellenir.
+- `docs/labs/room-plan.md`: bütün odaların planı (5 mahalle, 19 eğitim, 43 senaryo; her odanın hikâyesi, tuzağı, doğru kararı, ana sorusu ve beklediği kod işi). Oda yazılınca ya da plan değişince aynı PR'da güncellenir.
 - `docs/labs/room-overview.md`: planın tek sayfalık özeti (mahalle başına odalar, sahneleri, bekledikleri kod işi) ve mahalle paylaşımı (29 Ekim: Hesap Kalesi ve Yazılım Ormanı Dilek, Oltalama Limanı ve Para Çarşısı Murat, Dostluk Parkı beklemede).
 - `docs/labs/rooms/`: odaların tam senaryoları (mahalle başına bir klasör, `training/` ve `scenario/`; şablonlar `templates/`). Kimin hangi odayı yazdığı ve odanın durumu mahalle README'sindeki tabloda.
 - `docs/platform-document.md`: asıl doküman. Bölüm 3'ün sonundaki tasarım kısımları, Bölüm 4 lab yapısı, Bölüm 6 veri modeli, Bölüm 9 faz planı. Bu dosya Claude Docs'taki asıl dokümanın kopyasıdır; çelişki olursa asıl doküman geçerlidir.

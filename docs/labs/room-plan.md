@@ -1,6 +1,6 @@
 # Oda planı: bütün mahalleler ve odalar
 
-Siber şehrin bütün odaları: 5 mahalle, 18 eğitim odası, 43 senaryo odası (toplam 61). Plan 17 Ekim 2026'da ekiple birlikte çıkarıldı (Murat'ın proje dosyalarındaki "Siber şehrin odaları" sunumunun metin hâli; sunumda bundan fazlası yok). Bu dosya planın asıl yeridir: bir oda yazılınca, değişince ya da yeni oda eklenince burası da aynı PR'da güncellenir.
+Siber şehrin bütün odaları: 5 mahalle, 19 eğitim odası, 43 senaryo odası (toplam 62). Plan 17 Ekim 2026'da ekiple birlikte çıkarıldı (Murat'ın proje dosyalarındaki "Siber şehrin odaları" sunumunun metin hâli; sunumda bundan fazlası yok). Bu dosya planın asıl yeridir: bir oda yazılınca, değişince ya da yeni oda eklenince burası da aynı PR'da güncellenir.
 
 Odaların tam metni (mailler, mesajlar, kartlar, sorular) `docs/labs/rooms/<mahalle>/` altındaki senaryo dosyalarındadır; bu dosya kısa plandır.
 
@@ -11,9 +11,9 @@ Oda yazmadan önce `docs/guides/getting-started.md` (başlarken) ve `docs/guides
 | Hesap Kalesi | Hesap güvenliği | 3 | 9 |
 | Oltalama Limanı | Oltalama ve sahte içerik | 4 | 10 |
 | Yazılım Ormanı | Zararlı yazılım | 4 | 9 |
-| Para Çarşısı | Kişisel veri ve para | 3 | 7 |
+| Para Çarşısı | Kişisel veri ve para | 4 | 7 |
 | Dostluk Parkı | Güvenli iletişim | 4 | 8 |
-| **Toplam** | | **18** | **43** |
+| **Toplam** | | **19** | **43** |
 
 ## Nasıl okunur
 
@@ -677,15 +677,17 @@ Gençler artık kendi kartlarıyla, ailelerinin kartlarıyla ve oyun cüzdanlar�
 
 Bağlantılı mahalleler: Hesap Kalesi (kimlik bilgisi), Oltalama Limanı (kart isteyen sahte sayfa), Dostluk Parkı (para isteyen şantaj).
 
-### Temel eğitim: Kişisel veri ve para güvenliği
+### Temel eğitim: Kişisel veri
 
-*Kimseye verilmeyenler* · İlk dalga
+*Kimseye verilmeyenler* · İlk dalga · Yayında
+
+(17 Kasım, Murat: "Kişisel veri ve para güvenliği" ikiye bölündü; kart ve para kısmı aşağıdaki "Kart ve para güvenliği" ileri eğitimine geçti. Oda adresi `kisisel-veri-ve-para-guvenligi` olarak kaldı. Tam metin `docs/labs/rooms/para-carsisi/training/kisisel-veri-ve-para-guvenligi.md`.)
 
 Öğrenci bu odadan sonra:
 
-- Kimseye verilmeyecek bilgileri sayar: T.C. kimlik numarası, kart numarası, son kullanma tarihi, CVV, SMS onay kodu, şifre.
-- Aileden izinsiz ödeme yapmaz, "bedava ama küçük bir ücret" tuzağını tanır.
-- Para ya da bilgi isteyen her şeyde durur, ailesine sorar, resmî yerden kontrol eder.
+- Bilgilerini üç kutuya ayırır: herkesle, tanıdıklarla, kimseyle. T.C. kimlik numarası, ev adresi, şifre ve onay kodu kimseye verilmez.
+- Tek tek küçük bilgilerin birleşince ne anlattığını bilir.
+- Bilgi istendiğinde "Kim, neden, gerekli mi?" diye sorar, ailesine danışır, resmî yerden kontrol eder.
 
 Kartlar:
 
@@ -694,16 +696,49 @@ Kartlar:
 3. Kutulara ayırma: hangi bilgi hangi kutuya (Yeşil, Sarı, Kırmızı; sürükle bırak)
 4. Eşleştirme: bilgi yanlış ele geçerse ne olabilir
 5. Boşluk doldurma: kişisel veri, üç soru, aileye sor (cümleler tek tek)
-6. Video (Ayşegül ve Ayça, soru durağı): kartın önü, arkası, SMS kodu; bedava elmas için 3 rakam
-7. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır
-8. Mini test (4 şık, hediye çizimi): çekiliş formu neyi istemez
-9. Tıkla-bul: "hediye kazandın" maili
-10. Mini test (4 şık, 1 TL çizimi): "bedava ama 1 TL doğrulama" ne ister
-11. Bilgi, adım adım düzeni: dur, sor, kontrol et
+6. Mini test (4 şık, hediye çizimi): çekiliş formu neyi istemez (T.C. kimlik ve ev adresi)
+7. Bilgi, adım adım düzeni: dur, sor, kontrol et (bilgi isteyen mesaj için kısa hâli)
+
+#### Senaryo: Okul çekilişinde tablet kazandın
+
+Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga · Açan eğitim: Kişisel veri
+
+(2 Kasım: Murat bu odanın yerine "Yayıncının çekilişi" kurgusunu seçti (kopya yayıncı hesabı, sahte çekiliş); oynanabilir tuvali var, yazılınca bu bölüm güncellenir.)
+
+- **Hikâye:** "Okul Çekilişi" adlı bir hesaptan mesaj: "Tebrikler! Tablet kazandın, kargo için formu doldur." Form ad soyad, T.C. kimlik numarası, okul ve sınıf, ev adresi ve velinin telefonunu istiyor. Hiç katılmadığın bir çekiliş.
+- **Tuzak:** Formu doldurmak; bilgiler satılır, velin "kargo ücreti" için aranır.
+- **Doğru karar:** Doldurmamak, bildirmek, okulun resmî hesabına bakmak.
+- **İşaretler:**
+    - Katılmadığın çekiliş
+    - Yeni açılmış, az takipçili hesap
+    - T.C. kimlik ve veli telefonu istiyor
+- **Gerçek öğeler:** Okulun resmî duyurusu, arkadaşının mesajı.
+- **Ana soru:** Bir çekiliş formu hangisini asla istememeli? Doğru: "T.C. kimlik numaranı ve velinin telefonunu". Yanlışlar: "Kullanıcı adını"; "Hangi rengi istediğini".
+- **Bekleyen kod işi:** Yok, bugünkü sahneyle yazılır (M1 hazır: Mesajlar'da bağlantı sahte sayfa açar).
+
+### İleri eğitim: Kart ve para güvenliği
+
+*Bedava peynir sadece fare kapanında* · İlk dalga · Yayında
+
+(17 Kasım'da temel eğitimden ayrıldı. Tam metin `docs/labs/rooms/para-carsisi/training/kart-ve-para-guvenligi.md`.)
+
+Öğrenci bu odadan sonra:
+
+- Kimseye verilmeyecek kart bilgilerini sayar: kart numarası, son kullanma tarihi, CVV, SMS onay kodu.
+- Aileden izinsiz ödeme yapmaz, "bedava ama küçük bir ücret" tuzağını tanır.
+- Para isteyen her şeyde durur, ailesine sorar, resmî yerden kontrol eder.
+
+Kartlar:
+
+1. Video (Ayşegül ve Ayça, soru durağı): kartın önü, arkası, SMS kodu; bedava elmas için 3 rakam
+2. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır
+3. Tıkla-bul: "hediye kazandın" maili
+4. Mini test (4 şık, 1 TL çizimi): "bedava ama 1 TL doğrulama" ne ister
+5. Bilgi, adım adım düzeni: dur, sor, kontrol et
 
 #### Senaryo: Kulaklık için veli kartı
 
-Başlık: "Aynı mağaza, farklı adres" · Sahne: Postam + görev · Sonuç: Para · Kod yazıldı, oda dosyası taslak · İlk dalga
+Başlık: "Aynı mağaza, farklı adres" · Sahne: Postam + görev · Sonuç: Para · Yayında · İlk dalga · Açan eğitim: Kart ve para güvenliği (17 Kasım)
 
 (Eski adı "Ücretsiz elmas için veli kartı"; 2 Kasım'da Murat'la görevli hâle geldi. Tam metin `docs/labs/rooms/para-carsisi/scenario/kulaklik-icin-veli-karti.md`.)
 
@@ -717,21 +752,6 @@ Başlık: "Aynı mağaza, farklı adres" · Sahne: Postam + görev · Sonuç: Pa
 - **Gerçek öğeler:** TeknoPazar'ın gerçek maili, annenin maili, okul duyurusu.
 - **Ana soru:** Annenin telefonuna gelen kodda beklediğinden farklı bir tutar yazıyor. Ne yaparsın? Doğru: "Kodu yazdırmam, anneme anlatırım". Yanlışlar: "Sistem hatasıdır, yazarım"; "Önce yazar, sonra iptal ederim".
 - **Kod işi:** Görev, annenin kartı, aynı görünen mağaza sayfası, onay kodu adımı, telefonla açılış ve bitişler: yazıldı (2 Kasım; `docs/guides/new-lab.md` 2.12). Oda dosyası `labs/rooms/para-carsisi/kulaklik-icin-veli-karti.json`, taslak.
-
-#### Senaryo: Okul çekilişinde tablet kazandın
-
-Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga
-
-- **Hikâye:** "Okul Çekilişi" adlı bir hesaptan mesaj: "Tebrikler! Tablet kazandın, kargo için formu doldur." Form ad soyad, T.C. kimlik numarası, okul ve sınıf, ev adresi ve velinin telefonunu istiyor. Hiç katılmadığın bir çekiliş.
-- **Tuzak:** Formu doldurmak; bilgiler satılır, velin "kargo ücreti" için aranır.
-- **Doğru karar:** Doldurmamak, bildirmek, okulun resmî hesabına bakmak.
-- **İşaretler:**
-    - Katılmadığın çekiliş
-    - Yeni açılmış, az takipçili hesap
-    - T.C. kimlik ve veli telefonu istiyor
-- **Gerçek öğeler:** Okulun resmî duyurusu, arkadaşının mesajı.
-- **Ana soru:** Bir çekiliş formu hangisini asla istememeli? Doğru: "T.C. kimlik numaranı ve velinin telefonunu". Yanlışlar: "Kullanıcı adını"; "Hangi rengi istediğini".
-- **Bekleyen kod işi:** Yok, bugünkü sahneyle yazılır (M1 hazır: Mesajlar'da bağlantı sahte sayfa açar).
 
 ### İleri eğitim: Online alışveriş ve ikinci el
 
@@ -768,7 +788,7 @@ Başlık: "Son 3 ürün, sadece havale" · Sahne: Akış · Sonuç: Para · Yaz�
 
 #### Senaryo: Eski telefonunu sat
 
-Başlık: "Para sana mı geliyor, senden mi gidiyor?" · Sahne: Mesajlar + satış görevi · Sonuç: Para · Kod yazıldı, oda dosyası taslak · Lise için önerilir
+Başlık: "Para sana mı geliyor, senden mi gidiyor?" · Sahne: Mesajlar + satış görevi · Sonuç: Para · Kod yazıldı, oda dosyası taslak · Lise için önerilir · Açan eğitim şimdilik Kart ve para güvenliği; "Online alışveriş ve ikinci el" yazılınca oraya geçer (17 Kasım)
 
 (Eski adı "Eski telefonunu satarken gelen ödeme linki"; 2 Kasım'da Murat'la ikinci görevli oda oldu. Tam metin `docs/labs/rooms/para-carsisi/scenario/eski-telefonunu-sat.md`.)
 
