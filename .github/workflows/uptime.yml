@@ -28,7 +28,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  HEALTH_URL: https://bitirme.muratbulut.net/api/health
+  HEALTH_URL: https://hackmesafely.com/api/health
   ISSUE_TITLE: Site erişilemiyor
 
 jobs:

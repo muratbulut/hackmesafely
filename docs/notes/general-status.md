@@ -6,7 +6,7 @@ Son güncelleme: 3 Kasım 2026.
 
 ## Bugün
 
-- **Platform:** Doküman Bölüm 9'daki 7 fazın hepsi bitti ve canlıda (https://bitirme.muratbulut.net). Hesap, oda motoru (Postam, Mesajlar, eğitim kartları, hacklendin, rapor), öğretmen, sınıf ve okul, yönetim paneli, gündem, günün ipucu, güvenlik başlıkları, yük testi, yedek ve izleme hazır. Her fazdan sonra bir güvenlik turu yapıldı (5 tur, raporlar `docs/security/`).
+- **Platform:** Doküman Bölüm 9'daki 7 fazın hepsi bitti ve canlıda (https://hackmesafely.com; eski adres bitirme.muratbulut.net oraya yönlenir). Hesap, oda motoru (Postam, Mesajlar, eğitim kartları, hacklendin, rapor), öğretmen, sınıf ve okul, yönetim paneli, gündem, günün ipucu, güvenlik başlıkları, yük testi, yedek ve izleme hazır. Her fazdan sonra bir güvenlik turu yapıldı (5 tur, raporlar `docs/security/`).
 - **Mahalle yapısı (PR #24, 16 Ekim):** 5 mahalle; bir mahallede birden çok eğitim (ilki temel, diğerleri ileri eğitim), her senaryoyu kendi eğitimi açar, ödevde odalar tek tek seçilir. Kural `lib/lab/gates.ts`, kılavuz `docs/guides/new-lab.md` 2.7.
 - **Oda planı (17 Ekim):** 18 eğitim ve 43 senaryo, toplam 61 oda: `docs/labs/room-plan.md`. Sitede 3 örnek oda var. İlk dalga her mahallenin temel yolu (16 oda).
 - **Ekip (27 Ekim):** Murat ve Dilek; ikisi de kendi Claude'uyla çalışır. Her oda ve her iş kendi dalında, PR ile girer; PR'ları Murat onaylar. Odaların tam senaryoları `docs/labs/rooms/`.

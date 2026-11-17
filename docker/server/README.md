@@ -1,6 +1,6 @@
 # Sunucu ve yayın
 
-Site `https://bitirme.muratbulut.net` adresinde, Murat'ın kendi sunucusunda (DeHost, Türkiye) çalışır. Aynı
+Site `https://hackmesafely.com` adresinde (eski adres `bitirme.muratbulut.net` oraya yönlenir; aşağıda, Alan adı taşıma), Murat'ın kendi sunucusunda (DeHost, Türkiye) çalışır. Aynı
 sunucuda başka işler de vardır. Bu yüzden yayın düzeni **yalnızca
 kendi alanına** dokunur. Siteyi elle sunucuya yüklemeye gerek yoktur: `main`'e giren her
 değişiklik, testler geçince GitHub Actions ile yüklenir (`.github/workflows/deploy.yml`).
@@ -27,10 +27,10 @@ değişiklik, testler geçince GitHub Actions ile yüklenir (`.github/workflows/
 | Yayın klasörü | `/opt/apps/cyberguard` (`.env` burada; veritabanı şifresi ilk kurulumda üretildi, depoda yok) |
 | Docker yığını | proje adı `cyberguard`: `db` (kendi PostgreSQL'i, veri `cyberguard_db-data` biriminde), `migrate`, `app` |
 | Uygulama portu | `127.0.0.1:3002` (yalnızca sunucunun içinden) |
-| nginx girişi | `/etc/nginx/sites-available/bitirme.muratbulut.net` (+ `sites-enabled` bağlantısı) |
+| nginx girişi | `/etc/nginx/sites-available/hackmesafely.com` (+ `sites-enabled` bağlantısı); eski adresin yönlendirme girişi `/etc/nginx/sites-available/bitirme.muratbulut.net` |
 | Yedekler | `/opt/backups/cyberguard` (klasör 700, dosyalar 600, yayın kullanıcısının) |
 | Gece yedeği | systemd: `/etc/systemd/system/cyberguard-backup.service` ve `cyberguard-backup.timer` |
-| HTTPS | Cloudflare Origin sertifikası: `/etc/nginx/ssl/bitirme.muratbulut.net/`. Özel anahtar sunucuda üretildi ve oradan çıkmaz; sertifika açık bilgidir ve depoda `docker/server/bitirme.muratbulut.net.pem` olarak durur. |
+| HTTPS | Cloudflare Origin sertifikası: `/etc/nginx/ssl/hackmesafely.com/` (ana adres ve `www`), `/etc/nginx/ssl/bitirme.muratbulut.net/` (eski adres). Özel anahtarlar sunucuda üretildi ve oradan çıkmaz; sertifikalar açık bilgidir ve depoda `docker/server/<alan>.pem` olarak durur. |
 
 Ayrılık kuralları:
 
@@ -60,7 +60,7 @@ Ayrılık kuralları:
   güncellenir, PR ile yayına girer. Güncellenmezse Cloudflare'in yeni aralığından gelen
   ziyaretçiler siteye giremez.
 - HSTS: `max-age=31536000; includeSubDomains`, `preload` yok. `includeSubDomains` yalnızca
-  `*.bitirme.muratbulut.net`'i bağlar; `muratbulut.net`'e ve diğer sitelere dokunmaz.
+  `*.hackmesafely.com`'i (eski adreste `*.bitirme.muratbulut.net`'i) bağlar; `muratbulut.net`'e ve diğer sitelere dokunmaz.
   Cloudflare panelindeki alan geneli HSTS ayarı **açılmaz** (bütün alt alanları bağlar).
 - Gerekçe ve canlıda bakılacaklar: `docs/security/round-5-phase-6.md`.
 
@@ -95,7 +95,7 @@ sudo docker compose -f docker-compose.yml -f docker/server/compose.yml ps     # 
 sudo docker compose -f docker-compose.yml -f docker/server/compose.yml logs --tail 100 app
 grep APP_VERSION .env                              # yayındaki sürüm (commit)
 sudo docker image ls cyberguard-app                # geri dönülebilecek son üç sürüm
-bash docker/server/deploy.sh <eski-commit> bitirme.muratbulut.net 3002   # elle geri dönüş
+bash docker/server/deploy.sh <eski-commit> hackmesafely.com 3002   # elle geri dönüş
 ```
 
 Sunucuya sadece bakan kontrol (hiçbir şeyi değiştirmez): GitHub → Actions → Yayın → Run
@@ -202,7 +202,7 @@ yüklenmiştir):
 
 ```bash
 cd /opt/apps/cyberguard
-SKIP_PREDEPLOY_BACKUP=1 bash docker/server/deploy.sh <commit> bitirme.muratbulut.net 3002
+SKIP_PREDEPLOY_BACKUP=1 bash docker/server/deploy.sh <commit> hackmesafely.com 3002
 ```
 
 **Gece zamanlayıcısı** her yayında `install-backup-timer.sh` ile kurulur ya da güncellenir
@@ -327,7 +327,7 @@ dosyalarında işlemi bölen komut (`COMMIT`, `BEGIN`, `CONCURRENTLY`, `VACUUM` 
 ## İzleme
 
 **Asıl izleme UptimeRobot** (Murat'ın kararı, 12 Ekim; ücretsiz hesap): 5 dakikada bir
-`https://bitirme.muratbulut.net/api/health` adresine bakar, site ya da veritabanı düşerse
+`https://hackmesafely.com/api/health` adresine bakar, site ya da veritabanı düşerse
 Murat'a e-posta gönderir. `/api/health` veritabanına da `SELECT 1` ile bakar (3 sn zaman aşımı);
 veritabanına ulaşılamazsa 503 döner, bu da erişilemiyor sayılır. Kurulum (bir kez, UptimeRobot
 panelinde): New monitor → HTTP(s) → adres yukarıdaki → aralık 5 dakika → uyarı e-postası.

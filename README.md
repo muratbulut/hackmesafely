@@ -6,7 +6,7 @@ Hack Me Safely, ortaokul ve lise öğrencileri için bir dijital güvenlik eğit
 
 Murat Bulut'un bitirme projesi.
 
-Site: https://bitirme.muratbulut.net
+Site: https://hackmesafely.com
 
 ## Neler var
 
