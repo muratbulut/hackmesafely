@@ -9,14 +9,14 @@ import { Mascot } from "./Mascot";
 export const SHOW_AFTER_MS = 300;
 /** Bir şey ters giderse örtü en geç bu kadar sonra kalkar. */
 const GIVE_UP_MS = 15_000;
-/** Çıkışta maskot kapanıp uyusun diye örtü en az bu kadar durur (ana sayfadan çıkışta adres değişmez). */
+/** Çıkışta maskotun gözü kapanıp uyusun diye örtü en az bu kadar durur (ana sayfadan çıkışta adres değişmez). */
 const SIGN_OUT_MS = 2_400;
 /** Çıkış düğmesi bu olayı gönderir (AccountMenu). */
 export const SIGN_OUT_EVENT = "mascot:sign-out";
 
-const mascotClass = "h-auto w-[88px] lg:w-[104px]";
+const mascotClass = "h-auto w-[64px] lg:w-[76px]";
 
-/** Çıkış: maskot önce uyanık görünür, bir kare sonra kapanıp uyur (geçiş ancak böyle oynar). */
+/** Çıkış: maskot önce uyanık görünür, bir kare sonra gözü kapanır ve griye döner (geçiş ancak böyle oynar). */
 function FallAsleep() {
   const [asleep, setAsleep] = useState(false);
   useEffect(() => {
@@ -49,8 +49,8 @@ function internalTarget(e: MouseEvent): URL | null {
 
 /**
  * Tam ekran yükleniyor (maskot tuvali, "Sayfa geçişi"): bağlantıya tıklanınca sayfa 0,3 saniyede
- * açılmadıysa ortada küçük düğme gider gelir, yazı yok (ekran okuyucuya "Sayfa açılıyor").
- * Çıkışta aynı örtüde düğme kapanır ve maskot uyur. Yeni sayfa gelince (adres değişince) kalkar.
+ * açılmadıysa ortada küçük gözlü a'nın gözü döner, yazı yok (ekran okuyucuya "Sayfa açılıyor").
+ * Çıkışta aynı örtüde gözü kapanır, maskot uyur. Yeni sayfa gelince (adres değişince) kalkar.
  * useSearchParams yüzünden kök yerleşimde <Suspense> içinde durur (statik kabukta örtü yok).
  */
 export function PageOverlay() {

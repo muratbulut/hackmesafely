@@ -18,7 +18,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Temel yol (temel eğitim ve onun senaryoları; mahalle rozeti bunu sayar) | basic path (`isBasicPath`) |
 | Ödevin odaları (seçilenler ve onları açan eğitimler) | `Assignment.labIds`, `homeworkLabs`, `homeworkSelection` (`lib/classroom/homework.ts`) |
 | Dostluk Parkı (güvenli iletişim mahallesi), Dost eli rozeti | `dostluk-parki`, rozet `dost-eli`; renk `pink`, ikon `heart` |
-| Maskot (logodaki gözlü düğme), ruh hâli, evcil tepki | mascot (`Mascot`, `components/mascot/`), `MascotMood`, `petReactions` |
+| Maskot (logodaki gözlü a), ruh hâli | mascot (`Mascot`, `components/mascot/`), `MascotMood` |
 | Yükleniyor örtüsü (sayfa geçişinde tam ekran) | `PageOverlay` |
 | Tanıtım sayfasının dönen sahneleri (odadaki sahne türüyle ilgisi yok, süs) | `HeroScenes`, `SceneStore`, `shuffleScenes` (`components/landing/scenes/`) |
 | Sahne türü, şablon | `SceneTemplate`; içerik şeması `lib/lab/content.ts`, sahneler `components/lab/inbox/`, `messaging/`, `training/` |
@@ -193,7 +193,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | `DurumKarti`, `BosDurum`, `Yukleniyor`, `Cark`, `TekrarDene`, `BaglantiSeridi`, `DurumOnizlemesi` | `StatusCard`, `EmptyState`, `Loading`, `Spinner`, `RetryButton`, `ConnectionBanner`, `StatusPreview` |
 | `YakindaSayfasi` ("… hazırlanıyor") | `ComingSoonPage` |
 | `TemaDugmesi`, `SatirIciBetik` | `ThemeToggle`, `InlineScript` |
-| `LogoIsareti`, `marka` | `LogoMark`, `brand` |
+| `LogoIsareti` (gözlü a), `marka` | `LogoA`, `brand` |
 
 ## Veritabanı
 

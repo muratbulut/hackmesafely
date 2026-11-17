@@ -1,5 +1,5 @@
 import { Check, FlaskConical, GraduationCap, TriangleAlert, User, Users, type LucideIcon } from "lucide-react";
-import { brand, LogoMark } from "@/lib/brand";
+import { brand, Wordmark } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { SchoolBulletin } from "./types";
@@ -65,7 +65,7 @@ export function BulletinCard({ bulletin, schoolName }: { bulletin: SchoolBulleti
           </b>
           <span className="text-[13px] text-fg-3">{format(t.meta, { range: bulletin.range, name: bulletin.preparedBy })}</span>
         </span>
-        <LogoMark className="h-7 w-auto flex-none" />
+        <Wordmark className="h-9 w-auto flex-none lg:h-11" />
       </header>
 
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-4">

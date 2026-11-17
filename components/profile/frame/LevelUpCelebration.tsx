@@ -93,7 +93,7 @@ export function LevelUpCelebration({
     >
       <div className="af-lu keep-dark flex min-h-full flex-col items-center justify-center gap-3 px-4 py-8 text-center sm:gap-4">
         <span className="af-lu-mascot">
-          <Mascot mood="happy" reaction="cheer" className="h-auto w-[104px] sm:w-[132px]" />
+          <Mascot mood="happy" className="h-auto w-[84px] sm:w-[104px]" />
         </span>
         <h2 className="af-lu-title m-0 font-heading text-[40px] leading-none font-bold tracking-[0.02em] sm:text-[54px]">{format(t.levelUp.title, { n: levelUp.to })}</h2>
         <p className="af-lu-fade m-0 text-base font-bold text-accent-fg sm:text-[17px]">{title}</p>
