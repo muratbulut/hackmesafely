@@ -4,7 +4,7 @@ Bu dosya, bu depoda çalışan Claude Code için kalıcı talimatlardır. Her i�
 
 ## Proje
 
-Hack Me Safely ("Tıklamadan önce bir dur."; eski adı Careful Mode, depo adı hâlâ `carefulmode`), ortaokul ve lise öğrencileri için bir dijital güvenlik eğitim platformudur. Öğrenci önce eğitim labında kısa kartlarla öğrenir, sonra senaryo labında (sahte mail kutusu, mesajlaşma) karar verir. Yanlış karar verirse "hacklendin" ekranını görür, sonunda bir rapor alır. Öğretmenler sınıf açar ve ödev verir, yönetim ekibi lab, gündem ve günün ipucunu yönetir.
+Hack Me Safely ("Tıklamadan önce bir dur."; eski adı Careful Mode; depo `muratbulut/hackmesafely`, 17 Kasım'a kadar `carefulmode`), ortaokul ve lise öğrencileri için bir dijital güvenlik eğitim platformudur. Öğrenci önce eğitim labında kısa kartlarla öğrenir, sonra senaryo labında (sahte mail kutusu, mesajlaşma) karar verir. Yanlış karar verirse "hacklendin" ekranını görür, sonunda bir rapor alır. Öğretmenler sınıf açar ve ödev verir, yönetim ekibi lab, gündem ve günün ipucunu yönetir.
 
 Murat Bulut'un bitirme projesidir. Ekip iki kişidir; fikirleri ve lab senaryolarını ekip yazar, kodu Claude Code yazar.
 
