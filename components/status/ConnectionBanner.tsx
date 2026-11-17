@@ -35,7 +35,7 @@ export function ConnectionAlert({ className, onRetry = canReachServer }: { class
         className,
       )}
     >
-      <WifiOff className="size-5 flex-none text-warning" strokeWidth={2} aria-hidden="true" />
+      <WifiOff className="size-5 flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <b className="text-sm">{t.status.offlineTitle}</b>
         <span className="text-[13px] leading-[1.45] text-fg-2">{t.status.offlineText}</span>

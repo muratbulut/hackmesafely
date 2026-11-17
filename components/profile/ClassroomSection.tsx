@@ -88,7 +88,7 @@ export function ClassroomSection({
               key={c.id}
               className="flex flex-wrap items-center gap-3 rounded-[14px] border border-success/40 bg-success/8 px-4 py-3.5"
             >
-              <Check className="size-5 flex-none text-success" strokeWidth={2.6} aria-hidden="true" />
+              <Check className="size-5 flex-none text-success-fg" strokeWidth={2.6} aria-hidden="true" />
               <span className="flex min-w-0 flex-[1_1_200px] flex-col">
                 <b className="break-words">{c.school ? format(t.classAndSchool, { name: c.name, school: c.school }) : c.name}</b>
                 <span className="text-[13px] text-fg-3">{format(t.teacher, { name: c.teacher })}</span>

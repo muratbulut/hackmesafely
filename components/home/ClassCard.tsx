@@ -64,7 +64,7 @@ export function ClassCard({ data, verified, className }: { data: HomeClassData; 
       {inClass ? (
         <>
           <p className="m-0 flex items-center gap-2.5 rounded-xl border border-success/35 bg-success/10 px-3.5 py-3 text-sm leading-normal text-success-subtle-fg motion-safe:anim-pop">
-            <Check className="size-4 flex-none text-success" strokeWidth={2.4} aria-hidden="true" />
+            <Check className="size-4 flex-none text-success-fg" strokeWidth={2.4} aria-hidden="true" />
             {t.privacy}
           </p>
           {data.assignments.length > 0 ? (
@@ -125,7 +125,7 @@ function AssignmentBox({ assignment: a, showClass }: { assignment: AssignmentVie
       </span>
       {a.finished ? (
         <span className="flex h-11 items-center justify-center gap-2 rounded-xl border border-success/40 bg-success/10 text-sm font-bold text-success-subtle-fg">
-          <Check className="size-4 text-success" strokeWidth={2.4} aria-hidden="true" />
+          <Check className="size-4 text-success-fg" strokeWidth={2.4} aria-hidden="true" />
           {t.done}
         </span>
       ) : a.next ? (

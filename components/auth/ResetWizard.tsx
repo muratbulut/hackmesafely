@@ -118,7 +118,7 @@ export function ResetWizard() {
     return (
       <div className="flex flex-col items-center gap-[18px] text-center anim-slide-in">
         <span className="flex size-[84px] items-center justify-center rounded-3xl bg-success/12 anim-pop">
-          <Check className="size-10 text-success" strokeWidth={2.6} aria-hidden="true" />
+          <Check className="size-10 text-success-fg" strokeWidth={2.6} aria-hidden="true" />
         </span>
         <AuthHeading title={r.doneTitle} lead={r.doneText} />
         <Notice tone="good" icon={LogOut} className="w-full text-left">

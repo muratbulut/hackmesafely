@@ -53,7 +53,7 @@ export function PasswordStrength({ password, evaluation, id }: { password: strin
           return (
             <li key={key} className={cn("flex items-center gap-2 text-sm", ok ? "text-fg" : "text-fg-4")} data-ok={ok}>
               {ok ? (
-                <Check className="size-4 flex-none text-success anim-pop" strokeWidth={2.6} aria-hidden="true" />
+                <Check className="size-4 flex-none text-success-fg anim-pop" strokeWidth={2.6} aria-hidden="true" />
               ) : (
                 <Circle className="size-4 flex-none text-fg-4" strokeWidth={2.4} aria-hidden="true" />
               )}

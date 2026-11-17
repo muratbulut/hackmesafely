@@ -60,7 +60,7 @@ export function PanelTitle({ title, subtitle }: { title: string; subtitle?: stri
   );
 }
 
-const infoTones = { accent: "text-accent-light", warning: "text-warning", danger: "text-danger-fg" } as const;
+const infoTones = { accent: "text-accent-light", warning: "text-warning-fg", danger: "text-danger-fg" } as const;
 
 /** Simgeli küçük bilgi kutusu (gizlilik notu, yöneticinin sorusu ya da notu). */
 export function InfoBox({

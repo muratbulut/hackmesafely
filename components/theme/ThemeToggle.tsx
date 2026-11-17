@@ -35,7 +35,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       )}
     >
       <span className="theme-dark-only">
-        <Sun className="size-5 text-warning" strokeWidth={2} aria-hidden="true" />
+        <Sun className="size-5 text-warning-fg" strokeWidth={2} aria-hidden="true" />
         <span className="sr-only">{t.theme.toGray}</span>
       </span>
       <span className="theme-gray-only">

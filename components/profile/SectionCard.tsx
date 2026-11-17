@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const tones = {
   accent: "bg-accent/12 text-accent-fg",
   violet: "bg-purple/14 text-purple-fg",
-  success: "bg-success/12 text-success",
+  success: "bg-success/12 text-success-fg",
   warning: "bg-warning/12 text-warning-fg",
   danger: "bg-danger/12 text-danger-fg",
 } as const;

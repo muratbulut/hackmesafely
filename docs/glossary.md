@@ -125,7 +125,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Öğretmenler için sayfası, "İki ekran, bir ders" | teachers page (`/ogretmenler`, `components/teachers/`): `TeachersPage`, `LessonTour` |
 | Ziyaretçi | visitor (`app/(visitor)/`, `components/visitor/`) |
 | Durum ekranları (yükleniyor, boş, hata) | status (`components/status/`) |
-| Koyu / gri tema | `dark` / `gray` (`<html data-theme>`, `theme` çerezi) |
+| Koyu / açık tema (eski adı gri) | `dark` / `gray` (`<html data-theme>`, `theme` çerezi) |
 | Hareketi azalt (sitenin ayarı, profil > Görünüm) | reduce motion (`<html data-motion="reduce">`, `motion` çerezi, `lib/motion.ts`) |
 | Dil sözlüğü (arayüz metinleri), dil | messages (`lib/i18n/messages/tr.ts`, `getMessages()`), locale |
 | Sayfa adresleri | `routes` (`lib/navigation.ts`) |

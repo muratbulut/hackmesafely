@@ -99,7 +99,7 @@ function JoinFrame({ code, children }: { code?: string; children: ReactNode }) {
     <div className="flex flex-col gap-5 rounded-3xl border border-line bg-surface p-5 shadow-card sm:p-7">
       <div className="flex items-center gap-3.5">
         <span className="flex size-12 flex-none items-center justify-center rounded-[14px] bg-success/12">
-          <Users className="size-[22px] text-success" strokeWidth={2} aria-hidden="true" />
+          <Users className="size-[22px] text-success-fg" strokeWidth={2} aria-hidden="true" />
         </span>
         <span className="flex flex-col gap-1">
           <span className="font-mono text-xs font-bold tracking-[2px] text-accent-light">{t.eyebrow}</span>
@@ -123,7 +123,7 @@ function JoinFrame({ code, children }: { code?: string; children: ReactNode }) {
       ) : null}
       {children}
       <p className="m-0 flex items-start gap-2 text-[13px] leading-normal text-fg-3">
-        <ShieldCheck className="mt-px size-4 flex-none text-success" strokeWidth={2} aria-hidden="true" />
+        <ShieldCheck className="mt-px size-4 flex-none text-success-fg" strokeWidth={2} aria-hidden="true" />
         {m.privacy}
       </p>
     </div>

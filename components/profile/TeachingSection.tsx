@@ -195,7 +195,7 @@ function StepMark({ mark }: { mark: "done" | "now" | "later" }) {
   if (mark === "done") {
     return (
       <span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-success/16">
-        <Check className="size-3.5 text-success" strokeWidth={2.8} aria-hidden="true" />
+        <Check className="size-3.5 text-success-fg" strokeWidth={2.8} aria-hidden="true" />
       </span>
     );
   }
@@ -231,7 +231,7 @@ function ApprovedPanel({
     <Panel tone="success">
       <div className="flex items-center gap-3">
         <span className="flex size-10 flex-none items-center justify-center rounded-full bg-success/16">
-          <CircleCheck className="size-5 text-success" strokeWidth={2.4} aria-hidden="true" />
+          <CircleCheck className="size-5 text-success-fg" strokeWidth={2.4} aria-hidden="true" />
         </span>
         <PanelTitle title={t.title} subtitle={subtitle} />
       </div>

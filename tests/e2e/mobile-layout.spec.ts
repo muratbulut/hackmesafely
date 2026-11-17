@@ -16,7 +16,9 @@ import { createSchool, makeCoordinator, makeTeacher } from "./support/teacher";
 // Her rol için tek bir test, ekranları sırayla gezer ve sorunları sonunda toplu bildirir (bir
 // ekrandaki sorun ötekilerin denetimini durdurmaz). LAYOUT_SHOTS=<klasör> verilirse her ekranın
 // görüntüsünü oraya kaydeder (görsel inceleme için; görüntüler depoya girmez). LAYOUT_TARGETS=1
-// verilirse 40 px'ten küçük dokunma alanlarını da yazar.
+// verilirse 40 px'ten küçük dokunma alanlarını da yazar. LAYOUT_THEME=gray ekranları açık temada açar;
+// LAYOUT_DESKTOP=1 aynı ekranları masaüstünde de gezip görüntüler (temanın elden geçmesi gibi görsel
+// taramalar için; masaüstünde düzen denetimi bildirilir ama testi düşürmez).
 
 type Screen<D> = {
   /** Raporda ve görüntü dosyasında görünen ad. */
@@ -31,6 +33,8 @@ type Screen<D> = {
 
 const shotsDir = process.env.LAYOUT_SHOTS;
 const reportTargets = !!process.env.LAYOUT_TARGETS;
+const shotTheme = process.env.LAYOUT_THEME;
+const desktopShots = !!process.env.LAYOUT_DESKTOP;
 
 /**
  * Sayfa yüklendi, sonradan gelen içerik (yükleniyor blokları) yerine oturdu ve sonlu animasyonlar
@@ -84,11 +88,41 @@ async function scrollerShots(page: Page, file: string) {
 /** Görüntü dosyalarının sıra numarası (aynı grup birkaç parçada gezilince sıra sürer). */
 const shotCount = new Map<string, number>();
 
+async function shoot(page: Page, group: string, name: string) {
+  mkdirSync(shotsDir!, { recursive: true });
+  const index = (shotCount.get(group) ?? 0) + 1;
+  shotCount.set(group, index);
+  const file = path.join(shotsDir!, `${group}-${String(index).padStart(2, "0")}-${name.replace(/[^\p{L}\p{N}]+/gu, "-")}`);
+  // Açık pencere varsa ekranın görünen hali, yoksa bütün sayfa.
+  const dialogOpen = (await page.locator("[role=dialog], [role=alertdialog], dialog[open]").filter({ visible: true }).count()) > 0;
+  await page.screenshot({ path: `${file}.png`, fullPage: !dialogOpen, animations: "disabled" });
+  await scrollerShots(page, file);
+}
+
 async function visit<D>(page: Page, group: string, screens: Screen<D>[], data: D) {
   const failures: string[] = [];
   for (const screen of screens) {
     await test.step(screen.name, async () => {
       const target = typeof screen.path === "function" ? screen.path(data) : screen.path;
+      // Masaüstü taramasında telefona özgü bir adım (alt menü gibi) bulunamazsa ekran atlanır.
+      if (test.info().project.name === "desktop") {
+        try {
+          if (target) {
+            await page.goto(target);
+            await settle(page);
+          }
+          if (screen.open) {
+            await screen.open(page, data);
+            if (screen.brief) await page.waitForTimeout(1_200);
+            else await settle(page);
+          }
+        } catch (error) {
+          console.log(`[masaüstü] ${group} · ${screen.name}: atlandı (${String(error).split("\n")[0]})`);
+          return;
+        }
+        if (shotsDir) await shoot(page, group, screen.name);
+        return;
+      }
       if (target) {
         await page.goto(target);
         await settle(page);
@@ -98,22 +132,17 @@ async function visit<D>(page: Page, group: string, screens: Screen<D>[], data: D
         if (screen.brief) await page.waitForTimeout(1_200);
         else await settle(page);
       }
-      if (shotsDir) {
-        mkdirSync(shotsDir, { recursive: true });
-        const index = (shotCount.get(group) ?? 0) + 1;
-        shotCount.set(group, index);
-        const file = path.join(shotsDir, `${group}-${String(index).padStart(2, "0")}-${screen.name.replace(/[^\p{L}\p{N}]+/gu, "-")}`);
-        // Açık pencere varsa ekranın görünen hali, yoksa bütün sayfa.
-        const dialogOpen = (await page.locator("[role=dialog], [role=alertdialog], dialog[open]").filter({ visible: true }).count()) > 0;
-        await page.screenshot({ path: `${file}.png`, fullPage: !dialogOpen, animations: "disabled" });
-        await scrollerShots(page, file);
-      }
+      if (shotsDir) await shoot(page, group, screen.name);
       const problems = await layoutProblems(page);
       for (const p of problems) failures.push(`${screen.name} (${target ?? page.url()}): ${p.kind} ${p.detail}`);
       if (reportTargets) {
         for (const t of await smallTargets(page)) console.log(`[küçük] ${group} · ${screen.name}: ${t.size} ${t.detail}`);
       }
     });
+  }
+  if (test.info().project.name === "desktop") {
+    for (const f of failures) console.log(`[masaüstü] ${group} · ${f}`);
+    return;
   }
   expect(failures, failures.join("\n")).toEqual([]);
 }
@@ -789,10 +818,13 @@ const adminScreens: Screen<AdminData>[] = [
 ];
 
 test.describe("telefon düzeni", () => {
-  test.skip(({ isMobile }) => !isMobile, "yalnızca telefon");
+  test.skip(({ isMobile }) => !isMobile && !desktopShots, "yalnızca telefon");
   test.skip(isLive, "veritabanına yazan ve hesap açan testler canlı sitede çalışmaz");
   // Bir ekranda takılan tıklama bütün testi beklemesin.
   test.use({ actionTimeout: 15_000 });
+  test.beforeEach(async ({ context, baseURL }) => {
+    if (shotTheme) await context.addCookies([{ name: "theme", value: shotTheme, url: baseURL! }]);
+  });
 
   test("ziyaretçi ve hesap ekranları", async ({ page, baseURL, browser }) => {
     test.setTimeout(240_000);
