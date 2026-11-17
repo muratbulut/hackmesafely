@@ -204,7 +204,7 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     const note = "Metinler gözden geçiriliyor";
     try {
       // Depodan gelen taslak (oda panelde açılmaz), listeden v1 yayını ve not ile gizleme
-      await insertTestLab({ slug: lab.slug, name: lab.name });
+      const labId = await insertTestLab({ slug: lab.slug, name: lab.name });
       await page.goto("/yonetim/odalar");
       await page.getByRole("button", { name: `Yayınla: ${lab.name}` }).click();
       await page.getByRole("dialog", { name: `${lab.name} odasını yayınla` }).getByRole("button", { name: "Yayınla", exact: true }).click();
@@ -248,6 +248,48 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
       await expect(page).toHaveURL(/[?&]kisi=/);
       await expect(rows(page)).toHaveCount(2);
       for (const row of await rows(page).all()) await expect(row).toContainText(`Defter${tag} Y.`);
+
+      // Gün başlığı ve satırdan odaya git (hoca öncesi kontrol, 42)
+      await expect(page.getByTestId("audit-day-label").filter({ visible: true }).first()).toContainText("Bugün");
+      const published = rows(page).filter({ hasText: `"${lab.name}" v1 yayınlandı` });
+      await expect(published.getByTestId("audit-open")).toHaveAttribute("href", `/yonetim/odalar/${labId}`);
+      await expect(published.getByRole("link", { name: `Odayı aç: "${lab.name}" v1 yayınlandı` })).toBeVisible();
+
+      // Kişinin adına basınca yalnızca onun kayıtları (kişi süzgeci)
+      await page.goto(`/yonetim/kayit-defteri?ara=${encodeURIComponent(lab.name)}`);
+      await expect(rows(page)).toHaveCount(2);
+      await rows(page).first().getByRole("link", { name: `Yalnızca Defter${tag} Y. kayıtları` }).click();
+      await expect(page).toHaveURL(/[?&]kisi=/);
+      await expect(page).toHaveURL(/[?&]ara=/);
+      await expect(page.getByLabel("Kişi")).toHaveValue(/.+/);
+      await expect(rows(page)).toHaveCount(2);
+      // Süzgeç zaten bu kişiyse ad bağlantı değildir
+      await expect(rows(page).first().getByTestId("audit-actor")).toHaveCount(0);
+
+      // Tarih aralığı: bugün dahil olunca kayıtlar var, dün bitince yok; ters aralık düzelir
+      const day = (offset: number) => new Date(Date.now() + 3 * 3600_000 + offset * 86_400_000).toISOString().slice(0, 10);
+      const search = new URLSearchParams({ ara: lab.name }).toString();
+      await page.goto(`/yonetim/kayit-defteri?${search}&bas=${day(-3)}&bit=${day(0)}`);
+      await expect(rows(page)).toHaveCount(2);
+      await expect(page.getByLabel("Başlangıç günü")).toHaveValue(day(-3));
+      await page.goto(`/yonetim/kayit-defteri?${search}&bas=${day(-3)}&bit=${day(-1)}`);
+      await expect(page.getByText("Bu seçimle kayıt yok.")).toBeVisible();
+      await page.getByTestId("audit-clear").filter({ visible: true }).click();
+      await expect(page).toHaveURL(/\/yonetim\/kayit-defteri$/);
+
+      // CSV: aynı süzgeçlerle, Türkçe başlık; indirme de kayıt defterine yazılır
+      await page.goto(`/yonetim/kayit-defteri?${search}`);
+      const exportLink = page.getByTestId("audit-export").filter({ visible: true });
+      await expect(exportLink).toHaveAttribute("href", `/yonetim/kayit-defteri/indir?${search}`);
+      const [download] = await Promise.all([page.waitForEvent("download"), exportLink.click()]);
+      expect(download.suggestedFilename()).toMatch(/^kayit-defteri-\d{4}-\d{2}-\d{2}\.csv$/);
+      const csv = await (await page.request.get(`/yonetim/kayit-defteri/indir?${search}`)).text();
+      const lines = csv.replace(/^\uFEFF/, "").trim().split("\r\n");
+      expect(lines[0]).toBe("Zaman;Kim;Tür;Ne yaptı");
+      expect(lines).toHaveLength(3);
+      expect(csv).toContain(`Defter${tag} Y.;Oda;"""${lab.name}"" v1 yayınlandı"`);
+      await page.goto("/yonetim/kayit-defteri?tur=bakis");
+      await expect(rows(page).filter({ hasText: "Kayıt defteri CSV olarak indirildi · 2 kayıt" }).filter({ hasText: `Defter${tag} Y.` })).toHaveCount(2);
     } finally {
       await deleteTestLabs({ slug: lab.slug });
     }
@@ -266,5 +308,8 @@ test.describe("yönetim özeti, canlı nabız ve kayıt defteri", () => {
     await expect(me).toBeVisible();
     await expect(me).toContainText("Sorumlu · izinli");
     await expect(seers.getByRole("listitem").filter({ hasText: "Yönetici", visible: true }).first()).toBeVisible();
+    // Yalnızca kayıt defteri izni: satırlardan başka sayfalara bağlantı yok (hepsi 404 olurdu)
+    await expect(page.getByTestId("audit-open")).toHaveCount(0);
+    expect((await page.request.get("/yonetim/kayit-defteri/indir")).status()).toBe(200);
   });
 });

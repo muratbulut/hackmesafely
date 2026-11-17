@@ -12,7 +12,19 @@ import {
   shortName,
   type TargetInfo,
 } from "@/lib/admin/audit-sentences";
-import { auditHref, auditKindList, kindFromParam, kindParams, parseAuditFilters } from "@/lib/admin/audit-url";
+import { auditCsv, auditCsvFilename, csvCell } from "@/lib/admin/audit-csv";
+import { auditLink, type LinkAccess } from "@/lib/admin/audit-links";
+import {
+  auditExportHref,
+  auditHref,
+  auditKindList,
+  hasFilters,
+  isDayKey,
+  kindFromParam,
+  kindParams,
+  parseAuditFilters,
+} from "@/lib/admin/audit-url";
+import { dayHeading, dayKeyStart } from "@/lib/admin/calendar";
 
 const lookup = (entries: Record<string, TargetInfo>) => new Map(Object.entries(entries));
 const sentence = (action: string, details: unknown = {}, target = "x:1", targets: Record<string, TargetInfo> = {}, anonymize = false) =>
@@ -62,6 +74,7 @@ const allActions: AuditAction[] = [
   "news.deleted",
   "student.profile_viewed",
   "teacher.viewed_as",
+  "audit.exported",
 ];
 
 describe("kayıt defteri: adlar", () => {
@@ -255,12 +268,16 @@ describe("kayıt defteri: süzgeçler ve adres", () => {
       kind: "content",
       person: "cmabc123",
       query: "Sahte kargo",
+      from: null,
+      to: null,
       cursor: "cmx_9-1",
     });
     expect(parseAuditFilters({ tur: "bilinmeyen", kisi: "a b", ara: undefined, sonraki: "x'; DROP" })).toEqual({
       kind: null,
       person: null,
       query: "",
+      from: null,
+      to: null,
       cursor: null,
     });
     expect(parseAuditFilters({ tur: ["oda", "rol"], ara: "x".repeat(200) }).query).toHaveLength(80);
@@ -276,6 +293,107 @@ describe("kayıt defteri: süzgeçler ve adres", () => {
     const href = auditHref({ kind: "lab", person: "u1", query: "Kargo maili", cursor: "c1" });
     expect(href).toBe("/yonetim/kayit-defteri?tur=oda&kisi=u1&ara=Kargo+maili&sonraki=c1");
     const params = Object.fromEntries(new URL(href, "http://x").searchParams);
-    expect(parseAuditFilters(params)).toEqual({ kind: "lab", person: "u1", query: "Kargo maili", cursor: "c1" });
+    expect(parseAuditFilters(params)).toEqual({ kind: "lab", person: "u1", query: "Kargo maili", from: null, to: null, cursor: "c1" });
+  });
+
+  it("tarih aralığı: gerçek gün olmalı, ters aralık düzelir, adrese bas/bit yazılır", () => {
+    expect(isDayKey("2026-11-14")).toBe(true);
+    expect(isDayKey("2026-02-31")).toBe(false);
+    expect(isDayKey("2026-1-4")).toBe(false);
+    expect(isDayKey("1999-01-01")).toBe(false);
+    expect(parseAuditFilters({ bas: "2026-11-01", bit: "2026-11-17" })).toMatchObject({ from: "2026-11-01", to: "2026-11-17" });
+    expect(parseAuditFilters({ bas: "2026-11-17", bit: "2026-11-01" })).toMatchObject({ from: "2026-11-01", to: "2026-11-17" });
+    expect(parseAuditFilters({ bas: "dün", bit: "2026-13-01" })).toMatchObject({ from: null, to: null });
+    const href = auditHref({ kind: "view", from: "2026-11-01", to: "2026-11-17", cursor: "c1" });
+    expect(href).toBe("/yonetim/kayit-defteri?tur=bakis&bas=2026-11-01&bit=2026-11-17&sonraki=c1");
+    // CSV aynı süzgeçlerle, sayfalamasız
+    expect(auditExportHref({ kind: "view", from: "2026-11-01", cursor: "c1" })).toBe("/yonetim/kayit-defteri/indir?tur=bakis&bas=2026-11-01");
+    expect(auditExportHref({})).toBe("/yonetim/kayit-defteri/indir");
+    expect(hasFilters(parseAuditFilters({}))).toBe(false);
+    expect(hasFilters(parseAuditFilters({ sonraki: "c1" }))).toBe(false);
+    expect(hasFilters(parseAuditFilters({ bit: "2026-11-17" }))).toBe(true);
+  });
+
+  it("gün: Türkiye günü 00.00'da başlar; başlık Bugün, Dün ya da tarih ve gün adı", () => {
+    expect(dayKeyStart("2026-11-14")?.toISOString()).toBe("2026-11-13T21:00:00.000Z");
+    expect(dayKeyStart("bozuk")).toBeNull();
+    const now = new Date("2026-11-17T10:00:00Z");
+    expect(dayHeading(new Date("2026-11-17T00:30:00+03:00"), now)).toBe("Bugün");
+    expect(dayHeading(new Date("2026-11-16T23:59:00+03:00"), now)).toBe("Dün");
+    expect(dayHeading(new Date("2026-11-14T12:00:00+03:00"), now)).toBe("14 Kasım, Cumartesi");
+    expect(dayHeading(new Date("2025-11-14T12:00:00+03:00"), now)).toBe("14 Kasım 2025, Cuma");
+  });
+});
+
+describe("kayıt defteri: satırdan ilgili yere", () => {
+  const admin: LinkAccess = { permissions: ["APPLICATIONS", "LAB_EDITING", "LAB_PUBLISHING", "TIPS", "NEWS", "AUDIT_LOG", "ROLES"], canEdit: true, canPublish: true };
+  const auditOnly: LinkAccess = { permissions: ["AUDIT_LOG"], canEdit: false, canPublish: false };
+  const targets = lookup({
+    "user:s1": { kind: "user", name: "Ayşe Yılmaz", role: "STUDENT" },
+    "user:t1": { kind: "user", name: "Can Demir", role: "TEACHER" },
+    "user:a1": { kind: "user", name: "Ece Kaya", role: "ADMIN" },
+    "user:d1": { kind: "user", name: "Silinmiş kullanıcı", role: "DELETED" },
+    "school:k1": { kind: "school", name: "Atatürk Ortaokulu" },
+    "application:p1": { kind: "application", name: "Can Demir", role: "TEACHER", school: null },
+    "lab:l1": { kind: "lab", name: "Kargo", neighborhood: null },
+    "tip:i1": { kind: "tip", text: "İki adımlı doğrulama" },
+    "news:n1": { kind: "news", title: "Yeni dolandırıcılık" },
+  });
+  const link = (action: string, target: string, access = admin) => auditLink({ action, target }, targets, access);
+
+  it("her hedef kendi sayfasına; ekip işlemleri Yönetim ekibi sekmesine", () => {
+    expect(link("student.profile_viewed", "user:s1")).toEqual({ href: "/yonetim/kullanicilar?ogrenci=s1", kind: "student" });
+    expect(link("teacher.viewed_as", "user:t1")).toEqual({ href: "/yonetim/kullanicilar?sekme=ogretmenler&ogretmen=t1", kind: "teacher" });
+    expect(link("team.added", "user:s1")).toEqual({ href: "/yonetim/kullanicilar?sekme=ekip", kind: "team" });
+    expect(link("user.suspended", "user:a1")?.kind).toBe("team");
+    expect(link("school.updated", "school:k1")).toEqual({ href: "/yonetim/kullanicilar?gorunum=okullar&ara=Atat%C3%BCrk+Ortaokulu", kind: "school" });
+    expect(link("application.approved", "application:p1")).toEqual({ href: "/yonetim/talepler?talep=p1", kind: "application" });
+    expect(link("lab.publish", "lab:l1")).toEqual({ href: "/yonetim/odalar/l1", kind: "lab" });
+    expect(link("tip.pinned", "tip:i1")).toEqual({ href: "/yonetim/ipucu", kind: "tip" });
+    expect(link("news.updated", "news:n1")).toEqual({ href: "/yonetim/gundem/n1", kind: "news" });
+  });
+
+  it("izni olmayan sayfaya ve silinmiş hedefe bağlantı yok", () => {
+    for (const [action, target] of [
+      ["student.profile_viewed", "user:s1"],
+      ["school.updated", "school:k1"],
+      ["application.approved", "application:p1"],
+      ["lab.publish", "lab:l1"],
+      ["tip.pinned", "tip:i1"],
+      ["news.updated", "news:n1"],
+    ]) {
+      expect(link(action, target, auditOnly)).toBeNull();
+    }
+    expect(link("lab.publish", "lab:l1", { permissions: ["AUDIT_LOG", "LAB_PUBLISHING"], canEdit: false, canPublish: true })?.kind).toBe("lab");
+    expect(link("news.deleted", "news:gone")).toBeNull();
+    expect(link("user.suspended", "user:d1")).toBeNull();
+    expect(link("audit.exported", "audit:log")).toBeNull();
+    expect(link("x", "bozuk")).toBeNull();
+  });
+});
+
+describe("kayıt defteri: CSV", () => {
+  it("hücreler: formül etkisizleşir, ayırıcı ve tırnak kaçar", () => {
+    expect(csvCell("Ayşe Y.")).toBe("Ayşe Y.");
+    expect(csvCell("=HYPERLINK(\"x\")")).toBe(`"'=HYPERLINK(""x"")"`);
+    expect(csvCell("+90")).toBe("'+90");
+    expect(csvCell("-1")).toBe("'-1");
+    expect(csvCell("@a")).toBe("'@a");
+    expect(csvCell("a;b")).toBe(`"a;b"`);
+    expect(csvCell("satır\nsonu")).toBe(`"satır\nsonu"`);
+  });
+
+  it("dosya: BOM, başlık, Türkiye saati, noktalı virgül", () => {
+    const csv = auditCsv([{ at: new Date("2026-11-17T06:15:00Z"), actor: "Ece K.", kind: "lab", sentence: '"Kargo" v2 yayınlandı' }]);
+    expect(csv.charCodeAt(0)).toBe(0xfeff);
+    expect(csv.slice(1).split("\r\n")).toEqual(["Zaman;Kim;Tür;Ne yaptı", `2026-11-17 09:15;Ece K.;Oda;"""Kargo"" v2 yayınlandı"`, ""]);
+  });
+
+  it("dosya adı tarih aralığından", () => {
+    const now = new Date("2026-11-17T10:00:00Z");
+    expect(auditCsvFilename({ from: null, to: null }, now)).toBe("kayit-defteri-2026-11-17.csv");
+    expect(auditCsvFilename({ from: "2026-11-01", to: null }, now)).toBe("kayit-defteri-2026-11-01_2026-11-17.csv");
+    expect(auditCsvFilename({ from: "2026-11-01", to: "2026-11-10" }, now)).toBe("kayit-defteri-2026-11-01_2026-11-10.csv");
+    expect(auditCsvFilename({ from: null, to: "2026-11-10" }, now)).toBe("kayit-defteri-2026-11-10.csv");
   });
 });

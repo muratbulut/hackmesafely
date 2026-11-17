@@ -31,7 +31,7 @@ export const kindRules: Record<Exclude<AuditKind, "role">, KindRule> = {
   application: { prefixes: ["application."], actions: ["teacher.reminded"], except: ["application.document_viewed"] },
   lab: { prefixes: ["lab."], actions: [] },
   content: { prefixes: ["tip.", "news."], actions: [] },
-  view: { prefixes: [], actions: ["student.profile_viewed", "teacher.viewed_as", "application.document_viewed"] },
+  view: { prefixes: [], actions: ["student.profile_viewed", "teacher.viewed_as", "application.document_viewed", "audit.exported"] },
 };
 
 const ruleMatches = (rule: KindRule, action: string) =>
@@ -296,6 +296,7 @@ const sentences: Record<AuditAction, Builder> = {
   "student.profile_viewed": (c) => format(t().actions.studentProfileViewed, { name: targetPerson(c) }),
   "teacher.viewed_as": (c) => format(t().actions.teacherViewedAs, { name: targetPerson(c) }),
   "application.document_viewed": (c) => format(t().actions.applicationDocumentViewed, { name: applicant(c) }),
+  "audit.exported": (c) => format(t().actions.auditExported, { n: (number(c.details, "count") ?? 0).toLocaleString("tr-TR") }),
 };
 
 /** Cümlesi tanımlı bütün kayıt adları (birim testi her birini dener). */

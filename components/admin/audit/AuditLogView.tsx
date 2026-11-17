@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
-import type { AuditEntryView, AuditPage, Seer } from "@/lib/admin/audit-log";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { auditExportLimit, type AuditEntryView, type AuditPage, type Seer } from "@/lib/admin/audit-log";
 import { auditHref, type AuditFilters } from "@/lib/admin/audit-url";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,9 @@ const seersShownPhone = 3;
 
 /**
  * Kayıt defteri (Kayit-Defteri): kim, neyi, ne zaman yaptı. Masaüstünde tablo (zaman, kim, tür,
- * ne yaptı), telefonda kartlar. Süzgeçler adreste; sayfa başına 50 kayıt, "Daha eski kayıtlar"
- * ile devam edilir. Kayıtlar yalnızca okunur.
+ * ne yaptı, ilgili sayfa), telefonda kartlar; ikisi de gün başlıklarıyla (Bugün, Dün, 14 Kasım).
+ * Kişinin adına basınca yalnızca onun kayıtları gelir. Süzgeçler adreste; sayfa başına 50 kayıt,
+ * "Daha eski kayıtlar" ile devam edilir. Kayıtlar yalnızca okunur (hoca öncesi kontrol, 42).
  */
 export function AuditLogView({ page, filters }: { page: AuditPage; filters: AuditFilters }) {
   const t = getMessages().adminAudit;
@@ -31,14 +32,14 @@ export function AuditLogView({ page, filters }: { page: AuditPage; filters: Audi
       </div>
 
       <Seers seers={page.seers} />
-      <AuditFilterBar filters={filters} people={page.people} />
+      <AuditFilterBar filters={filters} people={page.people} exportLimit={auditExportLimit} />
 
       {page.entries.length === 0 ? (
         <p className="m-0 rounded-2xl border border-dashed border-line p-7 text-center text-[13px] text-fg-3">{t.empty}</p>
       ) : (
         <>
-          <EntryTable entries={page.entries} />
-          <EntryCards entries={page.entries} />
+          <EntryTable entries={page.entries} filters={filters} />
+          <EntryCards entries={page.entries} filters={filters} />
         </>
       )}
 
@@ -121,25 +122,73 @@ function KindChip({ entry, className }: { entry: AuditEntryView; className?: str
   );
 }
 
+/** Aynı güne düşen kayıtlar art arda gelir (liste en yeniden eskiye sıralı). */
+function byDay(entries: AuditEntryView[]) {
+  const groups: { day: string; label: string; entries: AuditEntryView[] }[] = [];
+  for (const entry of entries) {
+    const last = groups.at(-1);
+    if (last?.day === entry.day) last.entries.push(entry);
+    else groups.push({ day: entry.day, label: entry.dayLabel, entries: [entry] });
+  }
+  return groups;
+}
+
 function When({ entry }: { entry: AuditEntryView }) {
   return (
     <time dateTime={entry.at} title={entry.whenFull}>
-      {entry.when}
+      {entry.clock}
     </time>
   );
 }
 
-/** Masaüstü: tablo. */
-function EntryTable({ entries }: { entries: AuditEntryView[] }) {
+/** Yapan kişinin adı: basınca yalnızca onun kayıtları (kişi süzgeci zaten oysa düz yazı). */
+function Actor({ entry, filters, className }: { entry: AuditEntryView; filters: AuditFilters; className?: string }) {
+  const t = getMessages().adminAudit;
+  if (filters.person === entry.actor.id) return <b className={cn("text-fg", className)}>{entry.actor.name}</b>;
+  const label = format(t.personFilter, { name: entry.actor.name });
+  return (
+    <Link
+      href={auditHref({ ...filters, person: entry.actor.id, cursor: null })}
+      title={label}
+      aria-label={label}
+      className={cn("font-bold text-fg underline-offset-2 hover:text-accent-fg hover:underline", className)}
+      data-testid="audit-actor"
+    >
+      {entry.actor.name}
+    </Link>
+  );
+}
+
+/** Satırdan ilgili sayfaya: "Talebi aç", "Odayı aç"... (yalnızca bakanın izni olan sayfalar). */
+function OpenLink({ entry }: { entry: AuditEntryView }) {
+  const t = getMessages().adminAudit;
+  if (!entry.link) return null;
+  const label = t.links[entry.link.kind];
+  return (
+    <Link
+      href={entry.link.href}
+      aria-label={format(t.links.label, { link: label, sentence: entry.sentence })}
+      className="relative inline-flex h-[34px] flex-none items-center gap-1 rounded-lg border border-line bg-card px-2.5 text-[13px] font-bold whitespace-nowrap text-fg no-underline hover:border-line-strong max-lg:h-10"
+      data-testid="audit-open"
+    >
+      {label}
+      <ArrowUpRight className="size-3.5 text-fg-4" strokeWidth={2} aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** Masaüstü: tablo, gün gün (gün başlığı, altında saat). */
+function EntryTable({ entries, filters }: { entries: AuditEntryView[]; filters: AuditFilters }) {
   const t = getMessages().adminAudit;
   return (
     <div className="hidden overflow-hidden rounded-[20px] border border-line bg-surface lg:block">
       <table className="w-full table-fixed border-collapse" data-testid="audit-table" aria-label={t.listLabel}>
         <colgroup>
-          <col className="w-[156px]" />
-          <col className="w-[226px]" />
-          <col className="w-[128px]" />
+          <col className="w-[92px]" />
+          <col className="w-[210px]" />
+          <col className="w-[112px]" />
           <col />
+          <col className="w-[160px]" />
         </colgroup>
         <thead>
           <tr className="text-left text-xs font-bold tracking-[0.8px] text-fg-4">
@@ -152,58 +201,85 @@ function EntryTable({ entries }: { entries: AuditEntryView[] }) {
             <th scope="col" className="px-2 py-3 font-bold">
               {t.columns.kind}
             </th>
-            <th scope="col" className="py-3 pr-[18px] pl-2 font-bold">
+            <th scope="col" className="px-2 py-3 font-bold">
               {t.columns.what}
+            </th>
+            <th scope="col" className="relative py-3 pr-[18px] pl-2 font-bold">
+              <span className="sr-only">{t.links.column}</span>
             </th>
           </tr>
         </thead>
-        <tbody>
-          {entries.map((entry) => (
-            <tr key={entry.id} className="border-t border-card align-middle" data-testid="audit-row">
-              <td className="py-3 pr-2 pl-[18px] text-[13px] text-fg-3">
-                <When entry={entry} />
-              </td>
-              <td className="px-2 py-3">
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <span aria-hidden="true" className="flex size-[30px] flex-none items-center justify-center rounded-full border border-line bg-card text-[15px]">
-                    {entry.actor.avatar}
-                  </span>
-                  <b className="truncate text-sm">{entry.actor.name}</b>
-                </span>
-              </td>
-              <td className="px-2 py-3">
-                <KindChip entry={entry} />
-              </td>
-              <td className="py-3 pr-[18px] pl-2 text-sm leading-[1.45] text-fg-2 [overflow-wrap:anywhere]">{entry.sentence}</td>
+        {byDay(entries).map((group) => (
+          <tbody key={group.day} data-testid="audit-day">
+            <tr className="border-t border-line bg-surface-raised">
+              <th scope="colgroup" colSpan={5} className="px-[18px] py-2 text-left text-[13px] font-bold text-fg-2" data-testid="audit-day-label">
+                {group.label}
+                <span className="ml-2 font-normal text-fg-4">{format(t.day.count, { n: group.entries.length })}</span>
+              </th>
             </tr>
-          ))}
-        </tbody>
+            {group.entries.map((entry) => (
+              <tr key={entry.id} className="border-t border-card align-middle" data-testid="audit-row">
+                <td className="py-3 pr-2 pl-[18px] text-[13px] text-fg-3 tabular-nums">
+                  <When entry={entry} />
+                </td>
+                <td className="px-2 py-3">
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span aria-hidden="true" className="flex size-[30px] flex-none items-center justify-center rounded-full border border-line bg-card text-[15px]">
+                      {entry.actor.avatar}
+                    </span>
+                    <Actor entry={entry} filters={filters} className="truncate text-sm" />
+                  </span>
+                </td>
+                <td className="px-2 py-3">
+                  <KindChip entry={entry} />
+                </td>
+                <td className="px-2 py-3 text-sm leading-[1.45] text-fg-2 [overflow-wrap:anywhere]">{entry.sentence}</td>
+                <td className="py-3 pr-[18px] pl-2 text-right">
+                  <OpenLink entry={entry} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        ))}
       </table>
     </div>
   );
 }
 
-/** Telefon: kartlar ("Ad S. · ne yaptı", altında tür ve zaman). */
-function EntryCards({ entries }: { entries: AuditEntryView[] }) {
+/** Telefon: gün başlıkları altında kartlar ("Ad S. · ne yaptı", altında tür, saat ve "Aç"). */
+function EntryCards({ entries, filters }: { entries: AuditEntryView[]; filters: AuditFilters }) {
   const t = getMessages().adminAudit;
   return (
-    <ol aria-label={t.listLabel} className="m-0 flex list-none flex-col gap-2 p-0 lg:hidden" data-testid="audit-cards">
-      {entries.map((entry) => (
-        <li key={entry.id} className="flex gap-3 rounded-[14px] border border-card bg-surface-raised p-3" data-testid="audit-row">
-          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full border border-line bg-card text-base">
-            {entry.actor.avatar}
-          </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="text-sm leading-[1.45] text-fg-2 [overflow-wrap:anywhere]">
-              <b className="text-fg">{entry.actor.name}</b> · {entry.sentence}
-            </span>
-            <span className="flex items-center gap-2 text-xs text-fg-4">
-              <span className={cn("font-bold", kindTones[entry.kind].text)}>{t.kinds[entry.kind]}</span>
-              <When entry={entry} />
-            </span>
-          </span>
-        </li>
+    <div className="flex flex-col gap-3.5 lg:hidden" data-testid="audit-cards">
+      {byDay(entries).map((group) => (
+        <section key={group.day} aria-labelledby={`audit-day-${group.day}`} className="flex flex-col gap-2" data-testid="audit-day">
+          <h2 id={`audit-day-${group.day}`} className="m-0 flex items-baseline gap-2 text-[13px] font-bold text-fg-2" data-testid="audit-day-label">
+            {group.label}
+            <span className="font-normal text-fg-4">{format(t.day.count, { n: group.entries.length })}</span>
+          </h2>
+          <ol aria-label={format(t.dayListLabel, { day: group.label })} className="m-0 flex list-none flex-col gap-2 p-0">
+            {group.entries.map((entry) => (
+              <li key={entry.id} className="flex gap-3 rounded-[14px] border border-card bg-surface-raised p-3" data-testid="audit-row">
+                <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full border border-line bg-card text-base">
+                  {entry.actor.avatar}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="text-sm leading-[1.45] text-fg-2 [overflow-wrap:anywhere]">
+                    <Actor entry={entry} filters={filters} /> · {entry.sentence}
+                  </span>
+                  <span className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-xs text-fg-4">
+                      <span className={cn("font-bold", kindTones[entry.kind].text)}>{t.kinds[entry.kind]}</span>
+                      <When entry={entry} />
+                    </span>
+                    <OpenLink entry={entry} />
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
       ))}
-    </ol>
+    </div>
   );
 }

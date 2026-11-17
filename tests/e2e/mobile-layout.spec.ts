@@ -791,6 +791,7 @@ const adminScreens: Screen<AdminData>[] = [
   { name: "Haber düzenleme", path: (d) => `/yonetim/gundem/${d.article}` },
   { name: "Haber önizleme penceresi", path: (d) => `/yonetim/gundem/${d.article}`, open: (page) => page.getByRole("button", { name: "Önizle" }).click() },
   { name: "Kayıt defteri", path: "/yonetim/kayit-defteri" },
+  { name: "Kayıt defteri, süzgeçli", path: "/yonetim/kayit-defteri?tur=oda&bas=2026-01-01&bit=2026-12-31" },
 ];
 
 test.describe("telefon düzeni", () => {

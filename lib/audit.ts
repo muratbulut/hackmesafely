@@ -60,7 +60,10 @@ export type AuditAction =
   // Bakışlar: öğrenci profili, öğretmenin gözünden
   | "student.profile_viewed"
   | "teacher.viewed_as"
-  | "application.document_viewed";
+  | "application.document_viewed"
+  // Kayıt defterinin CSV olarak indirilmesi (app/yonetim/kayit-defteri/indir): ayrıntıda kayıt
+  // sayısı ve süzgeçler durur.
+  | "audit.exported";
 
 /** Kayıt defterindeki tür süzgeci (Kayit-Defteri): Talep, Rol, Lab, İçerik, Bakış. */
 export const auditKinds = ["application", "role", "lab", "content", "view"] as const;
@@ -72,7 +75,7 @@ export function auditKindOf(action: string): AuditKind {
   if (action.startsWith("application.")) return "application";
   if (action.startsWith("lab.")) return "lab";
   if (action.startsWith("tip.") || action.startsWith("news.")) return "content";
-  if (action === "student.profile_viewed" || action === "teacher.viewed_as") return "view";
+  if (action === "student.profile_viewed" || action === "teacher.viewed_as" || action === "audit.exported") return "view";
   if (action === "teacher.reminded") return "application";
   return "role";
 }
@@ -94,4 +97,6 @@ export const auditTarget = {
   lab: (id: string) => `lab:${id}`,
   tip: (id: string) => `tip:${id}`,
   news: (id: string) => `news:${id}`,
+  /** Kayıt defterinin kendisi (indirme): adı aranacak bir hedef değil. */
+  auditLog: () => "audit:log",
 } as const;
