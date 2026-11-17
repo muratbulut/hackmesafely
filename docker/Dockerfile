@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Careful Mode imajı. Depo kökünden derlenir:
+# Hack Me Safely imajı. Depo kökünden derlenir:
 #   docker build -f docker/Dockerfile .                  -> runner (uygulama, varsayılan)
 #   docker build -f docker/Dockerfile --target migrate . -> migrate (tek seferlik)
 #

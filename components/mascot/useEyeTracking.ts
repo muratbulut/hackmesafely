@@ -17,11 +17,15 @@ export function resetGaze(el: Element | null) {
   el.style.removeProperty("--mc-y");
 }
 
-/** Gözün bir noktaya bakması için yön: maskotun göz topundan (kutunun %70'i) o noktaya. */
-export function gazeTowards(el: Element, px: number, py: number, near = 260) {
+/** Gözün kutudaki yeri (0 ile 1 arası). Hap biçimli maskotta göz topu kutunun %70'inde, ortada. */
+export type EyeSpot = { x: number; y: number };
+const MASCOT_EYE: EyeSpot = { x: 90 / 128, y: 0.5 };
+
+/** Gözün bir noktaya bakması için yön: göz topundan o noktaya. */
+export function gazeTowards(el: Element, px: number, py: number, near = 260, eye: EyeSpot = MASCOT_EYE) {
   const box = el.getBoundingClientRect();
-  const cx = box.left + box.width * (90 / 128);
-  const cy = box.top + box.height / 2;
+  const cx = box.left + box.width * eye.x;
+  const cy = box.top + box.height * eye.y;
   const dx = px - cx;
   const dy = py - cy;
   const d = Math.hypot(dx, dy) || 1;
@@ -32,8 +36,9 @@ export function gazeTowards(el: Element, px: number, py: number, near = 260) {
 /**
  * Göz fareyi izler. Yalnızca fare olan cihazda ve "Hareketi azalt" kapalıyken; telefonda ve tablette
  * maskot yalnızca kırpar. Her harekette yeniden çizim olmaz: değer doğrudan SVG'ye yazılır.
+ * `eye` gözün kutudaki yerini verir (logoda göz bir a'dan öbürüne geçebilir); verilmezse maskotunki.
  */
-export function useEyeTracking(ref: RefObject<SVGSVGElement | null>, enabled = true) {
+export function useEyeTracking(ref: RefObject<SVGSVGElement | null>, enabled = true, eye?: RefObject<EyeSpot>) {
   useEffect(() => {
     if (!enabled || typeof window.matchMedia !== "function") return;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -44,7 +49,7 @@ export function useEyeTracking(ref: RefObject<SVGSVGElement | null>, enabled = t
       frame = 0;
       const el = ref.current;
       if (!el || !last || !fine.matches || prefersReducedMotion()) return;
-      const { x, y } = gazeTowards(el, last.clientX, last.clientY);
+      const { x, y } = gazeTowards(el, last.clientX, last.clientY, undefined, eye?.current);
       setGaze(el, x, y);
     }
     function onMove(e: PointerEvent) {
@@ -63,5 +68,5 @@ export function useEyeTracking(ref: RefObject<SVGSVGElement | null>, enabled = t
       document.documentElement.removeEventListener("pointerleave", onLeave);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [ref, enabled]);
+  }, [ref, enabled, eye]);
 }

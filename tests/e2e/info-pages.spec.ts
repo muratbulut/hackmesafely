@@ -123,7 +123,7 @@ test.describe("SSS", () => {
       await expect(questions(page)).toHaveCount(25);
       await expect(page.getByRole("heading", { level: 2, name: "Gizlilik ve aileler" })).toBeVisible();
       // Konu panelleri (gizli) de sayfada; JavaScript'siz liste bir kez görünür.
-      await expect(page.getByText("Hayır. Careful Mode öğrenciler, öğretmenler ve aileler için ücretsiz ve reklamsız.").filter({ visible: true })).toHaveCount(1);
+      await expect(page.getByText("Hayır. Hack Me Safely öğrenciler, öğretmenler ve aileler için ücretsiz ve reklamsız.").filter({ visible: true })).toHaveCount(1);
       await expect(page.getByRole("searchbox", { name: "Soru ara" })).toBeHidden();
     });
   });

@@ -1,4 +1,4 @@
-// Careful Mode veri modeli. Kaynak: docs/platform-document.md, Bölüm 6.
+// Hack Me Safely veri modeli. Kaynak: docs/platform-document.md, Bölüm 6.
 // Model ve alan adları İngilizcedir; dokümandaki Türkçe karşılıkları docs/glossary.md
 // içinde. Better Auth tabloları (Session, Account, Verification) kütüphanenin standart
 // biçimindedir.

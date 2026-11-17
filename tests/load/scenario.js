@@ -1,4 +1,4 @@
-// Careful Mode yük testi (k6): doküman Bölüm 7'deki hedefler.
+// Hack Me Safely yük testi (k6): doküman Bölüm 7'deki hedefler.
 //
 // Aynı anda 100 kullanıcı: çoğu giriş yapmış öğrenci (ana sayfa, yol haritası, mahalle, lab kapağı,
 // lab oynama, sonuç raporu; bazen eğitim labı, gündem, profil), bir kısmı ziyaretçi (tanıtım,

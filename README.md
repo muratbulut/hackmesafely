@@ -1,8 +1,8 @@
-# Careful Mode
+# Hack Me Safely
 
 **Tıklamadan önce bir dur.**
 
-Careful Mode, ortaokul ve lise öğrencileri için bir dijital güvenlik eğitim platformudur. Öğrenci önce kısa bir eğitim odasında öğrenir, sonra gerçek uygulamalara benzeyen güvenli bir senaryo odasında (sahte mail kutusu, mesajlaşma, alışveriş) karar verir. Yanlış kararda "hacklendin" ekranını görür, sonunda kararlarının raporunu alır. Öğretmenler sınıf açıp ödev verir, yönetim ekibi odaları, gündemi ve günün ipucunu yönetir.
+Hack Me Safely, ortaokul ve lise öğrencileri için bir dijital güvenlik eğitim platformudur. Öğrenci önce kısa bir eğitim odasında öğrenir, sonra gerçek uygulamalara benzeyen güvenli bir senaryo odasında (sahte mail kutusu, mesajlaşma, alışveriş) karar verir. Yanlış kararda "hacklendin" ekranını görür, sonunda kararlarının raporunu alır. Öğretmenler sınıf açıp ödev verir, yönetim ekibi odaları, gündemi ve günün ipucunu yönetir.
 
 Murat Bulut'un bitirme projesi.
 
@@ -45,5 +45,5 @@ Bütün komutlar, kod düzeni ve kurallar: [CLAUDE.md](CLAUDE.md).
 
 - Kod: [GNU AGPL-3.0](LICENSE)
 - İçerik (odalar, senaryolar, sesler, videolar, belgeler): [CC BY-NC-SA 4.0](LICENSE-CONTENT)
-- "Careful Mode" adı, logosu ve maskotu bu lisansların dışındadır.
+- "Hack Me Safely" adı, logosu ve maskotu bu lisansların dışındadır.
 - Sesler ElevenLabs ile üretildi. Diğer bildirimler: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

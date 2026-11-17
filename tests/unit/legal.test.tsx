@@ -34,7 +34,7 @@ describe("yasal metinler", () => {
   it("ürün adı metne gömülmez, {brand} ile gelir", () => {
     for (const key of legalDocumentKeys) {
       for (const section of getLegalDocument(key).sections) {
-        expect(`${section.title} ${section.short} ${section.full}`).not.toContain("Careful Mode");
+        expect(`${section.title} ${section.short} ${section.full}`).not.toContain("Hack Me Safely");
       }
     }
   });

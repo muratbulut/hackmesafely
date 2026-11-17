@@ -130,7 +130,7 @@ function SidebarContent({
     <>
       <div className="flex items-center gap-2.5 px-2 pb-[18px]">
         <span className="flex flex-col gap-1.5">
-          <Wordmark labelled className="h-[15px] w-auto" />
+          <Wordmark labelled className="h-9 w-auto" />
           <span className="text-[11px] font-bold tracking-[1.5px] text-warning-fg">{t.kicker}</span>
         </span>
       </div>

@@ -1,10 +1,10 @@
-// Ürün adı, isim hâli ve maskot simgesi yalnızca bu dosyada durur; isim değişince sadece burası değişir.
+// Ürün adı, isim hâli (logo) ve eski maskot simgesi yalnızca bu dosyada durur; isim değişince sadece burası değişir.
 
-import type { SVGProps } from "react";
+import { useId, type SVGProps } from "react";
 
 // Slogan ve açıklama gibi metinler sözlükte (lib/i18n), ürün adı yerine "{brand}" yazılır.
 export const brand = {
-  name: "Careful Mode",
+  name: "Hack Me Safely",
   // Paylaşım görselinin (opengraph-image) tam adresi buradan kurulur; alan adı değişince burası değişir.
   siteUrl: "https://bitirme.muratbulut.net",
   // Kaynak kodu (AGPL-3.0); alt bilgideki "Kaynak kodu" bağlantısı.
@@ -12,7 +12,8 @@ export const brand = {
 } as const;
 
 /*
- * Maskot: hap biçiminde bir düğme ve sağ ucunda gözlü başı (logo tuvalindeki "A · Orijinal").
+ * Eski maskot: hap biçiminde bir düğme ve sağ ucunda gözlü başı. Yeni logoda maskot gözlü a'dır
+ * (aşağıda Wordmark); hap biçimli simge kaldığı yerlerden ayrı bir işte kaldırılacak (17 Kasım, Murat).
  * Gövde --logo, göz bebeği --logo-eye; ikisi de iki temada globals.css'te tanımlı.
  * Göz beyazı her temada beyazdır (maskotun parçası, tema rengi değil).
  */
@@ -50,15 +51,54 @@ export function LogoLineIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-// İsim hâli "careful m◐de": harfler Unbounded Bold'dan çizilmiş yollar (yazı tipi siteye yüklenmez),
-// O harfinin yerinde maskot. Ölçüler yazı tipinin 1000 birimlik em karesinde; harf aralığı -0,03 em.
-const WORDMARK_LEFT = "M737 -241Q729 -164 681 -106Q633 -48 556 -16Q480 16 385 16Q280 16 200 -22Q120 -60 75 -128Q30 -196 30 -285Q30 -375 75 -443Q120 -511 200 -550Q280 -588 385 -588Q480 -588 556 -556Q633 -523 681 -466Q729 -408 737 -330H534Q523 -381 483 -408Q443 -436 385 -436Q340 -436 306 -418Q273 -401 254 -368Q236 -334 236 -285Q236 -237 254 -204Q273 -170 306 -152Q340 -135 385 -135Q443 -135 484 -164Q524 -193 534 -241ZM1304 0 1278 -206 1305 -285 1278 -364 1304 -571H1516L1480 -286L1516 0ZM1352 -285Q1338 -195 1296 -127Q1255 -59 1192 -22Q1128 16 1047 16Q963 16 900 -22Q836 -59 800 -128Q764 -196 764 -285Q764 -376 800 -444Q836 -512 900 -550Q963 -588 1047 -588Q1128 -588 1192 -550Q1255 -513 1297 -446Q1339 -378 1352 -285ZM971 -285Q971 -243 988 -210Q1006 -177 1037 -158Q1068 -140 1108 -140Q1150 -140 1187 -158Q1224 -177 1252 -210Q1280 -243 1294 -285Q1280 -328 1252 -361Q1224 -394 1187 -413Q1150 -432 1108 -432Q1068 -432 1037 -413Q1006 -394 988 -361Q971 -328 971 -285ZM1557 -571H1765L1799 -367V0H1595V-379ZM2067 -580V-406Q2037 -412 2010 -414Q1984 -417 1962 -417Q1918 -417 1881 -400Q1844 -382 1822 -342Q1799 -302 1799 -235L1760 -283Q1768 -345 1784 -400Q1800 -454 1828 -496Q1855 -539 1896 -564Q1937 -588 1996 -588Q2013 -588 2031 -586Q2049 -584 2067 -580ZM2442 16Q2338 16 2256 -22Q2175 -60 2128 -128Q2081 -197 2081 -288Q2081 -377 2126 -444Q2171 -512 2250 -550Q2328 -588 2427 -588Q2530 -588 2602 -544Q2675 -499 2714 -418Q2754 -337 2754 -227H2246V-350H2639L2572 -307Q2568 -351 2550 -382Q2532 -412 2502 -428Q2473 -444 2432 -444Q2387 -444 2355 -426Q2323 -408 2305 -376Q2287 -345 2287 -303Q2287 -249 2312 -212Q2336 -174 2384 -154Q2431 -134 2500 -134Q2563 -134 2626 -150Q2688 -167 2739 -197V-67Q2680 -27 2604 -6Q2529 16 2442 16ZM3217 -634Q3150 -634 3124 -610Q3097 -587 3097 -535V0H2893V-525Q2893 -608 2927 -666Q2961 -725 3028 -756Q3094 -786 3192 -786Q3236 -786 3270 -780Q3305 -774 3344 -763V-613Q3314 -624 3282 -629Q3251 -634 3217 -634ZM2777 -373V-524H3330V-373ZM3616 16Q3536 16 3480 -17Q3423 -50 3393 -110Q3363 -171 3363 -252V-571H3567V-281Q3567 -218 3598 -184Q3629 -150 3687 -150Q3730 -150 3759 -168Q3788 -185 3804 -218Q3820 -251 3820 -297L3883 -264Q3872 -173 3834 -110Q3795 -48 3739 -16Q3683 16 3616 16ZM3857 0 3820 -229V-571H4024V-197L4061 0ZM4117 -770H4322V0H4117ZM4595 -571H4800L4837 -343V0H4633V-374ZM5034 -588Q5113 -588 5168 -555Q5223 -522 5252 -462Q5281 -402 5281 -320V0H5077V-290Q5077 -354 5048 -388Q5019 -422 4964 -422Q4925 -422 4896 -404Q4868 -386 4852 -353Q4837 -320 4837 -275L4774 -308Q4786 -399 4823 -462Q4860 -524 4914 -556Q4969 -588 5034 -588ZM5477 -588Q5556 -588 5612 -555Q5667 -522 5696 -462Q5725 -402 5725 -320V0H5521V-290Q5521 -354 5492 -388Q5463 -422 5408 -422Q5369 -422 5340 -404Q5312 -386 5296 -353Q5281 -320 5281 -275L5218 -308Q5230 -399 5266 -462Q5303 -524 5358 -556Q5413 -588 5477 -588Z";
-const WORDMARK_RIGHT = "M7480 0 7453 -214 7488 -284 7454 -372 7502 -770H7714L7655 -301L7691 0ZM7524 -285Q7510 -195 7468 -127Q7427 -59 7364 -22Q7300 16 7219 16Q7135 16 7072 -22Q7008 -59 6972 -128Q6936 -196 6936 -285Q6936 -376 6972 -444Q7008 -512 7072 -550Q7135 -588 7219 -588Q7300 -588 7364 -550Q7427 -513 7469 -446Q7511 -378 7524 -285ZM7143 -285Q7143 -243 7160 -210Q7178 -177 7209 -158Q7240 -140 7280 -140Q7322 -140 7359 -158Q7396 -177 7424 -210Q7452 -243 7466 -285Q7452 -328 7424 -361Q7396 -394 7359 -413Q7322 -432 7280 -432Q7240 -432 7209 -413Q7178 -394 7160 -361Q7143 -328 7143 -285ZM8093 16Q7989 16 7908 -22Q7826 -60 7779 -128Q7732 -197 7732 -288Q7732 -377 7777 -444Q7822 -512 7900 -550Q7979 -588 8078 -588Q8181 -588 8254 -544Q8326 -499 8366 -418Q8405 -337 8405 -227H7897V-350H8290L8223 -307Q8219 -351 8201 -382Q8183 -412 8154 -428Q8124 -444 8083 -444Q8038 -444 8006 -426Q7974 -408 7956 -376Q7938 -345 7938 -303Q7938 -249 7962 -212Q7987 -174 8034 -154Q8082 -134 8151 -134Q8214 -134 8276 -150Q8339 -167 8390 -197V-67Q8331 -27 8256 -6Q8180 16 8093 16Z";
+// İsim hâli: alt alta "hack me / safely" (logo tuvali, 16 Kasım). Harfler Montserrat Alternates Bold'dan
+// çizilmiş yollar (yazı tipi siteye yüklenmez); iki a tam alt alta durur, maskot a harfinin kendisidir:
+// göz, a'nın iç boşluğunda. Ölçüler yazı tipinin 1000 birimlik em karesinde: harf aralığı -0,01 em,
+// satır aralığı 1058 birim, a harfi iki satırda da x = 681'de başlar.
+const LOGO_VIEW_BOX = "62 -752 4462 2022";
+const LOGO_REST = [
+  "M399-546Q499-546 561-486Q622-426 622-308L622 0L466 0L466-284Q466-348 438-379Q410-411 357-411Q298-411 263-374Q228-338 228-266L228 0L72 0L72-742L228-742L228-482Q259-513 303-529Q347-546 399-546M1703 8Q1617 8 1549-27Q1480-63 1442-126Q1403-189 1403-269Q1403-349 1442-412Q1480-475 1549-510Q1617-546 1703-546Q1788-546 1852-510Q1915-475 1944-409L1823-344Q1781-418 1702-418Q1641-418 1601-378Q1561-338 1561-269Q1561-200 1601-160Q1641-120 1702-120Q1782-120 1823-194L1944-128Q1915-64 1852-28Q1788 8 1703 8M2421 0L2251-211L2176-137L2176 0L2020 0L2020-742L2176-742L2176-322L2404-538L2590-538L2366-310L2610 0M3632-546Q3733-546 3793-486Q3852-427 3852-308L3852 0L3696 0L3696-284Q3696-348 3670-379Q3643-411 3594-411Q3539-411 3507-375Q3475-340 3475-270L3475 0L3319 0L3319-284Q3319-411 3217-411Q3163-411 3131-375Q3099-340 3099-270L3099 0L2943 0L2943-538L3092-538L3092-476Q3122-510 3166-528Q3209-546 3261-546Q3318-546 3364-523Q3410-501 3438-458Q3471-500 3522-523Q3572-546 3632-546M4259-117Q4301-117 4334-129Q4366-142 4394-169L4477-79Q4401 8 4255 8Q4164 8 4094-27Q4024-63 3986-126Q3948-189 3948-269Q3948-348 3986-411Q4023-475 4089-510Q4154-546 4236-546Q4313-546 4376-513Q4439-481 4477-419Q4514-358 4514-274L4116-197Q4133-157 4170-137Q4206-117 4259-117M4236-428Q4177-428 4140-390Q4103-352 4101-285L4363-336Q4352-378 4318-403Q4284-428 4236-428",
+  "M413 1066Q346 1066 282 1050Q218 1033 180 1008L232 896Q268 919 319 934Q370 948 419 948Q518 948 518 899Q518 876 491 866Q464 856 408 849Q342 839 299 826Q256 813 225 780Q193 747 193 686Q193 635 223 596Q252 556 309 534Q365 512 442 512Q499 512 556 525Q612 537 649 559L597 670Q526 630 442 630Q392 630 367 644Q342 658 342 680Q342 705 369 715Q396 725 455 734Q521 745 563 758Q605 770 636 803Q667 836 667 895Q667 945 637 984Q607 1023 550 1045Q492 1066 413 1066M1595 509L1595 532L1733 532L1733 652L1599 652L1599 1058L1443 1058L1443 508Q1443 416 1498 362Q1552 308 1651 308Q1686 308 1718 316Q1749 323 1770 337L1729 450Q1702 431 1666 431Q1595 431 1595 509M2065 941Q2107 941 2140 929Q2172 916 2200 889L2283 979Q2207 1066 2061 1066Q1970 1066 1900 1031Q1830 995 1792 932Q1754 869 1754 789Q1754 710 1792 647Q1829 583 1895 548Q1960 512 2042 512Q2119 512 2182 545Q2245 577 2283 639Q2320 700 2320 784L1922 861Q1939 901 1976 921Q2012 941 2065 941M2042 630Q1983 630 1946 668Q1909 706 1907 773L2169 722Q2158 680 2124 655Q2090 630 2042 630M2608 1066Q2517 1066 2466 1018Q2415 969 2415 880L2415 316L2571 316L2571 871Q2571 905 2589 924Q2606 942 2638 942Q2650 942 2663 939Q2675 936 2682 932L2689 1053Q2650 1066 2608 1066M3142 520L3298 520L3298 968Q3298 1116 3223 1188Q3148 1260 3005 1260Q2929 1260 2862 1241Q2794 1222 2748 1186L2810 1074Q2844 1102 2893 1118Q2942 1134 2992 1134Q3070 1134 3106 1098Q3142 1062 3142 988L3142 970Q3112 1000 3071 1016Q3030 1032 2983 1032Q2877 1032 2815 972Q2753 911 2753 790L2753 520L2909 520L2909 767Q2909 898 3018 898Q3074 898 3108 862Q3142 825 3142 753",
+] as const;
+const LOGO_A = "M462-538L618-538L618 0L469 0L469-62Q411 8 301 8Q225 8 164-26Q102-60 67-123Q32-186 32-269Q32-352 67-415Q102-478 164-512Q225-546 301-546Q404-546 462-481L462-538M328-120Q387-120 426-160Q465-201 465-269Q465-337 426-377Q387-418 328-418Q268-418 229-377Q190-337 190-269Q190-201 229-160Q268-120 328-120";
+
+/** Logonun ölçüleri; canlı logo (components/mascot/logo-engine.ts) aynı sayıları kullanır. */
+export const logoGeometry = {
+  /** viewBox: sol, üst, genişlik, yükseklik. */
+  box: { x: 62, y: -752, width: 4462, height: 2022 },
+  /** a harfinin satırdaki yeri ve iki satırın taban çizgileri. */
+  a: { x: 681, lines: [0, 1058], left: 32, right: 618, top: -546, bottom: 8 },
+  /** a'nın iç boşluğu (gözün yuvası): merkez ve yarıçap, harfin kendi ölçüsünde. */
+  hole: { cx: 328, cy: -269, r: 137.5 },
+  /** Göz: beyaz top, göz bebeği, parıltı; bakarken en çok kayma. */
+  eye: { ball: 99, pupil: 45.4, glint: 14, reach: 16.5 },
+} as const;
+
+/** Gözlü a'nın gözü (iç boşluğun ortasında). Göz bebeği varsayılan olarak biraz sağa bakar. */
+function LogoEye({ live }: { live: boolean }) {
+  const { hole, eye } = logoGeometry;
+  // Canlı hâlde bakış --mc-x ile gelir (mascot.css); düz hâlde aynı yerde durur.
+  const lookStyle = live ? undefined : { transform: `translate(${eye.reach * 0.6}px, 0)` };
+  return (
+    <>
+      <circle className="mc-ball" cx={hole.cx} cy={hole.cy} r={eye.ball} fill={EYE_WHITE} />
+      <g className="mc-look" style={lookStyle}>
+        <g className="mc-eye">
+          <circle cx={hole.cx} cy={hole.cy} r={eye.pupil} fill="var(--logo-eye)" />
+          <circle cx={hole.cx + eye.pupil * 0.34} cy={hole.cy - eye.pupil * 0.4} r={eye.glint} fill={EYE_WHITE} />
+        </g>
+      </g>
+    </>
+  );
+}
 
 /**
- * İsim hâli. Yüksekliği className ile verilir (genişlik oranla gelir); yazı rengi currentColor.
- * Çevresindeki bağlantı ürün adını söylüyorsa süstür (varsayılan); tek başına duruyorsa
- * `labelled` ile ekran okuyucuya ürün adı okunur.
+ * İsim hâli (alt alta logo). Yüksekliği className ile verilir (genişlik oranla gelir); yazı rengi
+ * currentColor, gözlü a --logo. Çevresindeki bağlantı ürün adını söylüyorsa süstür (varsayılan); tek
+ * başına duruyorsa `labelled` ile ekran okuyucuya ürün adı okunur.
+ *
+ * Düz hâlde göz üstteki a'dadır. Canlı hâlde (`live`, üst menü) iki a'da da göz çizilir, hangisinin
+ * göründüğünü ve hareketi components/mascot/logo-engine.ts yönetir; sınıflar mascot.css'te.
  */
 export function Wordmark({
   labelled = false,
@@ -66,26 +106,36 @@ export function Wordmark({
   className,
   ...props
 }: SVGProps<SVGSVGElement> & { labelled?: boolean; live?: boolean }) {
+  const clip = useId();
   const a11y = labelled ? { role: "img", "aria-label": brand.name } : { "aria-hidden": true };
-  // Canlı hâlde (üst menü) O harfindeki maskotun gözü bakar ve kırpar; sınıflar components/mascot/mascot.css'te.
-  // Göz bebeği topun ortasında çizilir, varsayılan bakış (sağa) --mc-x ile gelir; düz hâlde aynı yerde durur.
   const liveClass = live ? "mc mc-wordmark mc-follow mc-blink" : undefined;
-  const lookStyle = live ? undefined : { transform: "translate(51.6px, 0)" };
+  const { a, hole } = logoGeometry;
   return (
-    <svg viewBox="0 -790 8436 812" fill="currentColor" {...a11y} {...props} className={[liveClass, className].filter(Boolean).join(" ") || undefined}>
-      <path d={WORDMARK_LEFT} />
-      <rect className="mc-trk" x="5808" y="-566" width="1031" height="550" rx="275" fill="var(--logo)" />
-      <g className="mc-knob">
-        <circle className="mc-ball" cx="6548" cy="-290" r="206" fill={EYE_WHITE} />
-        <g className="mc-look" style={lookStyle}>
-          <g className="mc-eye">
-            <circle cx="6548" cy="-290" r="90" fill="var(--logo-eye)" />
-            <circle cx="6579" cy="-326" r="27.5" fill={EYE_WHITE} />
+    <svg viewBox={LOGO_VIEW_BOX} fill="currentColor" {...a11y} {...props} className={[liveClass, className].filter(Boolean).join(" ") || undefined}>
+      {live ? (
+        <clipPath id={clip}>
+          <circle cx={hole.cx} cy={hole.cy} r={hole.r * 1.02} />
+        </clipPath>
+      ) : null}
+      {a.lines.map((y, i) => (
+        <g key={y}>
+          <path d={LOGO_REST[i]} />
+          <g className={i === 0 ? "mc-a mc-a-on" : "mc-a"} transform={`translate(${a.x} ${y})`}>
+            <g className="mc-nudge">
+              <path className="mc-letter" d={LOGO_A} fill={i === 0 ? "var(--logo)" : undefined} />
+              {live ? (
+                <g clipPath={`url(#${clip})`}>
+                  <g className="mc-bang" opacity={i === 0 ? undefined : 0}>
+                    <LogoEye live />
+                  </g>
+                </g>
+              ) : i === 0 ? (
+                <LogoEye live={false} />
+              ) : null}
+            </g>
           </g>
         </g>
-        {live ? <path className="mc-arc" d="M6454 -290 Q6548 -221 6642 -290" fill="none" stroke="var(--logo-eye)" strokeWidth="43" strokeLinecap="round" /> : null}
-      </g>
-      <path d={WORDMARK_RIGHT} />
+      ))}
     </svg>
   );
 }
