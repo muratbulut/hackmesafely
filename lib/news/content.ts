@@ -144,6 +144,28 @@ export function linesOf(text: string): string[] {
 /** "Ne oluyor?" paragrafları (her satır bir paragraf). */
 export const paragraphsOf = linesOf;
 
+export type TextPart = { text: string; bold: boolean };
+
+/**
+ * "Ne oluyor?" paragrafındaki kalın yazı (17 Kasım, Murat): iki yıldız arasındaki metin kalın olur
+ * ("**sahte sayfa**"). Başka biçim yok (Markdown değil); eşi olmayan yıldızlar olduğu gibi kalır.
+ * Metin düz parça olarak döner, HTML üretilmez.
+ */
+export function boldParts(paragraph: string): TextPart[] {
+  const parts: TextPart[] = [];
+  const pattern = /\*\*(.+?)\*\*/g;
+  let last = 0;
+  for (const match of paragraph.matchAll(pattern)) {
+    const inner = match[1].trim();
+    if (!inner) continue;
+    if (match.index > last) parts.push({ text: paragraph.slice(last, match.index), bold: false });
+    parts.push({ text: inner, bold: true });
+    last = match.index + match[0].length;
+  }
+  if (last < paragraph.length) parts.push({ text: paragraph.slice(last), bold: false });
+  return parts;
+}
+
 /** Okuma süresi (dakika): tahtadaki hesap, kelime / 120 + 1. */
 export function readingMinutes(content: Pick<ArticleContent, "whatsHappening" | "signs" | "actions">): number {
   const text = [content.whatsHappening, ...content.actions, ...content.signs.flatMap((s) => [s.sign, s.explanation])].join(" ");

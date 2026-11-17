@@ -5,7 +5,7 @@ import { NeighborhoodIcon, toneOf } from "@/components/roadmap/NeighborhoodIcon"
 import { brand } from "@/lib/brand";
 import { format, getMessages, rich } from "@/lib/i18n";
 import type { LabDifficulty } from "@/lib/lab/route";
-import { paragraphsOf, type ArticleContent } from "@/lib/news/content";
+import { boldParts, paragraphsOf, type ArticleContent } from "@/lib/news/content";
 import type { CoverView } from "@/lib/news/cover";
 import { paths, routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -118,7 +118,15 @@ export function ArticleView({ article, member, others }: { article: ArticleViewD
             <SectionHeading n={1}>{a.whatsHappening}</SectionHeading>
             {paragraphsOf(c.whatsHappening).map((p, i) => (
               <p key={i} className="m-0 text-base leading-[1.75] break-words text-fg-2 @3xl:text-lg">
-                {p}
+                {boldParts(p).map((part, j) =>
+                  part.bold ? (
+                    <strong key={j} className="font-bold text-fg">
+                      {part.text}
+                    </strong>
+                  ) : (
+                    part.text
+                  ),
+                )}
               </p>
             ))}
 

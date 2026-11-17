@@ -1,6 +1,6 @@
 "use client";
 
-import { Lightbulb, Pencil, Pin, Plus, Search } from "lucide-react";
+import { Lightbulb, Pencil, Pin, Plus, Repeat, Search, TriangleAlert } from "lucide-react";
 import { useState, useTransition } from "react";
 import { inputClass } from "@/components/admin/fields";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
@@ -8,6 +8,7 @@ import { format, getMessages, rich } from "@/lib/i18n";
 import { archiveTip, pinTipDay, undoTipChange, type TipActionError } from "@/lib/tips/actions";
 import type { AdminTip, AdminTipNeighborhood, TipAdminData } from "@/lib/tips/data";
 import { dayLabel, weekdayLabel } from "@/lib/tips/format";
+import { isLowRead, poolByNeighborhood, poolWarning, repeatDays } from "@/lib/tips/insights";
 import { stripDays } from "@/lib/tips/rules";
 import type { DayKey, TipStatus } from "@/lib/tips/schedule";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,9 @@ const percent = (part: number, whole: number) => (whole > 0 ? Math.round((part /
  * Yönetim · Günün ipucu (Tur 4, C3; tahtalar Ipucu-C3-Bugun ve -Mobil): üstte bugün öğrencilerin
  * gördüğü ipucu ve sayıları, ortada sıradaki 6 gün (bir güne basınca o günün ipucu seçilir),
  * altta havuz (mahalle süzgeci, arama). Her işlemden sonra 5 saniyelik "Geri al". Öğrenci adı
- * yok, yalnızca toplam sayılar.
+ * yok, yalnızca toplam sayılar. Hoca öncesi kontrol (40): havuz bir haftaya yetmiyorsa üstte
+ * uyarı ve şeritte "tekrar" etiketi, süzgeç çiplerinde mahalle başına havuz sayısı, satırda son
+ * gösterildiği gün ve "Az okunuyor", gün penceresinde arama ve mahalle süzgeci.
  */
 export function TipsAdmin({ data }: { data: TipAdminData }) {
   const t = getMessages().tips;
@@ -37,6 +40,8 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
   const [showArchive, setShowArchive] = useState(false);
   const [editing, setEditing] = useState<{ tipId: string | null } | null>(null);
   const [dayOpen, setDayOpen] = useState<DayKey | null>(null);
+  const [dayQuery, setDayQuery] = useState("");
+  const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -46,6 +51,9 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
   const pool = data.tips.filter((x) => x.status === "POOL");
   const archived = data.tips.filter((x) => x.status === "ARCHIVED").length;
   const q = query.trim().toLocaleLowerCase("tr");
+  const repeats = repeatDays(data.plan);
+  const warning = poolWarning(data.plan, pool.length);
+  const poolCounts = poolByNeighborhood(data.tips);
   const visible = data.tips.filter(
     (x) => (showArchive || x.status !== "ARCHIVED") && (!filter || x.neighborhoodId === filter) && (!q || x.text.toLocaleLowerCase("tr").includes(q)),
   );
@@ -90,8 +98,16 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
     });
   }
 
+  function openDay(dayKey: DayKey) {
+    setDayQuery("");
+    setDayFilter(null);
+    setDayOpen(dayKey);
+  }
+
   const editingTip = editing ? tipOf(editing.tipId) : null;
   const day = dayOpen ? data.plan.find((d) => d.day === dayOpen) : null;
+  const dq = dayQuery.trim().toLocaleLowerCase("tr");
+  const dayChoices = pool.filter((x) => (!dayFilter || x.neighborhoodId === dayFilter) && (!dq || x.text.toLocaleLowerCase("tr").includes(dq)));
 
   return (
     <main className="flex flex-col gap-[22px] px-4 pt-6 pb-16 lg:px-9 lg:pt-8 lg:pb-[72px]">
@@ -110,6 +126,29 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
         </button>
       </div>
 
+      {warning ? (
+        <section
+          data-testid="tip-pool-warning"
+          className="flex flex-col gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4 lg:flex-row lg:items-center lg:gap-4 lg:px-5"
+        >
+          <span className="flex min-w-0 flex-1 items-start gap-3">
+            <TriangleAlert className="mt-0.5 size-5 flex-none text-warning-fg" strokeWidth={2} aria-hidden="true" />
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <b className="text-[15px] leading-snug">{format(t.warning.title, { n: pool.length, date: dayLabel(warning.firstRepeat) })}</b>
+              <span className="text-[13px] leading-normal text-fg-3">{t.warning.text}</span>
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setEditing({ tipId: null })}
+            className="inline-flex h-10 flex-none items-center gap-1.5 self-start rounded-xl border border-warning/50 bg-surface px-3.5 text-sm font-bold text-fg hover:border-warning lg:self-auto"
+          >
+            <Plus className="size-4" strokeWidth={2.4} aria-hidden="true" />
+            {t.warning.action}
+          </button>
+        </section>
+      ) : null}
+
       <TodaySection data={data} tip={tipOf(todayId)} neighborhood={neighborhoodOf(tipOf(todayId)?.neighborhoodId ?? null)} />
 
       <section aria-labelledby="tips-next" className="flex flex-col gap-2.5">
@@ -123,22 +162,35 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
           {data.plan.slice(1, 1 + stripDays).map((d) => {
             const tip = tipOf(d.tipId);
             const tone = toneOf(neighborhoodOf(tip?.neighborhoodId ?? null)?.color ?? "");
+            const repeat = repeats.has(d.day);
             return (
               <li key={d.day} className="flex w-[240px] flex-none lg:w-auto lg:min-w-0">
                 <button
                   type="button"
-                  onClick={() => setDayOpen(d.day)}
+                  onClick={() => openDay(d.day)}
                   disabled={pending}
                   className="relative flex min-w-0 flex-1 flex-col gap-2 rounded-2xl border border-line bg-surface p-3.5 text-left text-fg transition-colors hover:border-line-strong"
                 >
                   <span className="flex w-full items-center justify-between gap-1.5">
                     <b className="text-sm">{dayLabel(d.day)}</b>
-                    {d.pinned ? (
-                      <span className="flex text-accent-fg">
-                        <Pin className="size-3.5" strokeWidth={2} aria-hidden="true" />
-                        <span className="sr-only">{t.next.pinned}</span>
-                      </span>
-                    ) : null}
+                    <span className="flex items-center gap-1.5">
+                      {repeat ? (
+                        <span
+                          data-testid="tip-repeat"
+                          className="inline-flex h-5 items-center gap-1 rounded-full bg-warning/16 px-1.5 text-[11px] font-bold text-warning-fg"
+                        >
+                          <Repeat className="size-3" strokeWidth={2.4} aria-hidden="true" />
+                          <span aria-hidden="true">{t.next.repeat}</span>
+                          <span className="sr-only">{t.next.repeatLabel}</span>
+                        </span>
+                      ) : null}
+                      {d.pinned ? (
+                        <span className="flex text-accent-fg">
+                          <Pin className="size-3.5" strokeWidth={2} aria-hidden="true" />
+                          <span className="sr-only">{t.next.pinned}</span>
+                        </span>
+                      ) : null}
+                    </span>
                   </span>
                   <span className="-mt-1.5 text-xs text-fg-4">{weekdayLabel(d.day)}</span>
                   <span aria-hidden="true" className={cn("h-[3px] w-7 rounded-full", tip ? tone.fill : "bg-line-strong")} />
@@ -159,7 +211,14 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
             <div role="group" aria-label={t.pool.filterLabel} className="-mx-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:px-0">
               <FilterChip label={t.pool.all} dot="bg-accent" on={filter === null} onClick={() => setFilter(null)} />
               {data.neighborhoods.map((n) => (
-                <FilterChip key={n.id} label={n.name} dot={toneOf(n.color).fill} on={filter === n.id} onClick={() => setFilter(filter === n.id ? null : n.id)} />
+                <FilterChip
+                  key={n.id}
+                  label={n.name}
+                  count={poolCounts.get(n.id) ?? 0}
+                  dot={toneOf(n.color).fill}
+                  on={filter === n.id}
+                  onClick={() => setFilter(filter === n.id ? null : n.id)}
+                />
               ))}
             </div>
             <label className="relative block lg:w-[220px]">
@@ -233,9 +292,39 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
         className="lg:max-w-[520px]"
       >
         {day ? (
-          <div role="group" aria-label={t.day.options} className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             <DayOption title={t.day.auto} sub={t.day.autoHint} dot="bg-fg-4" on={!day.pinned} disabled={pending} onClick={() => pin(day.day, null, !day.pinned)} />
-            {pool.map((tip) => {
+            <div className="flex flex-col gap-2 pt-1.5">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2 text-fg-4" strokeWidth={2} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={dayQuery}
+                  onChange={(e) => setDayQuery(e.target.value)}
+                  aria-label={t.day.searchLabel}
+                  placeholder={t.day.searchPlaceholder}
+                  className={cn(inputClass, "h-[42px] pl-10 text-sm")}
+                />
+              </label>
+              <div role="group" aria-label={t.day.filterLabel} className="-mx-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:flex-wrap lg:px-0">
+                <FilterChip label={t.pool.all} dot="bg-accent" on={dayFilter === null} onClick={() => setDayFilter(null)} />
+                {data.neighborhoods
+                  .filter((n) => (poolCounts.get(n.id) ?? 0) > 0)
+                  .map((n) => (
+                    <FilterChip
+                      key={n.id}
+                      label={n.name}
+                      count={poolCounts.get(n.id) ?? 0}
+                      dot={toneOf(n.color).fill}
+                      on={dayFilter === n.id}
+                      onClick={() => setDayFilter(dayFilter === n.id ? null : n.id)}
+                    />
+                  ))}
+              </div>
+            </div>
+            <div role="group" aria-label={t.day.options} className="flex flex-col gap-2">
+            {dayChoices.length === 0 ? <p className="m-0 px-1 py-2 text-sm text-fg-3">{t.day.empty}</p> : null}
+            {dayChoices.map((tip) => {
               const area = neighborhoodOf(tip.neighborhoodId);
               return (
                 <DayOption
@@ -249,6 +338,7 @@ export function TipsAdmin({ data }: { data: TipAdminData }) {
                 />
               );
             })}
+            </div>
           </div>
         ) : null}
       </TipSheet>
@@ -331,19 +421,33 @@ function TodaySection({ data, tip, neighborhood }: { data: TipAdminData; tip: Ad
   );
 }
 
-function FilterChip({ label, dot, on, onClick }: { label: string; dot: string; on: boolean; onClick: () => void }) {
+function FilterChip({ label, count, dot, on, onClick }: { label: string; count?: number; dot: string; on: boolean; onClick: () => void }) {
+  const t = getMessages().tips;
   return (
     <button
       type="button"
       aria-pressed={on}
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 flex-none items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold text-fg transition-colors",
+        // relative: sayının sr-only metni kaydırılan çip satırının dışına taşıp sayfayı genişletmesin.
+        "relative inline-flex h-9 flex-none items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold text-fg transition-colors",
         on ? "border-accent bg-card" : "border-line bg-transparent hover:border-line-strong",
       )}
     >
       <span aria-hidden="true" className={cn("size-2 rounded-[3px]", dot)} />
       {label}
+      {count !== undefined ? (
+        <span
+          data-testid="tip-chip-count"
+          className={cn(
+            "ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold",
+            count === 0 ? "bg-warning/16 text-warning-fg" : "bg-fg-3/12 text-fg-3",
+          )}
+        >
+          <span aria-hidden="true">{count}</span>
+          <span className="sr-only">{format(t.pool.chipCount, { n: count })}</span>
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -371,6 +475,8 @@ function PoolRow({ tip, data, neighborhood, onOpen }: { tip: AdminTip; data: Tip
   else if (tip.nextDay) next = format(t.pool.nextDay, { date: dayLabel(tip.nextDay), weekday: weekdayLabel(tip.nextDay) });
   else if (pinned && tip.pinnedDay) next = format(t.pool.pinnedDay, { date: dayLabel(tip.pinnedDay) });
   else next = t.pool.noTurn;
+  const last = isToday ? null : tip.lastShown ? format(t.pool.lastShown, { date: dayLabel(tip.lastShown) }) : t.pool.notShown;
+  const lowRead = isLowRead(tip);
 
   return (
     <li>
@@ -391,17 +497,27 @@ function PoolRow({ tip, data, neighborhood, onOpen }: { tip: AdminTip; data: Tip
         </span>
         <span className="line-clamp-2 text-sm leading-[1.45] [overflow-wrap:anywhere] lg:line-clamp-none lg:min-w-0 lg:flex-1">{tip.text}</span>
         <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-fg-4 lg:contents">
-          <span className={cn("inline-flex items-center gap-1 font-bold lg:w-[150px] lg:flex-none lg:text-[13px]", isToday ? "text-warning-fg" : "text-fg-3")}>
-            {pinned ? (
-              <>
-                <Pin className="size-3.5 flex-none text-accent-fg" strokeWidth={2} aria-hidden="true" />
-                <span className="sr-only">{t.pool.pinnedIcon}</span>
-              </>
-            ) : null}
-            {next}
+          <span className="inline-flex flex-wrap items-center gap-x-2.5 gap-y-0.5 lg:w-[150px] lg:flex-none lg:flex-col lg:items-start">
+            <span className={cn("inline-flex items-center gap-1 font-bold lg:text-[13px]", isToday ? "text-warning-fg" : "text-fg-3")}>
+              {pinned ? (
+                <>
+                  <Pin className="size-3.5 flex-none text-accent-fg" strokeWidth={2} aria-hidden="true" />
+                  <span className="sr-only">{t.pool.pinnedIcon}</span>
+                </>
+              ) : null}
+              {next}
+            </span>
+            {last ? <span data-testid="tip-last-shown">{last}</span> : null}
           </span>
-          <span className="lg:w-[130px] lg:flex-none lg:text-[13px] lg:text-fg-3">
-            {tip.shown > 0 ? format(t.pool.why, { n: percent(tip.reasonViews, tip.views) }) : null}
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 lg:w-[130px] lg:flex-none lg:flex-col lg:items-start lg:text-[13px] lg:text-fg-3">
+            {tip.shown > 0 ? <span>{format(t.pool.why, { n: percent(tip.reasonViews, tip.views) })}</span> : null}
+            {lowRead ? (
+              <span data-testid="tip-low-read" title={t.pool.lowReadHint} className="inline-flex items-center gap-1 text-xs font-bold text-warning-fg">
+                <TriangleAlert className="size-3.5 flex-none" strokeWidth={2} aria-hidden="true" />
+                {t.pool.lowRead}
+                <span className="sr-only">{t.pool.lowReadHint}</span>
+              </span>
+            ) : null}
           </span>
         </span>
         <span className="hidden lg:block lg:w-[80px] lg:flex-none">

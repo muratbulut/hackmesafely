@@ -108,6 +108,8 @@ export type AdminTip = {
   /** Bütün günlerde ipucunu gören ve "Neden?"e bakan kişi sayıları (oran için). */
   views: number;
   reasonViews: number;
+  /** En son gösterildiği gün (bugün dahil); hiç gösterilmediyse null. */
+  lastShown: DayKey | null;
   /** Önümüzdeki 14 gün içinde sırası gelen ilk gün (bugün dahil); yoksa null. */
   nextDay: DayKey | null;
 };
@@ -150,6 +152,7 @@ export const getTipAdminData = cache(async (): Promise<TipAdminData> => {
   const nextOf = new Map<string, DayKey>();
   for (const day of plan) if (day.tipId && !nextOf.has(day.tipId)) nextOf.set(day.tipId, day.day);
   const shownOf = new Map(shown.map((s) => [s.tipId, s._count._all]));
+  const lastShownOf = new Map(schedule.map((s) => [s.id, s.lastShown]));
   const viewCount = (tipId: string, reasonOnly: boolean) =>
     views.filter((v) => v.tipId === tipId && (!reasonOnly || v.reasonViewed)).reduce((sum, v) => sum + v._count._all, 0);
   const todayCount = (reasonOnly: boolean) => todayViews.filter((v) => !reasonOnly || v.reasonViewed).reduce((sum, v) => sum + v._count._all, 0);
@@ -173,6 +176,7 @@ export const getTipAdminData = cache(async (): Promise<TipAdminData> => {
       status: t.status,
       pinnedDay: t.pinnedDate ? dateToDay(t.pinnedDate) : null,
       shown: shownOf.get(t.id) ?? 0,
+      lastShown: lastShownOf.get(t.id) ?? null,
       views: viewCount(t.id, false),
       reasonViews: viewCount(t.id, true),
       nextDay: t.status === "POOL" || t.id === todayTip?.id ? (nextOf.get(t.id) ?? null) : null,

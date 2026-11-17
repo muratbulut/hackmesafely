@@ -12,6 +12,7 @@ import { avatarOf } from "@/lib/avatars";
 import { db } from "@/lib/db";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { effectivePermissions } from "./access";
+import { auditLink, type AuditLink, type LinkAccess } from "./audit-links";
 import {
   actorName,
   auditKindOf,
@@ -25,7 +26,7 @@ import {
   type TargetLookup,
 } from "./audit-sentences";
 import type { AuditFilters } from "./audit-url";
-import { whenLabel } from "./calendar";
+import { clock, dayHeading, dayKey, dayKeyStart, dayMs, whenLabel } from "./calendar";
 
 /** Bir sayfadaki kayıt sayısı. */
 export const auditPageSize = 50;
@@ -39,9 +40,17 @@ export type AuditEntryView = {
   whenFull: string;
   /** ISO zaman (<time dateTime>) */
   at: string;
-  actor: { name: string; avatar: string };
+  /** Gün başlığı için: Türkiye günü ("2026-11-14") ve başlığı ("Bugün", "Dün", "14 Kasım, Cuma"). */
+  day: string;
+  dayLabel: string;
+  /** Gün başlığının altındaki saat: "09:15". */
+  clock: string;
+  /** Yapan kişinin kimliği: adına basınca yalnızca onun kayıtları (kişi süzgeci, ?kisi=). */
+  actor: { id: string; name: string; avatar: string };
   kind: AuditKind;
   sentence: string;
+  /** İlgili sayfa (talep, oda, kişi...); bakanın izni yoksa ya da hedef silinmişse null. */
+  link: AuditLink | null;
 };
 
 type Row = {
@@ -112,6 +121,11 @@ function whereSql(filters: AuditFilters, withCursor: boolean): Prisma.Sql {
   if (filters.kind) conditions.push(kindSql(filters.kind));
   if (filters.person) conditions.push(Prisma.sql`l."actorId" = ${filters.person}`);
   if (filters.query) conditions.push(searchSql(filters.query));
+  // Tarih aralığı Türkiye günleriyle: başlangıç gününün 00.00'ından bitiş gününün sonuna kadar.
+  const from = filters.from ? dayKeyStart(filters.from) : null;
+  const to = filters.to ? dayKeyStart(filters.to) : null;
+  if (from) conditions.push(Prisma.sql`l."createdAt" >= ${from}`);
+  if (to) conditions.push(Prisma.sql`l."createdAt" < ${new Date(to.getTime() + dayMs)}`);
   if (withCursor && filters.cursor) {
     conditions.push(Prisma.sql`(l."createdAt", l."id") < (SELECT "createdAt", "id" FROM "AuditLog" WHERE "id" = ${filters.cursor})`);
   }
@@ -172,7 +186,7 @@ export async function resolveTargets(keys: readonly string[]): Promise<TargetLoo
   return lookup;
 }
 
-async function toViews(rows: readonly Row[], now: Date, options: SentenceOptions = {}): Promise<AuditEntryView[]> {
+async function toViews(rows: readonly Row[], now: Date, access: LinkAccess | null, options: SentenceOptions = {}): Promise<AuditEntryView[]> {
   const lookup = await resolveTargets(referencedTargets(rows));
   return rows.map((row) => {
     const when = whenLabel(row.createdAt, now);
@@ -181,12 +195,17 @@ async function toViews(rows: readonly Row[], now: Date, options: SentenceOptions
       when: when.short,
       whenFull: when.full,
       at: row.createdAt.toISOString(),
+      day: dayKey(row.createdAt),
+      dayLabel: dayHeading(row.createdAt, now),
+      clock: clock(row.createdAt),
       actor: {
+        id: row.actorId,
         name: actorName({ name: row.actorName, role: row.actorRole }, options),
         avatar: avatarOf({ id: row.actorId, avatar: row.actorAvatar }).emoji,
       },
       kind: auditKindOf(row.action),
       sentence: auditSentence(row, lookup, options),
+      link: access ? auditLink(row, lookup, access) : null,
     };
   });
 }
@@ -240,7 +259,8 @@ async function getPeople(): Promise<AuditPerson[]> {
     .sort((a, b) => a.name.localeCompare(b.name, "tr"));
 }
 
-export async function getAuditPage(filters: AuditFilters, now: Date): Promise<AuditPage> {
+/** Kayıt defteri sayfası; `access` bakanın izinleri (satırdaki "Aç" bağlantıları yalnızca izinli sayfalara). */
+export async function getAuditPage(filters: AuditFilters, now: Date, access: LinkAccess): Promise<AuditPage> {
   const [rows, [count], seers, people] = await Promise.all([
     selectRows(whereSql(filters, true), auditPageSize + 1),
     db.$queryRaw<{ n: number }[]>`SELECT count(*)::int AS n FROM "AuditLog" l WHERE ${whereSql(filters, false)}`,
@@ -249,10 +269,32 @@ export async function getAuditPage(filters: AuditFilters, now: Date): Promise<Au
   ]);
   const page = rows.slice(0, auditPageSize);
   return {
-    entries: await toViews(page, now),
+    entries: await toViews(page, now, access),
     total: count?.n ?? 0,
     older: rows.length > auditPageSize ? page[page.length - 1].id : null,
     seers,
     people,
+  };
+}
+
+// ---------------------------------------------------------------------------------------
+// CSV (app/yonetim/kayit-defteri/indir)
+// ---------------------------------------------------------------------------------------
+
+/** Bir indirmede en çok bu kadar kayıt (daha fazlası için tarih aralığı daraltılır). */
+export const auditExportLimit = 5000;
+
+export type AuditExportRow = { at: Date; actor: string; kind: AuditKind; sentence: string };
+
+/** Süzgece uyan kayıtlar, sayfalamasız (en yeniden eskiye, en çok auditExportLimit). */
+export async function getAuditExport(filters: AuditFilters, now: Date): Promise<{ rows: AuditExportRow[]; total: number }> {
+  const [rows, [count]] = await Promise.all([
+    selectRows(whereSql(filters, false), auditExportLimit),
+    db.$queryRaw<{ n: number }[]>`SELECT count(*)::int AS n FROM "AuditLog" l WHERE ${whereSql(filters, false)}`,
+  ]);
+  const views = await toViews(rows, now, null);
+  return {
+    rows: views.map((view, i) => ({ at: rows[i].createdAt, actor: view.actor.name, kind: view.kind, sentence: view.sentence })),
+    total: count?.n ?? 0,
   };
 }

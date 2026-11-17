@@ -25,8 +25,8 @@ export default function AdminAuditPage({ searchParams }: PageProps<"/yonetim/kay
 }
 
 async function AdminAudit({ searchParams }: Pick<PageProps<"/yonetim/kayit-defteri">, "searchParams">) {
-  await requirePermission("AUDIT_LOG");
+  const access = await requirePermission("AUDIT_LOG");
   const filters = parseAuditFilters(await searchParams);
-  const page = await getAuditPage(filters, await requestTime());
+  const page = await getAuditPage(filters, await requestTime(), access);
   return <AuditLogView page={page} filters={filters} />;
 }

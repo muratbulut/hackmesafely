@@ -187,7 +187,18 @@ export type AdminArticleRow = {
   readiness: Pick<Readiness, "contentReady" | "missing" | "done" | "total">;
   /** Sıralama için (taslaklar son düzenlenen önce). */
   updatedAt: number;
+  /** Listedeki küçük kapak (hoca öncesi kontrol, 41); görsel yoksa null (konunun çizimi çıkar). */
+  cover: CoverView | null;
 };
+
+/** Takvim şeridinin bir Cuması (hoca öncesi kontrol, 41). */
+export type CalendarWeek = { key: string; day: string };
+
+/** Gündem listesinin üstündeki şerit: yayın anı henüz gelmemiş önümüzdeki 6 Cuma. */
+export async function getNewsCalendar(count = 6): Promise<CalendarWeek[]> {
+  const now = await requestTime();
+  return upcomingFridays(now, count).map((key) => ({ key, day: dayMonthText(fridayPublishTime(key)!) }));
+}
 
 /** Yönetimdeki liste (Gundem-Son): Yayında, Planlı, Taslak sekmeleri. */
 export async function getAdminArticles(): Promise<AdminArticleRow[]> {
@@ -209,6 +220,11 @@ export async function getAdminArticles(): Promise<AdminArticleRow[]> {
         neighborhoodId: true,
         updatedAt: true,
         neighborhood: { select: topicSelect },
+        coverFocusX: true,
+        coverFocusY: true,
+        coverAlt: true,
+        coverCredit: true,
+        cover: { select: { width: true, height: true, updatedAt: true } },
       },
     }),
     getPublishedLabs(),
@@ -237,6 +253,7 @@ export async function getAdminArticles(): Promise<AdminArticleRow[]> {
       readCount: row.readCount,
       readiness: { contentReady: check.contentReady, missing: check.missing, done: check.done, total: check.total },
       updatedAt: row.updatedAt.getTime(),
+      cover: coverOf(row),
     };
   });
 }
