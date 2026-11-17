@@ -1,11 +1,13 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FormMascot } from "@/components/mascot/FormMascot";
+import { LiveWordmark } from "@/components/mascot/LiveWordmark";
+import { LOGO_BANG_MS, LOGO_ROAM_MS, LOGO_WAIT_MS } from "@/components/mascot/logo-engine";
 import { Mascot, mascotMoods } from "@/components/mascot/Mascot";
 import { PageOverlay, SHOW_AFTER_MS, SIGN_OUT_EVENT } from "@/components/mascot/PageOverlay";
 import { LOOK_EVENT, lookAt } from "@/components/mascot/RoomMascot";
 import { Spinner } from "@/components/status/Spinner";
+import { brand, logoGeometry, Wordmark } from "@/lib/brand";
 
 let pathname = "/";
 vi.mock("next/navigation", () => ({
@@ -47,50 +49,129 @@ describe("maskot", () => {
   });
 });
 
-describe("giriş formundaki maskot", () => {
+describe("logo", () => {
+  it("düz hâlde göz üstteki a'dadır; tek başına duruyorsa ürün adını söyler", () => {
+    const { container, rerender } = render(<Wordmark />);
+    const svg = container.querySelector("svg")!;
+    expect(svg).toHaveAttribute("aria-hidden", "true");
+    const letters = svg.querySelectorAll(".mc-a");
+    expect(letters).toHaveLength(2);
+    expect(letters[0].querySelector(".mc-eye")).not.toBeNull();
+    expect(letters[1].querySelector(".mc-eye")).toBeNull();
+    rerender(<Wordmark labelled />);
+    expect(screen.getByRole("img", { name: brand.name })).toBeInTheDocument();
+  });
+
+  it("gözün yuvası a harfinin içinde, göz yuvadan küçük", () => {
+    const { a, hole, eye } = logoGeometry;
+    expect(hole.cx - hole.r).toBeGreaterThan(a.left);
+    expect(hole.cx + hole.r).toBeLessThan(a.right);
+    expect(hole.cy - hole.r).toBeGreaterThan(a.top);
+    expect(hole.cy + hole.r).toBeLessThan(a.bottom);
+    expect(eye.ball).toBeLessThan(hole.r);
+  });
+});
+
+describe("menüdeki canlı logo", () => {
+  /** Ana sayfada bir tur: bekleme, gezme, son vuruşlar (ardından kaçış). */
+  const ESCAPE_TURN = LOGO_WAIT_MS + LOGO_ROAM_MS.escape + LOGO_BANG_MS;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame", "performance", "Date"] });
+    window.history.replaceState(null, "", "/");
+  });
   afterEach(() => {
+    vi.useRealTimers();
+    delete document.documentElement.dataset.motion;
     delete document.documentElement.dataset.mascotEyes;
+    window.history.replaceState(null, "", "/");
+  });
+
+  function logo() {
+    const { container } = render(<LiveWordmark />);
+    const letters = Array.from(container.querySelectorAll(".mc-a"));
+    const on = () => letters.map((l) => l.classList.contains("mc-a-on"));
+    const moved = () => letters.some((l) => l.querySelector(".mc-bang")!.hasAttribute("transform"));
+    return { container, letters, on, moved };
+  }
+
+  it("10 saniye kıpırdamaz, sonra a'nın içinde gezer", () => {
+    const { on, moved } = logo();
+    act(() => vi.advanceTimersByTime(LOGO_WAIT_MS - 100));
+    expect(moved()).toBe(false);
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(moved()).toBe(true);
+    expect(on()).toEqual([true, false]);
+  });
+
+  it("ana sayfada göz öbür a'ya kaçar, renk de geçer; sonraki turda geri döner", () => {
+    const { letters, on, moved } = logo();
+    act(() => vi.advanceTimersByTime(ESCAPE_TURN + 3_000));
+    expect(on()).toEqual([false, true]);
+    expect(letters[0].querySelector(".mc-bang")).toHaveAttribute("opacity", "0");
+    expect(letters[1].querySelector(".mc-bang")).not.toHaveAttribute("opacity");
+    // Yerine oturunca durur, yeni tur 10 saniye sonra başlar.
+    expect(moved()).toBe(false);
+    act(() => vi.advanceTimersByTime(ESCAPE_TURN + 3_000));
+    expect(on()).toEqual([true, false]);
+  });
+
+  it("diğer sayfalarda göz a'nın içinde kalır", () => {
+    window.history.replaceState(null, "", "/odalar");
+    const { on, moved } = logo();
+    act(() => vi.advanceTimersByTime(LOGO_WAIT_MS + 1_000));
+    expect(moved()).toBe(true);
+    // Tur biter, göz yerine oturur; sonraki tur yine 10 saniye sonra.
+    act(() => vi.advanceTimersByTime(LOGO_ROAM_MS.inside + LOGO_BANG_MS + 2_000));
+    expect(on()).toEqual([true, false]);
+    expect(moved()).toBe(false);
+  });
+
+  it("Hareketi azalt açıksa hiç kıpırdamaz", () => {
+    document.documentElement.dataset.motion = "reduce";
+    const { on, moved } = logo();
+    act(() => vi.advanceTimersByTime(ESCAPE_TURN * 3));
+    expect(moved()).toBe(false);
+    expect(on()).toEqual([true, false]);
   });
 
   function form() {
     return render(
       <>
-        <FormMascot />
+        <LiveWordmark />
         <input type="email" aria-label="E-posta" />
         <input type="password" aria-label="Şifre" autoComplete="current-password" />
       </>,
     );
   }
 
-  it("şifre alanında gözünü kapatır, menüdeki logo da kapatır; çıkınca açar", () => {
-    const { container } = form();
+  it("şifre alanında gözünü kapatır; çıkınca açar", () => {
+    form();
+    fireEvent.focus(screen.getByLabelText("E-posta"));
+    expect(document.documentElement.dataset.mascotEyes).toBeUndefined();
     fireEvent.focus(screen.getByLabelText("Şifre"));
-    expect(container.querySelector("svg")).toHaveClass("mc-mood-shut");
     expect(document.documentElement.dataset.mascotEyes).toBe("shut");
     fireEvent.blur(screen.getByLabelText("Şifre"));
-    expect(container.querySelector("svg")).toHaveClass("mc-mood-idle");
     expect(document.documentElement.dataset.mascotEyes).toBeUndefined();
   });
 
-  it("şifre görünür yapılınca da (metin alanı) kapalı kalır", () => {
+  it("şifre görünür yapılınca da (metin alanı) kapalı kalır; yazılanı hiçbir yere yazmaz", () => {
     const { container } = form();
     const input = screen.getByLabelText("Şifre") as HTMLInputElement;
     input.type = "text";
     fireEvent.focus(input);
-    expect(container.querySelector("svg")).toHaveClass("mc-mood-shut");
+    input.value = "GizliSifre!2026";
+    fireEvent.input(input);
+    expect(document.documentElement.dataset.mascotEyes).toBe("shut");
+    expect(container.querySelector("svg")!.outerHTML).not.toContain("GizliSifre");
+    expect(JSON.stringify(document.documentElement.dataset)).not.toContain("GizliSifre");
   });
 
-  it("e-postayı yazarken yazının ucuna bakar; metnin kendisini hiçbir yere yazmaz", () => {
-    const { container } = form();
-    const svg = container.querySelector("svg")!;
-    const email = screen.getByLabelText("E-posta") as HTMLInputElement;
-    fireEvent.focus(email);
-    const start = Number(svg.style.getPropertyValue("--mc-x"));
-    email.value = "ayse.yilmaz@okul.example";
-    fireEvent.input(email);
-    expect(Number(svg.style.getPropertyValue("--mc-x"))).toBeGreaterThan(start);
-    expect(container.innerHTML).not.toContain("ayse");
-    expect(JSON.stringify(document.documentElement.dataset)).not.toContain("ayse");
+  it("şifrede gözü kapatan kural logodaki göze de uyar", () => {
+    const css = readFileSync("components/mascot/mascot.css", "utf8");
+    expect(css).toContain('html[data-mascot-eyes="shut"] .mc-follow .mc-eye');
+    const { container } = render(<LiveWordmark />);
+    expect(container.querySelector("svg")).toHaveClass("mc", "mc-wordmark", "mc-follow", "mc-blink");
   });
 });
 

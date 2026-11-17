@@ -4,7 +4,7 @@
  * Sınıflar "mc-" ile başlar. Ruh hâli kökteki .mc-mood-* sınıfıyla, evcil tepki .mc-r-* sınıfıyla seçilir.
  *
  * Bakış yönü iki değişkenle gelir: --mc-x ve --mc-y (-1 ile 1 arası; 1 = en sağ / en aşağı).
- * --mc-reach göz bebeğinin en çok kaç birim kayacağıdır: Mascot'ta 10, isim hâlinde 86 (kendi ölçeğinde).
+ * --mc-reach göz bebeğinin en çok kaç birim kayacağıdır: Mascot'ta 10, logoda 16,5 (kendi ölçeğinde).
  * "Hareketi azalt" açıksa globals.css bütün hareketleri durdurur; renk ve göz şekli yine değişir.
  */
 
@@ -15,10 +15,20 @@
   --mc-off: -52px;
   overflow: visible;
 }
-/* İsim hâlindeki maskot kendi ölçeğinde (1 maskot birimi = 8,6 isim birimi). */
+/*
+ * Canlı logo (lib/brand.tsx Wordmark, üst menü): göz a harfinin iç boşluğundadır, kendi ölçeğinde bakar.
+ * Gözün durduğu a (.mc-a-on) logo rengindedir, öbürü yazı rengindedir; göz kaçınca renk de geçer.
+ * Gezme, çarpma ve kaçma hareketi logo-engine.ts'ten gelir (SVG'ye doğrudan yazılır).
+ */
 .mc.mc-wordmark {
-  --mc-reach: 86px;
-  --mc-off: -465px;
+  --mc-reach: 16.5px;
+}
+.mc.mc-wordmark .mc-letter {
+  fill: currentColor;
+  transition: fill 0.5s ease;
+}
+.mc.mc-wordmark .mc-a-on .mc-letter {
+  fill: var(--logo);
 }
 
 .mc .mc-trk {
@@ -99,7 +109,7 @@
   }
 }
 
-/* Şifre yazılırken göz kapalı. Sayfadaki her maskot kapatır (FormMascot html'e data-mascot-eyes yazar). */
+/* Şifre yazılırken göz kapalı. Menüdeki logo kapatır (usePasswordEyes html'e data-mascot-eyes yazar). */
 .mc.mc-mood-shut .mc-eye,
 html[data-mascot-eyes="shut"] .mc-follow .mc-eye {
   animation: none;
@@ -209,22 +219,18 @@ html[data-mascot-eyes="shut"] .mc-follow .mc-eye {
 
 /* Uyku ve kapalı (404): düğme sola kayar, gövde soluk. */
 .mc.mc-mood-sleep .mc-trk,
-.mc.mc-mood-off .mc-trk,
-html[data-mascot="sleep"] .mc-follow .mc-trk {
+.mc.mc-mood-off .mc-trk {
   fill: var(--line-strong);
 }
 .mc.mc-mood-sleep .mc-knob,
-.mc.mc-mood-off .mc-knob,
-html[data-mascot="sleep"] .mc-follow .mc-knob {
+.mc.mc-mood-off .mc-knob {
   transform: translateX(var(--mc-off));
 }
-.mc.mc-mood-sleep .mc-eye,
-html[data-mascot="sleep"] .mc-follow .mc-eye {
+.mc.mc-mood-sleep .mc-eye {
   animation: none;
   opacity: 0;
 }
-.mc.mc-mood-sleep .mc-arc,
-html[data-mascot="sleep"] .mc-follow .mc-arc {
+.mc.mc-mood-sleep .mc-arc {
   opacity: 1;
 }
 .mc.mc-mood-sleep .mc-zz {

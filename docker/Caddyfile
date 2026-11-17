@@ -1,4 +1,4 @@
-# Careful Mode ters vekil sunucusu (kendi başına bir sunucuda). Caddy, DOMAIN için HTTPS
+# Hack Me Safely ters vekil sunucusu (kendi başına bir sunucuda). Caddy, DOMAIN için HTTPS
 # sertifikasını kendisi alır; DOMAIN verilmezse localhost üzerinde kendi imzaladığı
 # sertifikayla çalışır. Diğer güvenlik başlıkları uygulamadan gelir (next.config.ts).
 

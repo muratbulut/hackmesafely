@@ -1,4 +1,4 @@
-# Careful Mode yayın düzeni: PostgreSQL + migration işi + uygulama (+ isteğe bağlı Caddy).
+# Hack Me Safely yayın düzeni: PostgreSQL + migration işi + uygulama (+ isteğe bağlı Caddy).
 # Kendi başına bir sunucuda (depo kökünde): cp .env.example .env, değerleri doldur, sonra
 #   docker compose up -d --build
 # .env.example'daki COMPOSE_PROFILES=caddy, HTTPS'i Caddy'nin yapmasını sağlar.

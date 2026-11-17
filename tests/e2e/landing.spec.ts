@@ -28,7 +28,7 @@ test.describe("tanıtım sayfası", () => {
 
     const response = await page.goto("/");
     expect(response?.status()).toBe(200);
-    await expect(page).toHaveTitle(/Careful Mode/);
+    await expect(page).toHaveTitle(/Hack Me Safely/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hacklenmeden önce, burada hacklen.");
     await expect(page.getByRole("region", { name: "Günün ipucu" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Kısa kartlarla öğren" })).toBeVisible();

@@ -102,7 +102,7 @@ function ProjectionBody({ target, onClose, onJoined }: { target: ProjectionTarge
       <span aria-hidden="true" className="pointer-events-none absolute top-[10%] left-1/2 size-[520px] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
       <div className="relative flex flex-none items-center justify-between gap-3 px-4 py-3 lg:px-7 lg:py-5">
         <span className="hidden items-center gap-2.5 lg:flex">
-          <Wordmark labelled className="h-[18px] w-auto" />
+          <Wordmark labelled className="h-10 w-auto" />
         </span>
         <span className="text-[13px] leading-snug text-fg-4">{t.note}</span>
         <button

@@ -69,7 +69,7 @@ describe("SSS yapısı", () => {
     ];
     for (const text of texts) {
       for (const [, tag] of text.matchAll(/<(\w+)>/g)) expect(Object.keys(answerLinks), text).toContain(tag);
-      expect(text).not.toContain("Careful Mode");
+      expect(text).not.toContain("Hack Me Safely");
       expect(text).not.toMatch(/siber güvenli/i);
     }
   });

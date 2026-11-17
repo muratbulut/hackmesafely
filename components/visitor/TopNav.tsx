@@ -26,7 +26,7 @@ export function TopNav() {
     <header className="relative z-30 border-b border-card bg-canvas-translucent print:hidden">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3.5 lg:px-6 lg:py-4">
         <Link href={routes.home} className="-my-1.5 flex items-center gap-2 py-1.5 text-fg no-underline lg:gap-2.5" aria-label={format(t.site.homeLink, { brand: brand.name })}>
-          <LiveWordmark className="h-[15px] w-auto lg:h-[18px]" />
+          <LiveWordmark className="h-9 w-auto lg:h-11" />
         </Link>
         <div className="flex items-center gap-2 lg:gap-3">
           {/* Oturum isteğe göre okunur; o gelene kadar (ve ziyaretçide) ziyaretçi menüsü görünür. */}

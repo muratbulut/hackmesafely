@@ -3,7 +3,7 @@ import { brand } from "@/lib/brand";
 import { getMessages } from "@/lib/i18n";
 import { THEME_COLOR } from "@/lib/theme";
 
-// Telefonda "Ana ekrana ekle" ile gelen simge ve ad. Simgeler: app/icon.svg (yalnızca göz), public/icon-512.png.
+// Telefonda "Ana ekrana ekle" ile gelen simge ve ad. Simgeler: app/icon.svg (gözlü a), public/icon-512.png (koyu zeminde gözlü a).
 export default function manifest(): MetadataRoute.Manifest {
   const t = getMessages();
   return {
