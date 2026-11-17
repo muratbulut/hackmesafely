@@ -17,21 +17,21 @@ import { paths, routes } from "@/lib/navigation";
 
 // teacher-mail.ts ile aynı renkler (açık tema).
 const colors = {
-  page: "#E4E7EE",
+  page: "#ECEDEE",
   card: "#FFFFFF",
-  border: "#D5DCEA",
-  header: "#0B1020",
-  headerText: "#E8ECF8",
-  text: "#0F172A",
-  body: "#334155",
-  muted: "#5B6683",
-  quoteBg: "#F1F4FA",
-  quoteBorder: "#0E7490",
-  button: "#22D3EE",
-  buttonText: "#0B1020",
-  footer: "#7A859F",
-  footerBorder: "#E6EAF3",
-  link: "#0E7490",
+  border: "#D5D8DB",
+  header: "#141517",
+  headerText: "#F1F2F3",
+  text: "#141517",
+  body: "#33363A",
+  muted: "#52565C",
+  quoteBg: "#F4F5F6",
+  quoteBorder: "#F5C400",
+  button: "#F5C400",
+  buttonText: "#141517",
+  footer: "#656A70",
+  footerBorder: "#E4E6E8",
+  link: "#6B5300",
 };
 
 const fonts = {

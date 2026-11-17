@@ -10,21 +10,21 @@ import type { MailMessage } from "@/lib/mail";
 export type CodePurpose = "verify" | "reset" | "changeEmail";
 
 const colors = {
-  page: "#E4E7EE",
+  page: "#ECEDEE",
   card: "#FFFFFF",
-  border: "#D5DCEA",
-  header: "#0B1020",
-  headerText: "#E8ECF8",
-  text: "#0F172A",
-  body: "#334155",
-  muted: "#5B6683",
-  digitBg: "#F1F4FA",
-  warnBg: "#FEF3C7",
-  warnBorder: "#F59E0B",
-  warnText: "#78350F",
-  footer: "#7A859F",
-  footerBorder: "#E6EAF3",
-  link: "#0E7490",
+  border: "#D5D8DB",
+  header: "#141517",
+  headerText: "#F1F2F3",
+  text: "#141517",
+  body: "#33363A",
+  muted: "#52565C",
+  digitBg: "#F4F5F6",
+  warnBg: "#FFF1E6",
+  warnBorder: "#EA6A0C",
+  warnText: "#A84A00",
+  footer: "#656A70",
+  footerBorder: "#E4E6E8",
+  link: "#6B5300",
 };
 
 const fonts = {
