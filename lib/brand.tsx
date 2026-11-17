@@ -8,7 +8,7 @@ export const brand = {
   // Paylaşım görselinin (opengraph-image) tam adresi buradan kurulur; alan adı değişince burası değişir.
   siteUrl: "https://hackmesafely.com",
   // Kaynak kodu (AGPL-3.0); alt bilgideki "Kaynak kodu" bağlantısı.
-  sourceUrl: "https://github.com/muratbulut/carefulmode",
+  sourceUrl: "https://github.com/muratbulut/hackmesafely",
 } as const;
 
 /*
