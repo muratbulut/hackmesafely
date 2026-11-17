@@ -89,8 +89,9 @@ fi
 # Oturum imzası sunucuda bir kez üretilir ve oradan çıkmaz (değişirse herkesin oturumu kapanır).
 has_value BETTER_AUTH_SECRET || set_secret BETTER_AUTH_SECRET "$(openssl rand -hex 32)"
 if [ "$DOMAIN" = localhost ]; then set_env BETTER_AUTH_URL "http://localhost:$APP_PORT"; else set_env BETTER_AUTH_URL "https://$DOMAIN"; fi
-# Kod maillerinin gönderen adresi; Resend'de doğrulanan alan adında olmalı.
-has_value MAIL_FROM_ADDRESS || set_env MAIL_FROM_ADDRESS "no-reply@$DOMAIN"
+# Kod maillerinin gönderen adresi; Resend'de doğrulanan alan adında olmalı. Alan adıyla birlikte
+# değişir (alan adı taşınınca eski adres kalmasın), bu yüzden her yayında yeniden yazılır.
+set_env MAIL_FROM_ADDRESS "no-reply@$DOMAIN"
 # Depo sırları (RESEND_API_KEY) ve depo değişkenleri (ADMIN_EMAILS) komut satırında değil,
 # stdin'den "AD=değer" satırları olarak gelir (deploy.yml). Boş değer yazılmaz, sunucudaki eski
 # değer kalır. Her değerin biçimi sıkı denetlenir (.env'e beklenmedik bir şey yazılmasın).

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Sunucunun nginx'ine bu sitenin girişini ve HTTPS sertifikasını kurar.
-#   bash docker/server/install-nginx.sh <alan-adı> <uygulama-portu>
+#   bash docker/server/install-nginx.sh <alan-adı> <uygulama-portu> ["ek adlar"]
+#   bash docker/server/install-nginx.sh --redirect <eski-alan-adı> <yeni-alan-adı>
+# Ek adlar (www gibi, boşlukla ayrılır) ana adrese yönlenir ve sertifikada yer alır.
+# --redirect eski adres için uygulamaya gitmeyen, her isteği yeni adrese yönlendiren bir giriş
+# kurar (nginx-redirect.conf).
 #
 # Yalnızca bu siteye ait dosyalara dokunur; aynı sunucudaki diğer sitelerinkine dokunmaz:
 #   /etc/nginx/sites-available/<alan>, /etc/nginx/sites-enabled/<alan>, /etc/nginx/ssl/<alan>/
@@ -15,9 +19,25 @@
 
 set -euo pipefail
 
-DOMAIN=${1:?alan adı gerekli}
-PORT=${2:?uygulama portu gerekli}
+if [ "${1:-}" = --redirect ]; then
+  DOMAIN=${2:?eski alan adı gerekli}
+  TARGET=${3:?yeni alan adı gerekli}
+  PORT=0
+  ALIASES=""
+  TEMPLATE=nginx-redirect.conf
+else
+  DOMAIN=${1:?alan adı gerekli}
+  PORT=${2:?uygulama portu gerekli}
+  ALIASES=${3:-}
+  TARGET=""
+  TEMPLATE=nginx-site.conf
+fi
+# shellcheck disable=SC2206 # ek adlar boşlukla ayrılır
+NAMES=("$DOMAIN" $ALIASES)
 cd "$(dirname "$0")"
+# shellcheck source=docker/server/nginx-render.sh
+source ./nginx-render.sh
+valid_names "${NAMES[@]}" ${TARGET:+"$TARGET"}
 
 S=(sudo -n)
 SSL=/etc/nginx/ssl/$DOMAIN
@@ -36,8 +56,9 @@ fi
 if [ ! -s "$CERT" ]; then
   echo "Sertifika henüz yok (docker/server/$CERT)."
   echo "Cloudflare > SSL/TLS > Origin Server > Create Certificate > 'Use my private key and CSR'"
-  echo "seçeneğine aşağıdaki imza isteği yapıştırılır, alan adı olarak yalnızca $DOMAIN kalır."
-  "${S[@]}" openssl req -new -key "$SSL/origin-key.pem" -subj "/CN=$DOMAIN" -addext "subjectAltName=DNS:$DOMAIN"
+  echo "seçeneğine aşağıdaki imza isteği yapıştırılır, alan adları olarak yalnızca ${NAMES[*]} kalır."
+  san=$(printf 'DNS:%s,' "${NAMES[@]}")
+  "${S[@]}" openssl req -new -key "$SSL/origin-key.pem" -subj "/CN=$DOMAIN" -addext "subjectAltName=${san%,}"
   echo "NGINX=cert-pending"
   exit 0
 fi
@@ -45,8 +66,10 @@ if [ "$(openssl x509 -in "$CERT" -noout -pubkey)" != "$("${S[@]}" openssl pkey -
   echo "Hata: docker/server/$CERT sunucudaki özel anahtarla eşleşmiyor."
   exit 1
 fi
-openssl x509 -in "$CERT" -noout -checkhost "$DOMAIN" | grep -q "does match" \
-  || { echo "Hata: sertifika $DOMAIN için değil."; exit 1; }
+for name in "${NAMES[@]}"; do
+  openssl x509 -in "$CERT" -noout -checkhost "$name" | grep -q "does match" \
+    || { echo "Hata: sertifika $name için değil."; exit 1; }
+done
 openssl x509 -in "$CERT" -noout -checkend 2592000 > /dev/null \
   || echo "Uyarı: sertifikanın süresi 30 gün içinde doluyor."
 
@@ -56,9 +79,7 @@ openssl x509 -in "$CERT" -noout -checkend 2592000 > /dev/null \
 # sitenin ayar parçasına bağlı değildir. Liste bozuk ya da eksikse nginx'e dokunulmaz.
 new_site=$(mktemp)
 trap 'rm -f "$new_site"' EXIT
-# shellcheck source=docker/server/nginx-render.sh
-source ./nginx-render.sh
-render_site "$DOMAIN" "$PORT" nginx-site.conf cloudflare-ips.txt > "$new_site"
+render_site "$DOMAIN" "$PORT" "$TEMPLATE" cloudflare-ips.txt "$ALIASES" "$TARGET" > "$new_site"
 
 if "${S[@]}" cmp -s "$new_site" "$SITE" && "${S[@]}" cmp -s "$CERT" "$SSL/origin-cert.pem" \
   && [ "$(readlink "$ENABLED" 2> /dev/null)" = "$SITE" ]; then

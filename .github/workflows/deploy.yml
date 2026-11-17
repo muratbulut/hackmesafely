@@ -46,7 +46,15 @@ env:
   SERVER_USER: ${{ secrets.SERVER_USER }}
   SERVER_PORT: "22"
   REMOTE_DIR: /opt/apps/cyberguard
+  # Sitenin adresi (BETTER_AUTH_URL, gönderen adres, nginx girişi). DOMAIN_ALIASES ana adrese
+  # yönlenen ek adlar (boşlukla ayrılır), REDIRECT_DOMAINS her isteği ana adrese yönlendiren eski
+  # adresler. NEXT_DOMAIN taşınılacak yeni adres: sertifikası depoya girene kadar yalnızca imza
+  # isteği (CSR) yazdırır, siteye dokunmaz. Ayrıntı: docker/server/README.md, "Alan adı taşıma".
   DOMAIN: bitirme.muratbulut.net
+  DOMAIN_ALIASES: ""
+  REDIRECT_DOMAINS: ""
+  NEXT_DOMAIN: hackmesafely.com
+  NEXT_DOMAIN_ALIASES: www.hackmesafely.com
   # Uygulama sunucuda yalnızca 127.0.0.1:<port>'ta dinler.
   APP_PORT: "3002"
 
@@ -261,11 +269,26 @@ jobs:
         if: steps.key.outputs.present == 'true' && inputs.operation == 'deploy'
         run: |
           # shellcheck disable=SC2029
-          ssh server "bash '$REMOTE_DIR/docker/server/install-nginx.sh' '$DOMAIN' '$APP_PORT'" | tee nginx.txt
+          ssh server "bash '$REMOTE_DIR/docker/server/install-nginx.sh' '$DOMAIN' '$APP_PORT' '$DOMAIN_ALIASES'" | tee nginx.txt
           if grep -q '^NGINX=ready' nginx.txt; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::Site ayakta ama HTTPS sertifikası bekleniyor; imza isteği (CSR) bu adımın kaydında."
+          fi
+          # Eski adresler: uygulamaya gitmez, her istek ana adrese yönlenir.
+          for old in $REDIRECT_DOMAINS; do
+            # shellcheck disable=SC2029
+            ssh server "bash '$REMOTE_DIR/docker/server/install-nginx.sh' --redirect '$old' '$DOMAIN'" | tee redirect.txt
+            grep -q '^NGINX=ready' redirect.txt \
+              || echo "::warning::$old yönlendirmesi kurulamadı (sertifika bekleniyor); ayrıntı bu adımın kaydında."
+          done
+          # Taşınılacak adres: sertifika yoksa yalnızca imza isteği yazdırılır.
+          if [ -n "$NEXT_DOMAIN" ]; then
+            # shellcheck disable=SC2029
+            ssh server "bash '$REMOTE_DIR/docker/server/install-nginx.sh' '$NEXT_DOMAIN' '$APP_PORT' '$NEXT_DOMAIN_ALIASES'" | tee next.txt
+            if grep -q '^NGINX=cert-pending' next.txt; then
+              echo "::notice::$NEXT_DOMAIN için imza isteği (CSR) bu adımın kaydında: Cloudflare > SSL/TLS > Origin Server > Create Certificate."
+            fi
           fi
 
       # Uçtan uca testlerin hepsi canlı adreste de çalışır (hepsi yalnızca okur).
