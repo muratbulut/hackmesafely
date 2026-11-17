@@ -47,7 +47,6 @@ export const paths = {
   adminArticle: (id: string) => `/yonetim/gundem/${encodeURIComponent(id)}`,
   adminAudit: "/yonetim/kayit-defteri",
   adminLabs: "/yonetim/odalar",
-  adminNewLab: "/yonetim/odalar/yeni",
   adminLab: (id: string) => `/yonetim/odalar/${encodeURIComponent(id)}`,
   /** Taslağı öğrenci gibi oynatma: tam ekran, yönetim çerçevesi olmadan. */
   adminLabPreview: (id: string) => `/yonetim/odalar/${encodeURIComponent(id)}/onizle`,

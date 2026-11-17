@@ -14,7 +14,6 @@ import {
 import { isConfiguredAdminEmail, parseAdminEmails } from "@/lib/admin/admin-emails";
 import { canonical, isPublishable, sameContent } from "@/lib/admin/compare";
 import { emptyContent, exampleContent } from "@/lib/admin/drafts";
-import { blankTask, freeSignPlaces, moveItem, nextId, taskMax } from "@/lib/admin/editor-model";
 import { slugify, slugMaxLength, uniqueSlug } from "@/lib/admin/slug";
 import { defaultTryPath, fakeChoices, mergeTryPath, outcomePoints, realChoices, reportForPath, type TryPath } from "@/lib/admin/try-path";
 import { draftIssues, validateContent } from "@/lib/admin/validate";
@@ -268,36 +267,6 @@ describe("taslak ve yayına hazırlık", () => {
       expect(filled.meta.name).toBe("Kopya lab");
       expect(isPublishable(template, filled)).toBe(true);
     }
-  });
-});
-
-describe("lab düzenleme formu yardımcıları", () => {
-  it("tekil kimlik üretir", () => {
-    expect(nextId("item", [])).toBe("item-1");
-    expect(nextId("item", ["item-1", "item-3"])).toBe("item-2");
-  });
-
-  it("sırayı değiştirir, sınırda olduğu gibi bırakır", () => {
-    expect(moveItem(["a", "b", "c"], 1, -1)).toEqual(["b", "a", "c"]);
-    expect(moveItem(["a", "b", "c"], 2, 1)).toEqual(["a", "b", "c"]);
-    expect(moveItem(["a", "b", "c"], 0, -1)).toEqual(["a", "b", "c"]);
-  });
-
-  it("yeni soru görevi 3 boş seçenekle başlar", () => {
-    expect(blankTask("question-1", "question").options).toHaveLength(3);
-    expect(blankTask("action-1", "action").options).toHaveLength(0);
-  });
-
-  it("işaret yerleri şablona göre", () => {
-    expect(freeSignPlaces("INBOX", { signs: [] })).toEqual(["sender", "text", "link"]);
-    expect(freeSignPlaces("MESSAGING", { signs: [{ at: "sender", text: "", quote: "" }] })).toEqual(["text", "ask"]);
-  });
-
-  it("görevin en yüksek puanı", () => {
-    const items = [{ kind: "fake" as const }, { kind: "real" as const }, { kind: "real" as const }];
-    expect(taskMax({ type: "review", options: [] }, items)).toBe(6);
-    expect(taskMax({ type: "action", options: [] }, items)).toBe(0);
-    expect(taskMax({ type: "question", options: [{ text: "", points: 1 }, { text: "", points: 3 }] }, items)).toBe(3);
   });
 });
 

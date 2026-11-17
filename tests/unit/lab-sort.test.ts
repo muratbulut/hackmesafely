@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { localTrainingDriver } from "@/components/lab/preview/local-driver";
-import { blankCard } from "@/lib/admin/editor-model";
 import { isReady, trainingChecklist } from "@/lib/lab/checklist";
 import { toClientCard } from "@/lib/lab/client";
 import { parseTraining, type Card, type TrainingContent } from "@/lib/lab/content";
@@ -127,11 +126,5 @@ describe("kutulara ayırma: yayına hazır mı", () => {
     expect(ready({ ...sort, items: [...sort.items, { text: "", icon: "tag", bin: 0 }] })).toBe(false);
     // İki kutuya düşen kartta üçüncü kutudaki bilgi artık yok.
     expect(ready({ ...sort, bins: sort.bins.slice(0, 2) })).toBe(false);
-  });
-
-  it("formdaki boş kart üç renkli kutuyla başlar, doldurulmadan hazır değil", () => {
-    const blank = blankCard("sort-1", "sort");
-    expect(blank).toMatchObject({ type: "sort", bins: [{ color: "green" }, { color: "yellow" }, { color: "red" }] });
-    expect(ready(blank)).toBe(false);
   });
 });

@@ -2,7 +2,7 @@
 
 import { Lightbulb, Pencil, Pin, Plus, Search } from "lucide-react";
 import { useState, useTransition } from "react";
-import { inputClass } from "@/components/admin/editor/fields";
+import { inputClass } from "@/components/admin/fields";
 import { toneOf } from "@/components/roadmap/NeighborhoodIcon";
 import { format, getMessages, rich } from "@/lib/i18n";
 import { archiveTip, pinTipDay, undoTipChange, type TipActionError } from "@/lib/tips/actions";

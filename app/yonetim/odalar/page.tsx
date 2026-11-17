@@ -10,7 +10,7 @@ export function generateMetadata() {
   return adminMetadata(() => getMessages().admin.list.title, "LAB_EDITING", "LAB_PUBLISHING");
 }
 
-/** Yönetim · Lablar (Lablar-Son): yayın durumu, sıra, gizleme ve yeni lab. */
+/** Yönetim · Odalar (39 R1.3): yayın durumu, sıra ve gizleme. Oda içeriği depodaki dosyada yazılır. */
 export default function AdminLabsPage() {
   return (
     <Suspense fallback={<Loading className="m-4 lg:m-9" />}>
@@ -22,5 +22,5 @@ export default function AdminLabsPage() {
 async function AdminLabs() {
   const access = await requireLabAccess();
   const neighborhoods = await getAdminLabList();
-  return <LabList neighborhoods={neighborhoods} canEdit={access.canEdit} canPublish={access.canPublish} />;
+  return <LabList neighborhoods={neighborhoods} canPublish={access.canPublish} />;
 }

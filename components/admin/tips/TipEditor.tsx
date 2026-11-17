@@ -3,7 +3,7 @@
 import { Archive, UserRound } from "lucide-react";
 import { useId, useRef, useState, useTransition } from "react";
 import { TipCard } from "@/components/home/TipCard";
-import { inputClass } from "@/components/admin/editor/fields";
+import { inputClass } from "@/components/admin/fields";
 import { format, getMessages } from "@/lib/i18n";
 import { saveTip, type TipActionError } from "@/lib/tips/actions";
 import type { AdminTip, TipAdminData } from "@/lib/tips/data";

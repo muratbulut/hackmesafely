@@ -16,7 +16,7 @@ Murat Bulut'un bitirme projesidir. Fikirleri ve oda içeriğini ekip yazar, kodu
 | `docs/labs/room-plan.md` | Bütün odaların planı: 61 odanın her biri için hikâye, tuzak, doğru karar, işaretler, ana soru, bekleyen kod işi. |
 | `docs/labs/room-overview.md` | Planın tek sayfalık özeti: mahalleler, sahneler, her odanın türü ve beklediği kod işi, kimin hangi mahalleyi yazdığı. |
 | `docs/labs/rooms/` | Odaların tam senaryoları, her mahalle kendi klasöründe; kimin hangi odayı yazdığı ve odaların durumu da orada. |
-| `docs/guides/new-lab.md` | 1. kısım: odanın alanları (kapak, mailler, görevler, puan, rapor) ve formdaki önizleme. 2. kısım: yeni sahne türü (şablon) eklemek, depodaki oda dosyaları (2.9). |
+| `docs/guides/new-lab.md` | 1. kısım: odanın alanları (kapak, mailler, görevler, puan, rapor) ve yönetimdeki Odalar sayfası. 2. kısım: yeni sahne türü (şablon) eklemek, depodaki oda dosyaları (2.9). |
 | `docs/notes/general-status.md` | Projenin bugünkü durumu, sıradaki işler ve açık kararlar. Her büyük işten sonra güncellenir. |
 | `docs/platform-document.md` | Platformun bütün dokümanı (Bölüm 4 oda yapısı, Bölüm 6 veri modeli). |
 | `docs/glossary.md` | Türkçe terimlerin koddaki İngilizce adları. |
@@ -30,7 +30,7 @@ Harita bir **siber şehir**dir. 5 mahalle var: Hesap Kalesi (hesap güvenliği),
 - Her **senaryo odasını** bir eğitim açar (`Lab.unlockedById`; boşsa temel eğitim). Öğrenci sırayı kendisi seçer.
 - Mahalle rozeti temel yolu ister: temel eğitim ve onun açtığı senaryolar.
 - Öğretmen ödevde odaları tek tek seçer; seçilen senaryoyu açan eğitim ödeve kendiliğinden girer.
-- Odalar içeriktir, asıl yerleri depodaki **oda dosyasıdır** (`labs/rooms/<mahalle>/<oda-adresi>.json`). Dosya PR'la girer, birleşince odayı sitede ekler ya da günceller. **Yönetim > Odalar** formu önizleme ve deneme içindir. Sahne türleri (Postam, Mesajlar, eğitim kartları) koddadır.
+- Odalar içeriktir, asıl yerleri depodaki **oda dosyasıdır** (`labs/rooms/<mahalle>/<oda-adresi>.json`). Dosya PR'la girer, birleşince odayı sitede ekler ya da günceller. **Yönetim > Odalar**'da form yoktur: odayı orada dener, yayınlar, gizler ve sırasını değiştirirsin. Sahne türleri (Postam, Mesajlar, eğitim kartları) koddadır.
 
 Plan 18 eğitim ve 43 senaryo, toplam 61 oda. **İlk dalga** her mahallenin temel yoludur (16 oda); sitede 3'ü var. Hangi odanın bugün yazılabildiği, hangisinin kod işi beklediği `docs/labs/room-plan.md`'de.
 

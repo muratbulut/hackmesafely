@@ -79,8 +79,9 @@ test("oda dosyası eklenir, değişince yeni sürüm olur, değişmeyince dokunu
     expect((await labOf(slugs.scenario)).draftContent.meta.summary).toBe("Formdan");
     expect(await versionsOf(slugs.scenario)).toEqual([1]);
 
-    // Dosya değişti: taslak dosyadaki olur, yeni sürüm yayınlanır; gizlenmiş oda gizli kalır.
-    await query(`UPDATE "Lab" SET "status" = 'HIDDEN' WHERE "slug" = $1`, [slugs.scenario]);
+    // Dosya değişti: taslak dosyadaki olur, yeni sürüm yayınlanır; gizlenmiş oda gizli kalır. Sıra
+    // panelde değişir (oklar), dosya değişince ezilmez (39, 17 Kasım).
+    await query(`UPDATE "Lab" SET "status" = 'HIDDEN', "sortOrder" = 7 WHERE "slug" = $1`, [slugs.scenario]);
     write(scenario("İkinci hali"));
     expect(seed()).toContain("1 güncellendi (1 yeni sürüm)");
     const before = lab;
@@ -88,6 +89,7 @@ test("oda dosyası eklenir, değişince yeni sürüm olur, değişmeyince dokunu
     expect(lab).toMatchObject({ status: "HIDDEN", publishedVersion: 2, unlockedById: advanced.id, draftRevision: before.draftRevision + 2 });
     expect(lab.draftContent.meta.summary).toBe("İkinci hali");
     expect(lab.sourceHash).not.toBe(before.sourceHash);
+    expect((await query<{ sortOrder: number }>(`SELECT "sortOrder" FROM "Lab" WHERE "slug" = $1`, [slugs.scenario]))[0].sortOrder).toBe(7);
 
     // Taslak dosya yayındaki odayı yayından kaldırmaz, yeni sürüm açmaz. unlockedBy silinince oda
     // temel eğitime bağlanır.
@@ -112,16 +114,17 @@ test("oda dosyası eklenir, değişince yeni sürüm olur, değişmeyince dokunu
     expect(output).toContain(`${slugs.clash}.json): aynı adreste türü ya da şablonu farklı bir oda var`);
     expect(await labOf(slugs.clash)).toMatchObject({ status: "DRAFT", sourceHash: null });
 
-    // Yönetimdeki form dosyadan gelen odada dosyanın yolunu söyler; formla açılan odada söylemez.
+    // Odanın sayfası dosyadan gelen odada dosyanın yolunu ve GitHub bağlantısını gösterir; dosyası olmayanda söyler.
     const email = uniqueEmail("oda-dosyasi");
     await signUpVerified(page, email);
     await makeAdmin(email);
     await page.goto(`/yonetim/odalar/${lab.id}`);
-    await expect(page.getByText("Bu oda depodaki dosyadan gelir")).toBeVisible();
+    await expect(page.getByText("Bu oda depoda yazılır")).toBeVisible();
     await expect(page.getByText(`labs/rooms/${neighborhood.slug}/${slugs.scenario}.json`)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Dosyayı GitHub'da aç" })).toHaveAttribute("href", new RegExp(`/blob/main/labs/rooms/${neighborhood.slug}/${slugs.scenario}\\.json$`));
     await page.goto(`/yonetim/odalar/${(await labOf(slugs.clash)).id}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByText("Bu oda depodaki dosyadan gelir")).toHaveCount(0);
+    await expect(page.getByText("Depoda dosyası yok")).toBeVisible();
   } finally {
     await withDb(async (client) => {
       const labs = `SELECT "id" FROM "Lab" WHERE "neighborhoodId" = $1`;

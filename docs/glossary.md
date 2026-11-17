@@ -35,7 +35,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Son anda durdu (ödedi ama kodu yazmadı) | `stopped` (`FakeOutcome`) |
 | Önizle (tam ekran, öğrencinin oynatıcısı) | `LabPreview`, tarayıcıdaki sürücü `components/lab/preview/local-driver.ts` |
 | Öğrenci gibi dene (formun yanındaki sekme) | try path (`TryPath`, `lib/admin/try-path.ts`) |
-| Yönetim paneli, Oda düzenleme (Lab düzenleme) | admin (`app/yonetim/`, `components/admin/`, `lib/admin/`), `LabEditor` |
+| Yönetim paneli, Odalar sayfası, odanın sayfası | admin (`app/yonetim/`, `components/admin/`, `lib/admin/`), `LabList`, `RoomPage` |
 | Yayına hazır mı? | checklist (`lib/lab/checklist.ts`) |
 | Sürüm, revizyon | `LabVersion`; taslağın sayısal sürümü `Lab.draftRevision` (her taslak yazımında bir artar; aynı anda düzenlemeyi fark etmek için, `revision` parametresi) |
 | Taslak okunamadı (kayıtlı taslak şemaya uymuyor) | unreadable draft (`draftIssues`, `lib/admin/validate.ts`; eylem hatası `unreadable`) |
