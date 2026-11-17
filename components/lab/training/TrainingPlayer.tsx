@@ -31,6 +31,8 @@ export type TrainingPlayerProps = {
   playHref: string;
   /** Bitiş kartında "Açıldı" listesi: mahallenin senaryo labları. */
   scenarios: { title: string; href: string }[];
+  /** Bu eğitim bitince açılan ileri eğitimler (temel eğitimde); senaryo yoksa bitiş onlara gönderir. */
+  trainings?: { title: string; href: string }[];
   roadmapHref: string;
   /** Öğrencinin avatarı (keşfet kartındaki profil); önizlemede yok, genel simge görünür. */
   avatar?: string;
@@ -46,7 +48,7 @@ const primary =
  * video, eşleştirme, kutulara ayırma ve boşluk doldurma kartları, sonda bitiş kartı. Doğru cevaplar tarayıcıda yoktur; öğrenci seçince sürücü
  * (sunucu) söyler. İlerleme her kartta kaydedilir; son karttan sonra eğitim tamamlanır.
  */
-export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, playHref, scenarios, roadmapHref, avatar }: TrainingPlayerProps) {
+export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, playHref, scenarios, trainings = [], roadmapHref, avatar }: TrainingPlayerProps) {
   const t = getMessages().lab.training;
   const [index, setIndex] = useState(Math.max(0, Math.min(startIndex, cards.length)));
   const [spots, setSpots] = useState<Record<string, Record<string, Spot | null>>>({});
@@ -192,7 +194,7 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
   );
 
   let body: ReactNode = null;
-  if (finished) body = <FinishCard cards={cards} spots={spots} answers={answers} placements={placements} scenarios={scenarios} roadmapHref={roadmapHref} onAgain={() => go(0)} />;
+  if (finished) body = <FinishCard cards={cards} spots={spots} answers={answers} placements={placements} scenarios={scenarios} trainings={trainings} roadmapHref={roadmapHref} onAgain={() => go(0)} />;
   else if (card?.type === "info")
     body = (
       <InfoCardView
@@ -281,13 +283,14 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
   );
 }
 
-/** Bitiş kartı (Egitim-Mobil-5-Bitis): özet, açılan senaryo labları, ilk senaryoya geçiş. */
+/** Bitiş kartı (Egitim-Mobil-5-Bitis): özet, açılan senaryo labları ve ileri eğitimler, ilk senaryoya (yoksa sıradaki eğitime) geçiş. */
 function FinishCard({
   cards,
   spots,
   answers,
   placements,
   scenarios,
+  trainings,
   roadmapHref,
   onAgain,
 }: {
@@ -296,6 +299,7 @@ function FinishCard({
   answers: Record<string, Answer>;
   placements: Record<string, Placement>;
   scenarios: TrainingPlayerProps["scenarios"];
+  trainings: NonNullable<TrainingPlayerProps["trainings"]>;
   roadmapHref: string;
   onAgain: () => void;
 }) {
@@ -329,6 +333,9 @@ function FinishCard({
     placed("sort"),
     placed("fill"),
   ].filter((x) => x !== null);
+  // Açılanlar: önce senaryolar, sonra ileri eğitimler. Düğme ilk senaryoya, senaryo yoksa sıradaki eğitime gider.
+  const unlocked = [...scenarios, ...trainings];
+  const target = scenarios[0] ? { href: scenarios[0].href, label: f.first } : trainings[0] ? { href: trainings[0].href, label: f.nextTraining } : { href: roadmapHref, label: f.roadmap };
 
   return (
     <div className="flex flex-col items-center gap-[18px] pt-5 text-center">
@@ -336,7 +343,7 @@ function FinishCard({
         <Check className="size-12 text-success-fg" strokeWidth={2.4} aria-hidden="true" />
       </span>
       <h1 className="font-heading text-[26px] leading-tight font-bold tracking-[-0.4px] lg:text-[32px]">{f.title}</h1>
-      <p className="text-base leading-relaxed text-fg-2 lg:text-lg">{scenarios.length > 0 ? f.text : f.none}</p>
+      <p className="text-base leading-relaxed text-fg-2 lg:text-lg">{scenarios.length > 0 ? f.text : trainings.length > 0 ? f.trainingText : f.none}</p>
       {summary.length > 0 ? (
         <ul className="flex flex-wrap justify-center gap-2">
           {summary.map((s) => (
@@ -347,9 +354,9 @@ function FinishCard({
           ))}
         </ul>
       ) : null}
-      {scenarios.length > 0 ? (
+      {unlocked.length > 0 ? (
         <ul className="flex w-full max-w-[460px] flex-col gap-2 text-left">
-          {scenarios.map((s, i) => (
+          {unlocked.map((s, i) => (
             <li
               key={s.href}
               className="flex items-center gap-2.5 rounded-xl border border-card bg-surface-deep px-3 py-2.5 [animation:rise_.4s_ease-out_both]"
@@ -364,8 +371,8 @@ function FinishCard({
           ))}
         </ul>
       ) : null}
-      <Link href={scenarios[0]?.href ?? roadmapHref} className={cn(primary, "w-full max-w-[360px] no-underline")}>
-        {scenarios.length > 0 ? f.first : f.roadmap}
+      <Link href={target.href} className={cn(primary, "w-full max-w-[360px] no-underline")}>
+        {target.label}
         <ArrowRight className="size-5" strokeWidth={2.2} aria-hidden="true" />
       </Link>
       <button type="button" onClick={onAgain} className="min-h-11 cursor-pointer text-[15px] font-bold text-accent-fg">

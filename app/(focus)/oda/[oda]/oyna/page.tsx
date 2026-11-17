@@ -52,6 +52,10 @@ async function Player({ params }: Pick<PageProps<"/oda/[oda]/oyna">, "params">) 
         scenarios={district.scenarios
           .filter((s) => s.gate?.id === lab.id)
           .map((s) => ({ title: s.lab.meta.title || s.lab.meta.name, href: paths.lab(s.lab.slug) }))}
+        // Temel eğitimin açtığı ileri eğitimler (ör. Para Çarşısı: Kişisel veri → Kart ve para güvenliği).
+        trainings={district.trainings
+          .filter((t) => t.gate?.id === lab.id)
+          .map((t) => ({ title: t.lab.meta.name, href: paths.lab(t.lab.slug) }))}
         roadmapHref={routes.roadmap}
         avatar={avatarOf({ id: user.id, avatar: user.image }).emoji}
       />

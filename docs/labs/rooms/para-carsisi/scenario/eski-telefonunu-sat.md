@@ -3,7 +3,7 @@
 | Alan | Değer |
 | --- | --- |
 | Mahalle | Para Çarşısı |
-| Açan eğitim | Online alışveriş ve ikinci el (ileri eğitim; o yazılana kadar oda dosyasında boş, temel eğitim açar) |
+| Açan eğitim | Online alışveriş ve ikinci el (ileri eğitim); o yazılana kadar oda dosyasında `kart-ve-para-guvenligi` (Kart ve para güvenliği, 17 Kasım) |
 | Sahne | Mesajlar + satış görevi (babanın isteği, ilan, bankanın ödeme isteği, pazar yerindeki sipariş ve kargodan önceki hazırlık: yeni parçalar, aşağıda "Kod işi") |
 | Oda adresi | `/oda/eski-telefonunu-sat` |
 | Yazan | Murat |

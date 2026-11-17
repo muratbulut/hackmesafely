@@ -3,7 +3,7 @@
 | Alan | Değer |
 | --- | --- |
 | Mahalle | Para Çarşısı |
-| Açan eğitim | Kişisel veri ve para güvenliği (temel eğitim) |
+| Açan eğitim | Kart ve para güvenliği (ileri eğitim; 17 Kasım'a kadar temel eğitim "Kişisel veri ve para güvenliği") |
 | Sahne | Postam + görev (annenin isteği, annenin kartı, mağaza sayfası, onay kodu adımı: yeni parçalar, aşağıda "Bekleyen kod işi") |
 | Oda adresi | `/oda/kulaklik-icin-veli-karti` |
 | Yazan | Murat |

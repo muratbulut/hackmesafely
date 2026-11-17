@@ -9,6 +9,7 @@ export const roomArt = [
   "sahte-kargo-maili",
   "kodu-soran-arkadas",
   "kisisel-veri-ve-para-guvenligi",
+  "kart-ve-para-guvenligi",
   "kulaklik-icin-veli-karti",
   "eski-telefonunu-sat",
 ] as const;

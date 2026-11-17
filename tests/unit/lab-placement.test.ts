@@ -198,25 +198,38 @@ describe("eşleştirme ve boşluk doldurma: yayına hazır mı", () => {
   });
 });
 
-describe("Para Çarşısı temel eğitimi (oda dosyası)", () => {
-  const file = JSON.parse(readFileSync("labs/rooms/para-carsisi/kisisel-veri-ve-para-guvenligi.json", "utf8"));
-  const content = parseTraining(file.content)!;
+describe("Para Çarşısı eğitimleri (oda dosyaları)", () => {
+  // 17 Kasım (Murat): tek eğitim ikiye bölündü; her biri kendi videosuyla açılır.
+  const read = (slug: string) => parseTraining(JSON.parse(readFileSync(`labs/rooms/para-carsisi/${slug}.json`, "utf8")).content)!;
+  const basic = read("kisisel-veri-ve-para-guvenligi");
+  const money = read("kart-ve-para-guvenligi");
 
   it("kişisel veri videosu ve kartından sonra kutulara ayırma, eşleştirme ve boşluk doldurma alıştırmaları gelir", () => {
-    expect(content.cards.slice(0, 5).map((c) => c.type)).toEqual(["video", "info", "sort", "match", "fill"]);
-    expect(isReady(trainingChecklist(content))).toBe(true);
+    expect(basic.cards.slice(0, 5).map((c) => c.type)).toEqual(["video", "info", "sort", "match", "fill"]);
+    expect(isReady(trainingChecklist(basic))).toBe(true);
+    expect(isReady(trainingChecklist(money))).toBe(true);
   });
 
-  it("videolar yazılı kartların önüne gelir ve soru sorar", () => {
-    // 1 Kasım (Murat): videolar 1. ve 5. kartın yerine geçmedi, önlerine geldi.
-    const ids = content.cards.map((c) => c.id);
-    expect(ids.indexOf("kisisel-veri-videosu") + 1).toBe(ids.indexOf("kisisel-veri"));
-    expect(ids.indexOf("kart-videosu") + 1).toBe(ids.indexOf("kartin-onu-arkasi"));
-    for (const card of content.cards) if (card.type === "video") expect(card.question, card.id).not.toBeNull();
+  it("her eğitim videoyla açılır; video yazılı kartın önüne gelir ve soru sorar", () => {
+    // 1 Kasım (Murat): videolar yazılı kartların yerine geçmedi, önlerine geldi.
+    for (const [content, video, card] of [
+      [basic, "kisisel-veri-videosu", "kisisel-veri"],
+      [money, "kart-videosu", "kartin-onu-arkasi"],
+    ] as const) {
+      const ids = content.cards.map((c) => c.id);
+      expect(ids[0]).toBe(video);
+      expect(ids.indexOf(video) + 1).toBe(ids.indexOf(card));
+      for (const c of content.cards) if (c.type === "video") expect(c.question, c.id).not.toBeNull();
+    }
+  });
+
+  it("kart bilgisi ikinci eğitimde: ilk eğitimde CVV, kart numarası ve 1 TL geçmez", () => {
+    const text = JSON.stringify(basic.cards);
+    expect(text).not.toMatch(/CVV|kart numara|1 TL/);
   });
 
   it("alıştırmaların hepsi doğru yolla çözülebilir", () => {
-    for (const card of content.cards) {
+    for (const card of [...basic.cards, ...money.cards]) {
       if (card.type !== "match" && card.type !== "fill" && card.type !== "sort") continue;
       expect(checkPlacement(card, rightPicks(card)).correct, card.id).toBe(true);
     }

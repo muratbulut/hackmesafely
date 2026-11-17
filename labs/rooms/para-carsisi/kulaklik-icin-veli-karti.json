@@ -5,6 +5,7 @@
   "template": "INBOX",
   "sortOrder": 1,
   "status": "PUBLISHED",
+  "unlockedBy": "kart-ve-para-guvenligi",
   "content": {
     "meta": {
       "name": "Kulaklık için veli kartı",
