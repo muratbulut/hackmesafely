@@ -2,7 +2,7 @@
 
 Konu (sohbet) devri notu: projenin bugünkü hâli, sıradaki işler ve açık kararlar. İki tarafın Claude'u da yeni bir konuya buradan ve `CLAUDE.md`'den başlar. Büyük bir iş bitince (ya da konu kapanırken) bu dosya güncellenir; değişiklik de PR ile girer.
 
-Son güncelleme: 3 Kasım 2026.
+Son güncelleme: 17 Kasım 2026.
 
 ## Bugün
 
@@ -17,6 +17,7 @@ Son güncelleme: 3 Kasım 2026.
 - **Para Çarşısı'nın ikinci senaryosu (2 Kasım, PR #54):** **"Eski telefonunu sat"** (sıra 2; sıra 1 Kulaklık için veli kartı). Bu sefer öğrenci satıcı: baban (İbrahim) görüntülü arayıp eski telefonunun satışını sana bırakıyor. Mesajlar'da gerçek alıcı Emre (ödeme pazar yerinde), sahte alıcı Selin (bankanın "ödeme isteği", Onayla deyince para senden çıkar); kargodan önce telefonu yedekle, hesaplardan çık, sıfırla. Kod main'de: satış görevi (`mission.sale`, `request`, `order`, olay `item_shipped`), babanın çizimi, babanın sesi (`public/sesler/eski-telefonunu-sat/`; iyi bitişin 3. satırı "Telefonu da sıfırlamışsın, aferin sana." kayıtta yok, altyazıyla geçiyor) ve Murat'ın isteğiyle **telefon görünümü**: bu odada sahne masaüstünde de bir telefonun içinde açılır (`components/lab/frame/PhoneFrame.tsx`, Mesajlar Postam'a benzemesin diye). Nasıl yapıldığı `docs/guides/new-lab.md` 2.13; senaryo `docs/labs/rooms/para-carsisi/scenario/eski-telefonunu-sat.md`; oynanabilir tuval ve videolar https://claude.ai/artifact/GAkgh6nErokgZM2egWdGXM. Oda dosyası taslak; yayın için `"status": "PUBLISHED"` PR'ı. Murat aramaları ve oda içini video olarak görmek istiyor: kayıt betikleri `/mnt/project-files/para-carsisi/eski-telefonu-tuval/kayit/`.
 
 - **Hoca öncesi revizeler, 1. grup Odalar (3 Kasım):** Murat 5 Kasım'daki hoca görüşmesinden önce bütün sayfaları kontrol listesinde işaretliyor (tuval https://claude.ai/artifact/5JtADf8jtmSQPAftrBM9Wm). Odalar grubunun revizeleri tek taslak PR'da: odanın çizimi (`public/odalar/`, `lib/lab/art.ts`), kapakta adım yolu ve "Seni neler bekliyor" (dersler oda bitene kadar kilitli), renkli çerçeveli etiketler, perde (oda adı) ve genel "Aklında olsun", hacklendin sonrası sonuç sahnesi (açıklama ekranı kalktı), adım adım okunan rapor, görev kartı ikonları, yeni rozet bildirimi. Notlar `/mnt/project-files/notes/hoca-oncesi-revizeler.md`. Sırada kontrol listesinin 2. grubu (Ziyaretçi sayfaları). Kargo odası hikâyeleri, Oltalama eğitiminin yeniden yazımı ve oda açılma animasyonu sonraya; hangi odada hangi sonuç sahnesi olacağını Murat söyleyecek.
+- **Ad ve logo (17 Kasım, PR #13, #14):** Ürünün adı **Hack Me Safely** (eski adı Careful Mode; depo `muratbulut/hackmesafely`, PR #17). Logo alt alta "hack me / safely"; maskot gözlü a'dır (göz a harfinin iç boşluğunda). Ad ve logo `lib/brand.tsx`'ten okunur. Üst menüdeki logo canlıdır: ana sayfada göz öbür a'ya kaçar, diğer sayfalarda a'nın içinde gezip kalır, şifre yazılırken kapanır (`components/mascot/LiveWordmark.tsx`, `logo-engine.ts`). Hap biçimli eski maskot her yerden kalktı. Sekme ve telefon simgesi, paylaşım görseli ve mail logosu yeni logoyla. Tasarım tuvalleri Murat'ın Claude projesinde (logo tuvali ve "Hack Me Safely sitede" tuvali).
 
 ## Sırada
 
@@ -34,7 +35,7 @@ Son güncelleme: 3 Kasım 2026.
 ## Murat'ın kararını bekleyenler
 
 - 13 yaş altı öğrenciler için veli onayı (hocayla konuşulacak).
-- Ürün adı, logo ve alan adı (ad ve logo tek dosyadan okunur: `lib/brand.tsx`).
+- Logonun giriş animasyonu ("Gerçek olta": göz açılır, yazı gelir, göz oltadan kaçar) seçildi ama siteye konmadı; nerede oynayacağı (öneri: tanıtım sayfasında ilk ziyarette bir kez) ve sesi (beş deneme hazır, seçim yapılmadı) bekliyor.
 - Okullara açmadan önce mail hizmetinin ücretli planı (Resend).
 - Canlı yük testinin günü ve saati.
 - Rozet ikonları ve avatar seti.
@@ -42,7 +43,7 @@ Son güncelleme: 3 Kasım 2026.
 
 ## Sonraya bırakılanlar
 
-- İki adımlı giriş, ekip maili kuyruğu, iletişim e-postası, bir odada birden çok sahte öğe, hacklendin ekranının yeniden tasarımı, yavaş internette yazı tipleri, ürün alan adına geçiş, sunucuda ayrı kullanıcı.
+- İki adımlı giriş, ekip maili kuyruğu, iletişim e-postası, bir odada birden çok sahte öğe, hacklendin ekranının yeniden tasarımı, yavaş internette yazı tipleri, sunucuda ayrı kullanıcı.
 - Pilottan önce: yasal metinlerdeki boşluklar (`lib/content/legal.ts`: veri sorumlusu, kayıt defteri saklama süresi, iletişim e-postası) ve hukuki kontrol; örnek verinin kaldırılması.
 - Proje sonunda bütün site için son güvenlik testi; aynı turda bağımlılık güncellemeleri. Büyük sürüm atlamalı Dependabot PR'ları (1 Kasım: #3 typescript 7, #20 @types/node 26, #27 jsdom 30, #28 eslint 10) bilerek bekliyor; küçük yamalar (ör. #34) CI yeşil olunca birleşir.
 - Yayından sonra (doküman Bölüm 9): revizyonlar, revizyon testleri, stres testi. İleride (Bölüm 10): Google ile giriş, oda başına ayrıntılı analiz, başka diller, harici oda paketleri.
