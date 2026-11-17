@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Mascot, type MascotMood } from "./Mascot";
+import { eyeSpot } from "./glyphs";
 import { gazeTowards, resetGaze, setGaze } from "./useEyeTracking";
 
 /** Sahnedeki bir bağlantının üstüne gelinince gönderilen olay; detail bağlantı öğesi ya da null. */
@@ -34,7 +35,7 @@ export function RoomMascot({ mood = "idle", className }: { mood?: MascotMood; cl
         return;
       }
       const box = target.getBoundingClientRect();
-      const { x, y } = gazeTowards(el, box.left + box.width / 2, box.top + box.height / 2, 120);
+      const { x, y } = gazeTowards(el, box.left + box.width / 2, box.top + box.height / 2, 120, eyeSpot("a"));
       setGaze(el, x, y);
       setLooking(true);
     }

@@ -3,11 +3,12 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LiveWordmark } from "@/components/mascot/LiveWordmark";
 import { LOGO_BANG_MS, LOGO_ROAM_MS, LOGO_WAIT_MS } from "@/components/mascot/logo-engine";
+import { glyphs } from "@/components/mascot/glyphs";
 import { Mascot, mascotMoods } from "@/components/mascot/Mascot";
 import { PageOverlay, SHOW_AFTER_MS, SIGN_OUT_EVENT } from "@/components/mascot/PageOverlay";
 import { LOOK_EVENT, lookAt } from "@/components/mascot/RoomMascot";
 import { Spinner } from "@/components/status/Spinner";
-import { brand, logoGeometry, Wordmark } from "@/lib/brand";
+import { brand, LOGO_A, logoGeometry, Wordmark } from "@/lib/brand";
 
 let pathname = "/";
 vi.mock("next/navigation", () => ({
@@ -23,13 +24,37 @@ describe("maskot", () => {
     expect(svg).toHaveClass("mc", "mc-mood-idle", "mc-blink");
   });
 
-  it("başka bir ruh hâlinde ya da tepki oynarken kırpmaz", () => {
-    const { container, rerender } = render(<Mascot mood="hacked" />);
+  it("başka bir ruh hâlinde kırpmaz", () => {
+    const { container } = render(<Mascot mood="hacked" />);
     expect(container.querySelector("svg")).toHaveClass("mc-mood-hacked");
     expect(container.querySelector("svg")).not.toHaveClass("mc-blink");
-    rerender(<Mascot reaction="cheer" />);
-    expect(container.querySelector("svg")).toHaveClass("mc-r-cheer");
-    expect(container.querySelector("svg")).not.toHaveClass("mc-blink");
+  });
+
+  it("gövde logodaki a'dır; göz iç boşlukta, göz kapağı göze kırpılır", () => {
+    const { container } = render(<Mascot />);
+    const svg = container.querySelector("svg")!;
+    const { hole, eye } = logoGeometry;
+    const ball = svg.querySelector(".mc-ball")!;
+    expect(svg.querySelector(".mc-trk")).toHaveAttribute("d", LOGO_A);
+    expect(Number(ball.getAttribute("cx"))).toBe(hole.cx);
+    expect(Number(ball.getAttribute("r"))).toBe(eye.ball);
+    expect(svg.querySelector(".mc-lid")?.parentElement).toHaveAttribute("clip-path");
+  });
+
+  it("404'te gövde sıfırdır, göz sıfırın iç boşluğunda; dokununca seker", () => {
+    const { container, rerender } = render(<Mascot mood="off" glyph="zero" />);
+    const svg = container.querySelector("svg")!;
+    const { hole } = glyphs.zero;
+    expect(svg.querySelector(".mc-trk")).toHaveAttribute("d", glyphs.zero.d);
+    expect(Number(svg.querySelector(".mc-ball")!.getAttribute("cx"))).toBe(hole.cx);
+    expect(hole.r).toBeGreaterThan(logoGeometry.eye.ball);
+    rerender(<Mascot mood="off" glyph="zero" poke />);
+    expect(container.querySelector("svg")).toHaveClass("mc-r-try");
+  });
+
+  it("hap biçimli eski maskot hiçbir yerde kalmadı", () => {
+    const { container } = render(<Mascot />);
+    expect(container.querySelector("rect.mc-trk")).toBeNull();
   });
 
   it("renkleri yalnızca tema değişkenlerinden alır; her ruh hâlinin kuralı var", () => {

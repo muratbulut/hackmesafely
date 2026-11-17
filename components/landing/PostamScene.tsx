@@ -1,5 +1,6 @@
 import { Check, Flag, Mail, TriangleAlert } from "lucide-react";
-import { LogoMark } from "@/lib/brand";
+import { Mascot } from "@/components/mascot/Mascot";
+import { GAZE_DOWN_LEFT } from "@/components/landing/scenes/parts";
 import { getMessages, rich } from "@/lib/i18n";
 
 /**
@@ -104,12 +105,12 @@ export function PostamScene() {
         <div className="hidden text-xs text-fg-3 lg:block">{t.codeWarning}</div>
       </div>
 
-      {/* Parlayan maskot (sadece masaüstü) */}
+      {/* Parlayan maskot (sadece masaüstü): "Oltalama olarak bildir"e, yani doğru karara bakar. */}
       <div
         aria-hidden="true"
         className="anim-glow-pulse absolute top-[30px] right-[30px] hidden size-[76px] items-center justify-center rounded-[22px] border border-accent bg-surface lg:flex"
       >
-        <LogoMark className="h-auto w-[52px]" />
+        <Mascot style={GAZE_DOWN_LEFT} className="h-auto w-[44px]" />
       </div>
 
       {/* "Oltalama olarak bildirildi" */}

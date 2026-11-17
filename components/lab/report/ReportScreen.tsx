@@ -249,7 +249,7 @@ export function ReportScreen({ view, lab, backHref, crumbs, facts, history, acti
                 {t.status[view.status]}
               </span>
               {/* Yeni rozet varken kalp göz, yoksa sonuca göre: güvende mutlu, riskli şüpheli, hacklendi kırmızı. */}
-              <Mascot mood={badges.length > 0 ? "love" : reportMood[view.status]} className="h-auto w-[56px] flex-none" />
+              <Mascot mood={badges.length > 0 ? "love" : reportMood[view.status]} className="h-auto w-[44px] flex-none" />
             </div>
             <h1 className="font-heading text-[28px] leading-[1.12] font-bold lg:text-[40px]">{view.title}</h1>
             <div className="flex flex-col gap-1">

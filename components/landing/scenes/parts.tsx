@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Check, TriangleAlert } from "lucide-react";
-import { LogoMark } from "@/lib/brand";
+import { Mascot } from "@/components/mascot/Mascot";
 import { getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import "./scene.css";
@@ -53,11 +53,14 @@ export function DoneToast({ children }: { children: ReactNode }) {
   );
 }
 
-/** Sahnelerdeki parlayan maskot (eskiden kalkan). */
+/** Sahnelerdeki parlayan maskot (eskiden kalkan): gözlü a, aşağıdaki doğru karara bakar. */
 export function ShieldBadge() {
   return (
     <div className="hs-shield anim-glow-pulse">
-      <LogoMark />
+      <Mascot style={GAZE_DOWN_LEFT} />
     </div>
   );
 }
+
+/** Sahnedeki maskotun sabit bakışı: sol aşağı (doğru karar düğmesi orada). */
+export const GAZE_DOWN_LEFT = { "--mc-x": -0.7, "--mc-y": 0.7 } as CSSProperties;

@@ -76,7 +76,7 @@ export function LabBar({
             </span>
             <span className="text-sm font-bold text-fg-3">{format(t.task, { n: taskNo, total })}</span>
             <span aria-hidden="true" className="h-7 w-px bg-line" />
-            <RoomMascot mood={mood} className="w-[52px]" />
+            <RoomMascot mood={mood} className="w-[38px]" />
           </div>
         </div>
       </div>
@@ -93,7 +93,7 @@ export function LabBar({
         </button>
         <h1 className="min-w-0 flex-1 truncate text-base font-bold">{title}</h1>
         <SimulationBadge short />
-        <RoomMascot mood={mood} className="w-[44px]" />
+        <RoomMascot mood={mood} className="w-[34px]" />
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import { BadgeMedal } from "@/components/profile/BadgeMedal";
 import { AvatarFrame } from "@/components/profile/frame/AvatarFrame";
 import { CardBackdrop } from "@/components/profile/frame/CardBackdrop";
 import { LevelBar, LevelPill, PointsPill } from "@/components/profile/LevelSummary";
-import { brand, LogoLineIcon, LogoMark } from "@/lib/brand";
+import { brand, LogoA, LogoLineIcon } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import type { BadgeCode } from "@/lib/progress/badges";
@@ -61,7 +61,7 @@ export function ProfileCard({ data, className }: { data: ProfileCardData; classN
       <span aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <span className="anim-shine absolute inset-0 bg-[linear-gradient(105deg,transparent_35%,var(--shine)_50%,transparent_65%)]" />
       </span>
-      <LogoMark className="pointer-events-none absolute -top-6 -right-16 h-auto w-[240px] opacity-[0.07] lg:-top-8 lg:w-[360px]" />
+      <LogoA className="pointer-events-none absolute -top-8 -right-10 h-auto w-[170px] opacity-[0.08] lg:-top-12 lg:-right-12 lg:w-[250px]" />
 
       {/* Masaüstü üst satır */}
       <div className="relative hidden items-center justify-between gap-3 lg:flex">

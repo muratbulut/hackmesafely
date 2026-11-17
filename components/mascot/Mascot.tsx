@@ -1,36 +1,27 @@
-import type { CSSProperties, Ref } from "react";
-import { EYE_WHITE } from "@/lib/brand";
+import { useId, type CSSProperties, type Ref } from "react";
+import { EYE_WHITE, logoGeometry } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+import { glyphs, type MascotGlyph } from "./glyphs";
 import "./mascot.css";
 
 /**
- * Maskotun ruh hâlleri (maskot tuvali, "İfadeler" ve "Sitede oynanabilir").
+ * Maskotun ruh hâlleri (eski logo tuvali, 17 Kasım; maskot artık logodaki gözlü a).
  * idle: her zamanki hâli, arada göz kırpar. look: odada bir bağlantıya dikkatle bakar.
- * shut: şifre yazılırken göz kapalı. suspicious: bildirilen mesaj (sarı). surprised: şaşkın (mor).
- * happy: doğru karar (yeşil). love: yeni rozet (kalp göz). hacked: yanlış karar (kırmızı, X).
- * sleep: uyku. off: 404'teki kapalı düğme. loading: yükleniyor. out: çıkış (kapanıp uyur).
+ * shut: göz kapalı. suspicious: bildirilen mesaj (sarı, göz kısılır). surprised: şaşkın (mor).
+ * happy: doğru karar (yeşil, göz güler). love: yeni rozet (kalp göz). hacked: yanlış karar (kırmızı, X).
+ * sleep: uyku. off: 404'teki sıfır (gri, göz etrafa bakar). loading: yükleniyor (göz döner).
+ * out: çıkış (göz kapanır, griye döner).
  */
 export const mascotMoods = ["idle", "look", "shut", "suspicious", "surprised", "happy", "love", "hacked", "sleep", "off", "loading", "out"] as const;
 export type MascotMood = (typeof mascotMoods)[number];
 
-/** Ana sayfadaki büyük maskotun evcil tepkileri, tıklama sırasıyla; "try" 404'te açılmaya çalışmak. */
-export const petReactions = [
-  { id: "blink", ms: 900 },
-  { id: "cheer", ms: 1400 },
-  { id: "look", ms: 1800 },
-  { id: "surprise", ms: 1400 },
-  { id: "dizzy", ms: 1600 },
-  { id: "love", ms: 1600 },
-  { id: "nap", ms: 2600 },
-] as const;
-export type MascotReaction = (typeof petReactions)[number]["id"] | "try";
-
 type Props = {
   mood?: MascotMood;
-  reaction?: MascotReaction | null;
-  /** Fareyi izleyen maskot: html'deki data-mascot-eyes ve data-mascot de onu etkiler. */
-  follow?: boolean;
-  /** Ana renk düğmenin içinde (yükleniyor): gövde düğmenin yazı rengini alır. */
+  /** Gövde: logodaki a ya da 404'teki sıfır. */
+  glyph?: MascotGlyph;
+  /** Dokunulunca: göz iç boşlukta sekip duvarlara vurur (404). */
+  poke?: boolean;
+  /** Renkli düğmenin içinde (yükleniyor): gövde düğmenin yazı rengini alır, göz beyazı çıkar. */
   onAccent?: boolean;
   className?: string;
   style?: CSSProperties;
@@ -38,52 +29,60 @@ type Props = {
 };
 
 /**
- * Maskot: 128 × 72 kutuda gözlü düğme (lib/brand.tsx'teki LogoMark'ın hareketli hâli).
- * Her zaman süstür (aria-hidden); anlamı çevresindeki düğme ya da durum metni söyler.
+ * Maskot: harfin kendisi gövde, göz iç boşlukta. Her zaman süstür (aria-hidden); anlamı çevresindeki
+ * düğme ya da durum metni söyler. Bakış yönü --mc-x / --mc-y ile gelir (useEyeTracking).
  */
-export function Mascot({ mood = "idle", reaction = null, follow = false, onAccent = false, className, style, ref }: Props) {
+export function Mascot({ mood = "idle", glyph = "a", poke = false, onAccent = false, className, style, ref }: Props) {
+  const clip = useId();
+  const { d, box, hole } = glyphs[glyph];
+  const { ball, pupil, glint } = logoGeometry.eye;
+  const { cx, cy } = hole;
   return (
     <svg
       ref={ref}
-      viewBox="0 0 128 72"
+      viewBox={box}
       aria-hidden="true"
       focusable="false"
       data-mood={mood}
-      className={cn(
-        "mc",
-        `mc-mood-${mood}`,
-        mood === "idle" && !reaction && "mc-blink",
-        reaction && `mc-r-${reaction}`,
-        follow && "mc-follow",
-        onAccent && "mc-on-accent",
-        className,
-      )}
+      className={cn("mc mc-mascot", `mc-mood-${mood}`, mood === "idle" && "mc-blink", poke && "mc-r-try", onAccent && "mc-on-accent", className)}
       style={style}
     >
+      <defs>
+        <clipPath id={`${clip}h`}>
+          <circle cx={cx} cy={cy} r={hole.r * 1.02} />
+        </clipPath>
+        <clipPath id={`${clip}b`}>
+          <circle cx={cx} cy={cy} r={ball} />
+        </clipPath>
+      </defs>
       <g className="mc-body">
-        <rect className="mc-trk" x="4" y="4" width="120" height="64" rx="32" />
-        <g className="mc-zz">
-          <path className="mc-stroke" strokeWidth="2.6" d="M67 26h8l-8 9h8" />
-          <path className="mc-stroke" strokeWidth="2" d="M79 16h6l-6 7h6" />
-        </g>
-        <g className="mc-knob">
-          <circle className="mc-ball" cx="90" cy="36" r="24" fill={EYE_WHITE} />
-          <g className="mc-look">
-            <g className="mc-eye">
-              <circle className="mc-pupil mc-ink" cx="90" cy="36" r="10.5" />
-              <circle cx="93.6" cy="31.8" r="3.2" fill={EYE_WHITE} />
+        <path className="mc-trk" d={d} />
+        <g clipPath={`url(#${clip}h)`}>
+          <g className="mc-bang">
+            <circle className="mc-ball" cx={cx} cy={cy} r={ball} fill={EYE_WHITE} />
+            <g className="mc-look">
+              <g className="mc-eye">
+                <circle className="mc-pupil mc-ink" cx={cx} cy={cy} r={pupil} />
+                <circle className="mc-glint" cx={cx + pupil * 0.34} cy={cy - pupil * 0.4} r={glint} fill={EYE_WHITE} />
+              </g>
+              <path
+                className="mc-heart"
+                fill="var(--pink)"
+                d={`M${cx} ${cy + 46} C${cx - 82} ${cy - 5} ${cx - 33} ${cy - 63} ${cx} ${cy - 19} C${cx + 33} ${cy - 63} ${cx + 82} ${cy - 5} ${cx} ${cy + 46}Z`}
+              />
+              <path className="mc-x mc-stroke" strokeWidth="19" d={`M${cx - 38} ${cy - 38}L${cx + 38} ${cy + 38}M${cx + 38} ${cy - 38}L${cx - 38} ${cy + 38}`} />
             </g>
+            <g className="mc-spin">
+              <circle cx={cx} cy={cy} r={ball} fill="transparent" />
+              <circle className="mc-ink" cx={cx + ball - pupil * 1.02} cy={cy} r={pupil * 0.82} />
+            </g>
+            <g clipPath={`url(#${clip}b)`}>
+              <rect className="mc-lid" x={cx - ball - 2} y={cy - ball - 2} width={ball * 2 + 4} height={ball * 2 + 4} />
+            </g>
+            <path className="mc-arc mc-stroke" strokeWidth="16" d={`M${cx - 61} ${cy + 8}Q${cx} ${cy + 59} ${cx + 61} ${cy + 8}`} />
+            <path className="mc-happy mc-stroke" strokeWidth="19" d={`M${cx - 54} ${cy + 22}Q${cx} ${cy - 61} ${cx + 54} ${cy + 22}`} />
           </g>
-          <path className="mc-lid mc-ink" d="M67.2 28.5 A24 24 0 0 1 112.8 28.5 Z" />
-          <path className="mc-happy mc-stroke" strokeWidth="5.5" d="M78 41 Q90 26 102 41" />
-          <path className="mc-heart" fill="var(--pink)" d="M90 47 C78 39 76 31 81 27.5 C85 24.5 89 26.5 90 29.5 C91 26.5 95 24.5 99 27.5 C104 31 102 39 90 47 Z" />
-          <path className="mc-x mc-stroke" strokeWidth="5" d="M83 29 L97 43 M97 29 L83 43" />
-          <path className="mc-arc mc-stroke" strokeWidth="5" d="M79 36 Q90 44 101 36" />
         </g>
-      </g>
-      <g className="mc-badge">
-        <circle cx="122" cy="2" r="13" fill="var(--success)" stroke="var(--canvas)" strokeWidth="3" />
-        <path className="mc-stroke" strokeWidth="3.4" d="M116.5 2 L120.5 6 L127.5 -2" />
       </g>
     </svg>
   );

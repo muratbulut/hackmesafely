@@ -17,9 +17,10 @@ export function resetGaze(el: Element | null) {
   el.style.removeProperty("--mc-y");
 }
 
-/** Gözün kutudaki yeri (0 ile 1 arası). Hap biçimli maskotta göz topu kutunun %70'inde, ortada. */
+/** Gözün kutudaki yeri (0 ile 1 arası). */
 export type EyeSpot = { x: number; y: number };
-const MASCOT_EYE: EyeSpot = { x: 90 / 128, y: 0.5 };
+/** Varsayılan: kutunun ortası (maskotun yeri glyphs.ts'teki eyeSpot ile verilir). */
+const MASCOT_EYE: EyeSpot = { x: 0.5, y: 0.5 };
 
 /** Gözün bir noktaya bakması için yön: göz topundan o noktaya. */
 export function gazeTowards(el: Element, px: number, py: number, near = 260, eye: EyeSpot = MASCOT_EYE) {
