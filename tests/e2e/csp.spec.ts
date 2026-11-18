@@ -4,7 +4,7 @@ import { test as base, expect, type Locator, type Page, type Response } from "@p
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
-import { continueFromScene, dismissLevelUps, finishTraining, reportStep } from "./support/lab";
+import { continueFromScene, dismissLevelUps, finishTraining, reportStep, signInDesktop } from "./support/lab";
 import { createSchool, makeCoordinator, makeTeacher, userIdOf } from "./support/teacher";
 
 // İçerik Güvenliği Politikası (Faz 6, güvenlik turu 5; tur 1 D2, tur 2 O2). Her HTML yanıtı aynı
@@ -184,6 +184,7 @@ test.describe("hesapla gezilen sayfalar", () => {
     await finishTraining(email);
     await visit(page, "/oda/sahte-kargo-maili/oyna");
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
+    await signInDesktop(page);
     await page.getByRole("button", { name: /^Kargo Takip/ }).click();
     await page.getByRole("button", { name: "Adresi güncelle" }).click();
     await page.getByLabel(/Postam şifresi/).fill("csp-deneme-sifresi");
@@ -279,6 +280,7 @@ test.describe("hesapla gezilen sayfalar", () => {
     await visit(page, `/yonetim/odalar/${labId("sahte-kargo-maili")}`);
     await visit(page, `/yonetim/odalar/${labId("sahte-kargo-maili")}/onizle`);
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
+    await signInDesktop(page);
     await page.getByRole("button", { name: /^Kargo Takip/ }).click();
     await page.getByRole("button", { name: "Adresi güncelle" }).click();
     await page.getByLabel(/Postam şifresi/).fill("onizleme-sifresi");

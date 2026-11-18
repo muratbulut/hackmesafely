@@ -2,11 +2,11 @@
 // odanın sayfasında (eksikler) ve oda dosyalarının testinde çalışır. Maddelerin yazısı sözlükte:
 // t.admin.room.checklist[anahtar].
 
-import { fillParts, maxScore, rawTotal, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "./content";
+import { fillParts, maxScore, rawTotal, stageFits, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "./content";
 
 export type EditorSection = "cover" | "items" | "trap" | "tasks" | "report" | "cards";
 
-export type ScenarioCheck = "cover" | "items" | "signs" | "trap" | "mission" | "tasks" | "options" | "rightWhy" | "total" | "tips";
+export type ScenarioCheck = "cover" | "items" | "signs" | "trap" | "mission" | "tasks" | "options" | "rightWhy" | "total" | "tips" | "stage";
 export type TrainingCheck = "cover" | "cards" | "cardText" | "answers";
 
 export type CheckItem<K extends string> = { key: K; ok: boolean; section: EditorSection };
@@ -69,8 +69,20 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
     { key: "rightWhy", section: "tasks", ok: [...questions, ...missionTasks].every((t) => filled(t.right) && filled(t.why)) },
     { key: "total", section: "tasks", ok: maxScore(content) === rawTotal },
     { key: "tips", section: "report", ok: content.tips.filter((t) => filled(t.text)).length >= 3 },
+    // Oda sahne şablonu: sahne şablona uyar (masaüstü gelen kutusunda, masadaki telefon
+    // mesajlaşmada), şifre yazıldıysa dolu, konuşma yalnızca soru görevinde ve konuşanın adı dolu.
+    { key: "stage", section: "tasks", ok: stageReady(content, template) },
   ];
-  return mission || missionTasks.length > 0 || linked.length > 0 ? checks : checks.filter((c) => c.key !== "mission");
+  const talks = content.tasks.some((t) => t.talk);
+  return checks.filter(
+    (c) => (c.key !== "mission" || mission || missionTasks.length > 0 || linked.length > 0) && (c.key !== "stage" || content.stage || talks),
+  );
+}
+
+function stageReady(content: ScenarioContent, template: ScenarioTemplate) {
+  const stage = content.stage;
+  const stageOk = !stage || (stageFits(stage.type, template) && (!stage.password || filled(stage.password.value)));
+  return stageOk && content.tasks.every((t) => !t.talk || (t.type === "question" && filled(t.talk.speaker)));
 }
 
 /**

@@ -24,5 +24,6 @@ Notlarda geçen `tasarim/...` yolları (`tasarim/turN/kaynak/`, zip yedekleri) d
 | [Tur 5](https://claude.ai/artifact/HrcHYiRY4kD5iwRJTjLMPA) | Kalan ekranlar ve son kararlar ("Son haller" sayfası) |
 | [Tur 6](https://claude.ai/artifact/EWLY7NALmwUCDYC8gujhh6) | Eğitim kartları: eşleştirme, kutulara ayırma (yeni hali: renkli kutular, sürükle bırak, "Nasıl oynanır" penceresi), boşluk doldurma, bitiş |
 | [Tur 7](https://claude.ai/artifact/1X3FG7p2c3uK1YE8Arwcgy) | Para Çarşısı eğitimi: eşleştirme A (hizalı satırlar, tepsi), keşfet, boşluk doldurma B (tek tek cümle), banka kartı, 4 şıklı çizimli testler, adım adım (kodlandı, PR #43) |
+| [Oda sahne şablonu](https://claude.ai/artifact/FUZhpRbnDoWiu25f845vfe) | Senaryo odalarının sahneleri (18 Kasım, onaylı): M1 masaüstü, T1 masadaki telefon, T2 bilgisayar ve telefon, T3 karşılıklı konuşma (sinema şeritleri); kurallar `room-scene-template.md` |
 
 Son haller tahtalarda adı "-Son" ile biten tasarımlardır. Bir faz başlarken o fazın ekranlarının tahtaları (HTML) `docs/design/boards/phase-N/` altına eklenir. Tahta dosyaları tuvaldeki adlarıyla (Türkçe) kopyalanır, böylece tuvalde aranabilir.

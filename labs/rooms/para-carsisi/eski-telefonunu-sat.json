@@ -321,6 +321,7 @@
           "/sesler/eski-telefonunu-sat/kotu-3.mp3"
         ]
       }
-    }
+    },
+    "stage": { "type": "PHONE" }
   }
 }

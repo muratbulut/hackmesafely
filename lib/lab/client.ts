@@ -2,7 +2,7 @@
 // (CLAUDE.md, "Lab güvenliği"): öğenin sahte mi gerçek mi olduğu, işaretler, sahte sayfa, soru
 // puanları, doğru cevaplar, açıklamalar, rapor metinleri ve ipuçları gitmez.
 
-import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
+import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Stage, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
 import { placementBank } from "./training";
 
 export type ClientItem = {
@@ -18,7 +18,17 @@ export type ClientItem = {
   attachment: { name: string; size: string } | null;
 };
 
-export type ClientTask = { id: string; type: TaskType; text: string; options: string[] };
+export type ClientTask = {
+  id: string;
+  type: TaskType;
+  text: string;
+  options: string[];
+  /** T3: soru yüz yüze sorulur (konuşanın adı ve çizimi); puanları gitmez. */
+  talk: NonNullable<Task["talk"]> | null;
+};
+
+/** Oda sahne şablonu; şifre ve ipucu sahnede zaten görünür (puanlama alanı değildir). */
+export type ClientStage = Stage;
 
 export type ClientScenario = {
   template: ScenarioTemplate;
@@ -36,6 +46,8 @@ export type ClientScenario = {
    * öğelerin ödeme SMS'i gitmez: bitişte ve ödeyince sunucudan gelir.
    */
   mission: ClientMission | null;
+  /** Oda sahne şablonu; yazılmamışsa null (uygulama doğrudan açılır). */
+  stage: ClientStage | null;
 };
 
 export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" | "title" | "points" | "accept" | "refuse"> & {
@@ -70,6 +82,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
       type: task.type,
       text: task.text,
       options: task.type === "question" ? task.options.map((o) => o.text) : [],
+      talk: task.type === "question" && task.talk ? task.talk : null,
     })),
     secret: template === "MESSAGING" ? content.trap.secret : "",
     mission: content.mission
@@ -95,6 +108,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
             : null,
         }
       : null,
+    stage: content.stage ?? null,
   };
 }
 

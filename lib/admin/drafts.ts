@@ -1,10 +1,10 @@
 // Yeni labın ilk taslağı: şablona göre boş ama geçerli içerik ya da "örnek içerikle başla"
-// seçildiyse şablonun örnek labı (labs/examples/). Örnekler derlemeye gömülür; sunucuda
+// seçildiyse şablonun örnek labı (labs/examples/; Postam'ınki 18 Kasım'dan beri gerçek oda, labs/rooms/oltalama-limani/). Örnekler derlemeye gömülür; sunucuda
 // dosya okunmaz. Örnekler yayındaki labların doğru cevaplarını içerir: "server-only" bu dosya
 // yanlışlıkla bir tarayıcı bileşenine eklenirse derlemeyi durdurur.
 
 import "server-only";
-import inboxExample from "@/labs/examples/sahte-kargo-maili.json";
+import inboxExample from "@/labs/rooms/oltalama-limani/sahte-kargo-maili.json";
 import messagingExample from "@/labs/examples/kodu-soran-arkadas.json";
 import trainingExample from "@/labs/examples/oltalama-egitimi.json";
 import { scenarioSchema, trainingSchema, type LabContent, type Template } from "@/lib/lab/content";

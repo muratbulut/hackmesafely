@@ -21,6 +21,7 @@ Oda yazmadan önce `docs/guides/getting-started.md` (başlarken) ve `docs/guides
 - **İlk dalga:** her mahallenin temel eğitimi ve onun senaryoları (16 oda). Bitince 5 mahalle rozeti ve Şehir turu kazanılabilir.
 - **Ana soru:** görevlerdeki 3 seçenekli soru. İlk seçenek doğrudur; formda seçeneklerin yeri odadan odaya değiştirilir.
 - **Gerçek öğeler:** tuzağın yanında duran, güvenli mail ya da mesajlar. Öğrenci her şeyden şüphelenmeyi değil, ayırt etmeyi öğrenir.
+- **Şablon:** odanın sahnesinin hangi oda şablonunda açıldığı (18 Kasım, Murat): **M1** masaüstü (yalnız bilgisayar), **T1** masadaki telefon (yalnız telefon), **T2** bilgisayar ve telefon (ör. kod telefona gelir), **T3** karşılıklı konuşma (sinema şeritleri). "(+T3)" doğru kararın bir büyüğe anlatmak olduğu, sonunda kısa bir konuşma sahnesi önerilen odalardır. Ayrıntı `docs/design/room-scene-template.md`. Odayı yazan şablonu değiştirebilir; değiştirirse bu satırı da günceller.
 - **Bekleyen kod işi:** odanın bugünkü sahnelerle (Postam, Mesajlar, eğitim kartları) yazılıp yazılamayacağı. Kod işleri en altta.
 - **Lise için önerilir:** oda herkese açıktır; kapakta ve ödev penceresinde bu not durur.
 
@@ -52,7 +53,7 @@ Kartlar:
 
 #### Senaryo: Kodu soran "arkadaş"
 
-Başlık: "Kodu bana atar mısın?" · Sahne: Mesajlar · Sonuç: Hesap · Sitede taslak · İlk dalga
+Başlık: "Kodu bana atar mısın?" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Hesap · Sitede taslak · İlk dalga
 
 - **Hikâye:** Akşam Deniz yazıyor: "Yanlışlıkla senin numarana kod gönderdim, atar mısın? Acil, oyuna giremiyorum." Bir dakika önce Postam'dan gerçek bir kod mesajı düşmüş.
 - **Tuzak:** Kodu Deniz'e yazmak.
@@ -67,7 +68,7 @@ Başlık: "Kodu bana atar mısın?" · Sahne: Mesajlar · Sonuç: Hesap · Sited
 
 #### Senaryo: Gece gelen giriş uyarısı
 
-Başlık: "Ben değildim!" · Sahne: Postam · Sonuç: Hesap · Yazılacak · İlk dalga
+Başlık: "Ben değildim!" · Sahne: Postam · Şablon: M1 · Sonuç: Hesap · Yazılacak · İlk dalga
 
 - **Hikâye:** Saat 02:14'te iki mail gelmiş: Postam'ın gerçek "yeni cihazdan giriş" uyarısı (Ankara, bilinmeyen Windows) ve onu taklit eden sahte bir uyarı. Sahte olanın "Ben değildim, hesabımı koru" düğmesi sahte giriş sayfasına gidiyor.
 - **Tuzak:** Sahte uyarıdaki düğmeden Postam şifresini girmek.
@@ -83,7 +84,7 @@ Başlık: "Ben değildim!" · Sahne: Postam · Sonuç: Hesap · Yazılacak · İ
 
 #### Senaryo: Oyun sohbetinde yeni arkadaş
 
-Başlık: "İlk evcil hayvanın neydi?" · Sahne: Mesajlar · Sonuç: Hesap · Yazılacak · İlk dalga · Tanıtım sayfasında sahnesi var
+Başlık: "İlk evcil hayvanın neydi?" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Hesap · Yazılacak · İlk dalga · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Oyunda bugün tanıştığın kral_oyuncu çok sohbet ediyor; laf arasında doğum gününü, ilk evcil hayvanının adını, annenin kızlık soyadını soruyor. Hepsi Oyun Dünyası hesabının kurtarma sorularının cevabı. Odanın başında öğrenciye kendi bilgileri verilir ("kedinin adı Pamuk").
 - **Tuzak:** Soruları cevaplamak (gizli bilgi: "Pamuk").
@@ -116,7 +117,7 @@ Kartlar:
 
 #### Senaryo: Aynı şifre her yerde
 
-Başlık: "Bir anahtar, bütün kapılar" · Sahne: Postam · Sonuç: Hesap · Yazılacak
+Başlık: "Bir anahtar, bütün kapılar" · Sahne: Postam · Şablon: M1 · Sonuç: Hesap · Yazılacak
 
 - **Hikâye:** Oynadığın oyunun sitesinden "veri ihlali" maili gelmiş: şifreler sızmış. Aynı şifreyi Postam'da da kullanıyorsun. Hemen ardından "Şifren sızdı mı? Buraya yaz, kontrol edelim" diyen bir servis maili.
 - **Tuzak:** Şifreyi "kontrol" sayfasına yazmak.
@@ -131,7 +132,7 @@ Başlık: "Bir anahtar, bütün kapılar" · Sahne: Postam · Sonuç: Hesap · Y
 
 #### Senaryo: Kütüphane bilgisayarında açık hesap
 
-Başlık: "Süre doldu, hesap açık" · Sahne: Cihaz · Sonuç: Hesap · Yazılacak · Tanıtım sayfasında sahnesi var
+Başlık: "Süre doldu, hesap açık" · Sahne: Cihaz · Şablon: T2 · Sonuç: Hesap · Yazılacak · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Kütüphane bilgisayarında ödevini bitirdin, süren doluyor, sırada biri bekliyor. Postam açık, "Beni hatırla" işaretli, tarayıcı "Şifreyi bu bilgisayara kaydet?" diye soruyor.
 - **Tuzak:** "Kaydet" demek ya da çıkış yapmadan kalkmak; sıradaki kişi senin adına "acil 100 TL lazım" yazar.
@@ -165,7 +166,7 @@ Kartlar:
 
 #### Senaryo: Herkese açık profilden bulunmak
 
-Başlık: "Üç gönderide evin" · Sahne: Akış · Sonuç: Veri sızıntısı · Yazılacak · Tanıtım sayfasında sahnesi var
+Başlık: "Üç gönderide evin" · Sahne: Akış · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Profilin bir yabancının gözünden görünüyor: biyografide okul ve sınıf, gönderilerde ev sokağı ve konum. Yeni bir hesap takip isteği atmış, ardından yazmış: "Çınar Ortaokulu'nda mısın? Ben de 7-B'deyim, çıkışta görüşelim."
 - **Tuzak:** İsteği kabul edip okulunu ve çıkış saatini yazmak.
@@ -180,7 +181,7 @@ Başlık: "Üç gönderide evin" · Sahne: Akış · Sonuç: Veri sızıntısı 
 
 #### Senaryo: Paylaşmadan önce bak
 
-Başlık: "Okul formalı fotoğraf" · Sahne: Akış · Sonuç: Veri sızıntısı · Yazılacak
+Başlık: "Okul formalı fotoğraf" · Sahne: Akış · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak
 
 - **Hikâye:** Okul çıkışı arkadaşlarınla fotoğraf çektin, paylaşmak üzeresin. Formanda okul arması, arkada sokak tabelası, otomatik "Okulum · 14:05" konum etiketi var; kimler görebilir: Herkes.
 - **Tuzak:** Gönderiyi olduğu gibi paylaşmak.
@@ -195,7 +196,7 @@ Başlık: "Okul formalı fotoğraf" · Sahne: Akış · Sonuç: Veri sızıntıs
 
 #### Senaryo: Canlı konum isteyen kalabalık grup
 
-Başlık: "Herkes konum atsın!" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak
+Başlık: "Herkes konum atsın!" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak
 
 - **Hikâye:** 280 kişilik "Okul Sohbet" grubunda biri "Herkes canlı konum atsın, kim nerede bakalım" diyor; birkaç kişi atmış bile. Grupta kimin kim olduğunu bilmiyorsun. Aynı akşam annen de konumunu istiyor.
 - **Tuzak:** Gruba konum ya da adres yazmak (gizli bilgi: evin sokağı).
@@ -210,7 +211,7 @@ Başlık: "Herkes konum atsın!" · Sahne: Mesajlar · Sonuç: Veri sızıntıs�
 
 #### Senaryo: Ödev asistanı kılığında uygulama
 
-Başlık: "Yüzünü analiz edeyim" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak
+Başlık: "Yüzünü analiz edeyim" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak
 
 - **Hikâye:** Sınıfta herkesin konuştuğu "Ödev Asistanı Pro" sohbet botu ödevlerde yardım ediyor. Sonra "Sana özel plan için adını, okulunu, T.C. kimlik numaranı ve bir yüz fotoğrafını gönder" diyor.
 - **Tuzak:** Kimlik bilgilerini yazmak.
@@ -250,7 +251,7 @@ Kartlar:
 
 #### Senaryo: Sahte kargo maili
 
-Başlık: "Kargonuz kapıda... değil!" · Sahne: Postam · Sonuç: Hesap · Sitede yayında · İlk dalga · Tanıtım sayfasında sahnesi var
+Başlık: "Kargonuz kapıda... değil!" · Sahne: Postam · Şablon: M1 · Sonuç: Hesap · Sitede yayında · İlk dalga · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Kargon yolda ve gelen kutun dolu. "Kargo Takip" adına gelen mail adresin eksik olduğunu, 24 saat içinde güncellemezsen paketin iade edileceğini söylüyor.
 - **Tuzak:** "Adresi güncelle" düğmesinden Postam şifresini girmek.
@@ -265,7 +266,7 @@ Başlık: "Kargonuz kapıda... değil!" · Sahne: Postam · Sonuç: Hesap · Sit
 
 #### Senaryo: Karne günü gelen mail
 
-Başlık: "Notların açıklandı!" · Sahne: Postam · Sonuç: Hesap · Yazılacak · İlk dalga
+Başlık: "Notların açıklandı!" · Sahne: Postam · Şablon: M1 · Sonuç: Hesap · Yazılacak · İlk dalga
 
 - **Hikâye:** Karne günü sabahı "Okul Portalı" adına bir mail: "Dönem notların açıklandı, görmek için giriş yap." Aynı sabah okulun gerçek töreni duyurusu ve öğretmeninin tatil ödevi maili de gelmiş. (Sınav sonucu günü için de yazılabilir.)
 - **Tuzak:** Bağlantıdan Okul Portalı şifresini girmek.
@@ -299,7 +300,7 @@ Kartlar:
 
 #### Senaryo: "Kartınız bloke edildi" SMS'i
 
-Başlık: "Bankam'dan acil uyarı" · Sahne: Mesajlar · Sonuç: Para · Yazılacak
+Başlık: "Bankam'dan acil uyarı" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Annenin kartıyla internetten bir şey almıştın. Akşam "Bankam" adına SMS: "Kartınız şüpheli işlem nedeniyle bloke edildi, açmak için bankam-guvenli.xyz/kart". Sayfa kart numarası, son kullanma, CVV ve SMS şifresini istiyor.
 - **Tuzak:** Sayfaya kart bilgilerini girmek.
@@ -314,7 +315,7 @@ Başlık: "Bankam'dan acil uyarı" · Sahne: Mesajlar · Sonuç: Para · Yazıla
 
 #### Senaryo: Kod isteyen "Destek Ekibi"
 
-Başlık: "Hesabını kurtarıyoruz" · Sahne: Mesajlar · Sonuç: Hesap · Yazılacak
+Başlık: "Hesabını kurtarıyoruz" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Hesap · Yazılacak
 
 - **Hikâye:** "Oyun Dünyası Destek" adlı, bugün açılmış bir hesap yazıyor: "Hesabında şüpheli işlem var, doğrulamak için telefonuna gelen 6 haneli kodu yaz, yoksa hesabın 1 saat içinde kapanacak." Hemen ardından gerçek bir kod SMS'i düşüyor.
 - **Tuzak:** Kodu yazmak.
@@ -330,7 +331,7 @@ Başlık: "Hesabını kurtarıyoruz" · Sahne: Mesajlar · Sonuç: Hesap · Yaz�
 
 #### Senaryo: "Polisim, savcıyım" araması
 
-Başlık: "Babaannenin telefonu" · Sahne: Mesajlar · Sonuç: Para · Yazılacak
+Başlık: "Babaannenin telefonu" · Sahne: Mesajlar · Şablon: T1 (+T3) · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Aile grubunda babaannen yazıyor: "Polis aradı, adıma soruşturma varmış, paramı güvenli hesaba aktarmam lazımmış, kimseye söylememi istediler." Ardından bilinmeyen bir numaradan "Savcılık" imzalı bir mesaj ve bir IBAN geliyor.
 - **Tuzak:** "Savcılık" mesajına cevap verip babaannenin bilgilerini yazmak.
@@ -364,7 +365,7 @@ Kartlar:
 
 #### Senaryo: Okul panosundaki QR kod
 
-Başlık: "Sınırsız elmas hilesi!" · Sahne: Cihaz · Sonuç: Hesap · Yazılacak · Tanıtım sayfasında sahnesi var
+Başlık: "Sınırsız elmas hilesi!" · Sahne: Cihaz · Şablon: T1 · Sonuç: Hesap · Yazılacak · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Koridor panosunda "Sınırsız elmas hilesi, okut ve indir!" afişi. Telefonun kamerası QR'ı okuyunca adres önizlemesi çıkıyor: elmas-hile-indir.xyz/ElmasHack.apk. Açarsan "Bilinmeyen kaynaktan yüklensin mi?" sorusu geliyor.
 - **Tuzak:** Bağlantıyı açıp uygulamayı yüklemek; uygulama SMS kodlarını okur, oyun hesabı gider.
@@ -379,7 +380,7 @@ Başlık: "Sınırsız elmas hilesi!" · Sahne: Cihaz · Sonuç: Hesap · Yazıl
 
 #### Senaryo: Kafede bedava Wi‑Fi
 
-Başlık: "KafeMola_FREE" · Sahne: Cihaz · Sonuç: Hesap · Yazılacak
+Başlık: "KafeMola_FREE" · Sahne: Cihaz · Şablon: T1 · Sonuç: Hesap · Yazılacak
 
 - **Hikâye:** Arkadaşlarla kafedesin. Wi‑Fi listesinde üç ağ var: "KafeMola" (şifreli, kasadaki kartta yazıyor), "KafeMola_FREE" (açık) ve "Bedava_Internet". Açık ağa bağlanınca "İnternete çıkmak için Postam hesabınla giriş yap" sayfası açılıyor.
 - **Tuzak:** Postam şifresini giriş sayfasına yazmak.
@@ -412,7 +413,7 @@ Kartlar:
 
 #### Senaryo: "Yeni numaram bu" diyen kuzen
 
-Başlık: "Sesi aynı, numara yeni" · Sahne: Mesajlar · Sonuç: Hesap · Yazılacak
+Başlık: "Sesi aynı, numara yeni" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Hesap · Yazılacak
 
 - **Hikâye:** Bilinmeyen bir numaradan kuzenin Ece'nin sesiyle sesli mesaj: "Telefonum kırıldı, bu yeni numaram. Hesabımı yeni telefona kuruyorum, sana bir kod gelecek, atar mısın?" Az sonra kod SMS'i düşüyor.
 - **Tuzak:** Kodu göndermek.
@@ -428,7 +429,7 @@ Başlık: "Sesi aynı, numara yeni" · Sahne: Mesajlar · Sonuç: Hesap · Yazı
 
 #### Senaryo: Afet sonrası sahte yardım kampanyası
 
-Başlık: "Bağış için bu IBAN" · Sahne: Akış · Sonuç: Para · Yazılacak
+Başlık: "Bağış için bu IBAN" · Sahne: Akış · Şablon: T1 · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Bir deprem haberinin ardından akışında hızla yayılan bir gönderi: yıkıntı fotoğrafı, "Hemen yardım lazım, bağışları bu sayfadan yapın." Hesap dün açılmış, IBAN bir kişinin adına. (Postam'da mail olarak da yazılabilir.)
 - **Tuzak:** Bağış sayfasına kart bilgisini girmek.
@@ -443,7 +444,7 @@ Başlık: "Bağış için bu IBAN" · Sahne: Akış · Sonuç: Para · Yazılaca
 
 #### Senaryo: Ünlünün videosunda bedava telefon
 
-Başlık: "Sadece kargo ücreti" · Sahne: Akış · Sonuç: Para · Yazılacak
+Başlık: "Sadece kargo ücreti" · Sahne: Akış · Şablon: T1 · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Sevdiğin bir içerik üreticisi videoda "Takipçilerime 500 telefon hediye ediyorum, sadece 49 TL kargo ücreti" diyor. Ağzı sesle tam oturmuyor, hesap adının sonunda fazladan bir harf var.
 - **Tuzak:** Kargo ücreti için kart bilgisini girmek.
@@ -483,7 +484,7 @@ Kartlar:
 
 #### Senaryo: Ödev diye gelen ekli dosya
 
-Başlık: "Yarınki sınavın soruları ekte" · Sahne: Postam · Sonuç: Fidye · Yazılacak · İlk dalga
+Başlık: "Yarınki sınavın soruları ekte" · Sahne: Postam · Şablon: M1 · Sonuç: Fidye · Yazılacak · İlk dalga
 
 - **Hikâye:** Sınav haftası. Sınıf arkadaşın Can'ın adresinden mail: "Yarınki sınavın soruları ekte, kimseye gösterme." Ek: sinav_sorulari.pdf.exe. Aynı gün matematik öğretmeninden gerçek bir PDF çalışma kâğıdı da gelmiş.
 - **Tuzak:** Eki açmak; dosyalar kilitlenir.
@@ -499,7 +500,7 @@ Başlık: "Yarınki sınavın soruları ekte" · Sahne: Postam · Sonuç: Fidye 
 
 #### Senaryo: Sınıf grubundan gelen hileli uygulama
 
-Başlık: "Mağazada yok, hileli sürüm" · Sahne: Mesajlar · Sonuç: Hesap · Yazılacak · İlk dalga
+Başlık: "Mağazada yok, hileli sürüm" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Hesap · Yazılacak · İlk dalga
 
 - **Hikâye:** Sınıf grubunda Mert "elmas nasıl alınıyor?" diye soruyor; Kaan "hileli sürüm, mağazada yok" diye ElmasHack_v3.apk atıyor. Yüklemek için "bilinmeyen kaynaklara izin ver" ve SMS, Kişiler, "üstte göster" izinleri gerekiyor.
 - **Tuzak:** Dosyayı açıp yüklemek; uygulama SMS kodlarını okuyup oyun ve mail hesabını alır.
@@ -532,7 +533,7 @@ Kartlar:
 
 #### Senaryo: Videodaki hile linki
 
-Başlık: "%100 ÇALIŞIYOR" · Sahne: Tarayıcı · Sonuç: Fidye · Yazılacak
+Başlık: "%100 ÇALIŞIYOR" · Sahne: Tarayıcı · Şablon: M1 · Sonuç: Fidye · Yazılacak
 
 - **Hikâye:** "oyun hile 2026" araması seni "HİLE 2026 %100 ÇALIŞIYOR" videosuna götürüyor. Açıklamadaki kısaltılmış link üç ayrı İNDİR düğmeli bir sayfa açıyor; sabitlenmiş yorum "çalışmazsa antivirüsü kapatın" diyor.
 - **Tuzak:** hile_kurulum.exe'yi indirip açmak.
@@ -547,7 +548,7 @@ Başlık: "%100 ÇALIŞIYOR" · Sahne: Tarayıcı · Sonuç: Fidye · Yazılacak
 
 #### Senaryo: Bedava elmas jeneratörü
 
-Başlık: "İnsan olduğunu doğrula" · Sahne: Tarayıcı · Sonuç: Hesap · Yazılacak
+Başlık: "İnsan olduğunu doğrula" · Sahne: Tarayıcı · Şablon: T1 · Sonuç: Hesap · Yazılacak
 
 - **Hikâye:** "10.000 elmas 5 dakikada hesabında" diyen bir site kullanıcı adını alıyor, sayaç dönüyor, sonra "insan olduğunu doğrula" diyor: önce OyunBoost uygulamasını indir, sonra oyun şifrenle giriş yap.
 - **Tuzak:** Uygulamayı indirmek ya da oyun şifresini yazmak.
@@ -580,7 +581,7 @@ Kartlar:
 
 #### Senaryo: Rehberini isteyen el feneri
 
-Başlık: "Işık için kişiler mi?" · Sahne: Cihaz · Sonuç: Veri sızıntısı · Yazılacak
+Başlık: "Işık için kişiler mi?" · Sahne: Cihaz · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak
 
 - **Hikâye:** Mağazada "Süper Fener" uygulaması: kurulumda Kişiler, SMS, Konum ve Erişilebilirlik izinleri istiyor. Yorumların üçü aynı gün, aynı cümleyle yazılmış.
 - **Tuzak:** Bütün izinleri vermek; rehberindeki herkese senin adına reklam SMS'i gider.
@@ -595,7 +596,7 @@ Başlık: "Işık için kişiler mi?" · Sahne: Cihaz · Sonuç: Veri sızıntı
 
 #### Senaryo: Kargo uygulaması diye gelen dosya
 
-Başlık: "Paketini takip et" · Sahne: Mesajlar · Sonuç: Para · Yazılacak
+Başlık: "Paketini takip et" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Bilinmeyen numaradan SMS: "Kargonuz şubede bekliyor, takip için uygulamamızı indirin: kargo-takip-app.xyz/takip.apk". Kurulum SMS okuma izni istiyor.
 - **Tuzak:** Uygulamayı kurmak; bankanın SMS şifreleri okunur.
@@ -610,7 +611,7 @@ Başlık: "Paketini takip et" · Sahne: Mesajlar · Sonuç: Para · Yazılacak
 
 #### Senaryo: Gerçek güncelleme hangisi?
 
-Başlık: "Telefonunuz eski!" · Sahne: Cihaz · Sonuç: Veri sızıntısı · Yazılacak
+Başlık: "Telefonunuz eski!" · Sahne: Cihaz · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak
 
 - **Hikâye:** Bir film sitesinde tam ekran uyarı: "Telefonunuz eski! Virüs riski. Hemen güncelleyin" ve geri sayım. Aynı anda telefonun gerçek "Güncelleme hazır" bildirimi de bildirim çubuğunda duruyor.
 - **Tuzak:** Sayfadaki "Güncelle"ye basıp dosyayı kurmak.
@@ -643,7 +644,7 @@ Kartlar:
 
 #### Senaryo: Koridorda bulunan flash bellek
 
-Başlık: "SINAV SORULARI" · Sahne: Cihaz · Sonuç: Fidye · Yazılacak · Tanıtım sayfasında sahnesi var
+Başlık: "SINAV SORULARI" · Sahne: Cihaz · Şablon: M1 · Sonuç: Fidye · Yazılacak · Tanıtım sayfasında sahnesi var
 
 - **Hikâye:** Koridorda "SINAV SORULARI" etiketli bir flash bellek buldun. Laptopa takınca pencere açılıyor: sinav_cevaplari.pdf.exe, Tür: Uygulama, Yayıncı: Bilinmiyor; ardından "Bu program cihazında değişiklik yapmak istiyor".
 - **Tuzak:** Dosyayı çalıştırmak.
@@ -658,7 +659,7 @@ Başlık: "SINAV SORULARI" · Sahne: Cihaz · Sonuç: Fidye · Yazılacak · Tan
 
 #### Senaryo: Korsan dizi sitesindeki oynatıcı
 
-Başlık: "İzlemek için eklentiyi kur" · Sahne: Tarayıcı · Sonuç: Fidye · Yazılacak
+Başlık: "İzlemek için eklentiyi kur" · Sahne: Tarayıcı · Şablon: M1 · Sonuç: Fidye · Yazılacak
 
 - **Hikâye:** Sinemada olan filmi bedava izleyebileceğin bir site. Oynat'a basınca "Video oynatıcınız eski, HD Oynatıcı eklentisini kurun" çıkıyor; arkada reklamlar açılıyor.
 - **Tuzak:** Eklentiyi ya da dosyayı kurmak.
@@ -701,7 +702,7 @@ Kartlar:
 
 #### Senaryo: Okul çekilişinde tablet kazandın
 
-Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga · Açan eğitim: Kişisel veri
+Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga · Açan eğitim: Kişisel veri
 
 (2 Kasım: Murat bu odanın yerine "Yayıncının çekilişi" kurgusunu seçti (kopya yayıncı hesabı, sahte çekiliş); oynanabilir tuvali var, yazılınca bu bölüm güncellenir.)
 
@@ -738,7 +739,7 @@ Kartlar:
 
 #### Senaryo: Kulaklık için veli kartı
 
-Başlık: "Aynı mağaza, farklı adres" · Sahne: Postam + görev · Sonuç: Para · Yayında · İlk dalga · Açan eğitim: Kart ve para güvenliği (17 Kasım)
+Başlık: "Aynı mağaza, farklı adres" · Sahne: Postam + görev · Şablon: T2 · Sonuç: Para · Yayında · İlk dalga · Açan eğitim: Kart ve para güvenliği (17 Kasım)
 
 (Eski adı "Ücretsiz elmas için veli kartı"; 2 Kasım'da Murat'la görevli hâle geldi. Tam metin `docs/labs/rooms/para-carsisi/scenario/kulaklik-icin-veli-karti.md`.)
 
@@ -773,7 +774,7 @@ Kartlar:
 
 #### Senaryo: Yarı fiyatına telefon
 
-Başlık: "Son 3 ürün, sadece havale" · Sahne: Akış · Sonuç: Para · Yazılacak
+Başlık: "Son 3 ürün, sadece havale" · Sahne: Akış · Şablon: T1 · Sonuç: Para · Yazılacak
 
 - **Hikâye:** Akışta "Telefon Dünyası Outlet" hesabı: yeni model telefon yarı fiyatına, "son 3 ürün", ödeme yalnız havale, yorumlar kapalı. Mesaj atınca "kapora at, ayırayım" diyor ve bir ödeme sayfası yolluyor.
 - **Tuzak:** Ödeme sayfasına kart bilgisini girmek.
@@ -788,7 +789,7 @@ Başlık: "Son 3 ürün, sadece havale" · Sahne: Akış · Sonuç: Para · Yaz�
 
 #### Senaryo: Eski telefonunu sat
 
-Başlık: "Para sana mı geliyor, senden mi gidiyor?" · Sahne: Mesajlar + satış görevi · Sonuç: Para · Kod yazıldı, oda dosyası taslak · Lise için önerilir · Açan eğitim şimdilik Kart ve para güvenliği; "Online alışveriş ve ikinci el" yazılınca oraya geçer (17 Kasım)
+Başlık: "Para sana mı geliyor, senden mi gidiyor?" · Sahne: Mesajlar + satış görevi · Şablon: T1 · Sonuç: Para · Kod yazıldı, oda dosyası taslak · Lise için önerilir · Açan eğitim şimdilik Kart ve para güvenliği; "Online alışveriş ve ikinci el" yazılınca oraya geçer (17 Kasım)
 
 (Eski adı "Eski telefonunu satarken gelen ödeme linki"; 2 Kasım'da Murat'la ikinci görevli oda oldu. Tam metin `docs/labs/rooms/para-carsisi/scenario/eski-telefonunu-sat.md`.)
 
@@ -823,7 +824,7 @@ Kartlar:
 
 #### Senaryo: Hesabını kirala
 
-Başlık: "Haftada 2.000 TL, hiçbir şey yapmadan" · Sahne: Mesajlar · Sonuç: Yeni: hesabın suçta kullanıldı · Yazılacak · Lise için önerilir
+Başlık: "Haftada 2.000 TL, hiçbir şey yapmadan" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Yeni: hesabın suçta kullanıldı · Yazılacak · Lise için önerilir
 
 - **Hikâye:** Takip ettiğin bir hesaptan mesaj: "Banka hesabın var mı? Hesabına gelen parayı başka bir hesaba aktar, her işlemden %10 senin." Başvuru linki IBAN'ı, kartı ve mobil bankacılık şifresini istiyor.
 - **Tuzak:** Başvuru formunu doldurmak; hesap dolandırıcılık parası taşır, dondurulur, soruşturma açılır.
@@ -838,7 +839,7 @@ Başlık: "Haftada 2.000 TL, hiçbir şey yapmadan" · Sahne: Mesajlar · Sonuç
 
 #### Senaryo: Beğen, kazan
 
-Başlık: "Her beğeniye 25 TL" · Sahne: Mesajlar · Sonuç: Para · Yazılacak · Lise için önerilir
+Başlık: "Her beğeniye 25 TL" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Para · Yazılacak · Lise için önerilir
 
 - **Hikâye:** Bilinmeyen biri: "Evden iş: videoları beğen, ekran görüntüsünü at, her beğeniye 25 TL." İlk gün gerçekten 75 TL yatmış. Ertesi gün "VIP görevler için önce 500 TL yatır, üç katını al" deniyor.
 - **Tuzak:** Ödeme sayfasında kartla para yatırmak.
@@ -853,7 +854,7 @@ Başlık: "Her beğeniye 25 TL" · Sahne: Mesajlar · Sonuç: Para · Yazılacak
 
 #### Senaryo: Kesin kazanç grubu
 
-Başlık: "Bugün yatır, yarın 10 katı" · Sahne: Mesajlar · Sonuç: Para · Yazılacak · Lise için önerilir
+Başlık: "Bugün yatır, yarın 10 katı" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Para · Yazılacak · Lise için önerilir
 
 - **Hikâye:** Eklendiğin bir grupta her gün "kazanç" ekran görüntüleri paylaşılıyor: kripto ya da maç tahmini, "bugün 200 yatır, yarın 2.000". Yönetici "sadece bugün, son 5 kişi" diyor.
 - **Tuzak:** Yatırım sayfasına kart bilgisini girmek.
@@ -895,7 +896,7 @@ Kartlar:
 
 #### Senaryo: Oyunda tanışılan "arkadaş"
 
-Başlık: "Sadece bizim sırrımız" · Sahne: Mesajlar · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga
+Başlık: "Sadece bizim sırrımız" · Sahne: Mesajlar · Şablon: T1 (+T3) · Sonuç: Veri sızıntısı · Yazılacak · İlk dalga
 
 - **Hikâye:** Oyunda tanıştığın "Arda, 13" haftalardır çok iyi davranıyor, sana elmas hediye etti. Şimdi başka bir uygulamada konuşmak, ailene söylememeni ve hangi okula, kaçta çıktığını istiyor: "Bir gün tesadüfen karşılaşırız belki."
 - **Tuzak:** Okulunu ve çıkış saatini yazmak (gizli bilgi).
@@ -910,7 +911,7 @@ Başlık: "Sadece bizim sırrımız" · Sahne: Mesajlar · Sonuç: Veri sızınt
 
 #### Senaryo: Sınıf grubunda alay edilen arkadaş
 
-Başlık: "Sadece şakaydı" · Sahne: Mesajlar · Sonuç: Yeni: paylaşım yayıldı · Yazılacak · İlk dalga
+Başlık: "Sadece şakaydı" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Yeni: paylaşım yayıldı · Yazılacak · İlk dalga
 
 - **Hikâye:** Sınıf grubunda biri Ece'nin fotoğrafını alaycı bir çıkartmaya çevirip paylaşıyor; gülme emojileri art arda geliyor, biri "sen de bir şey yaz" diyor. Az sonra Ece sana özelden yazıyor: "Herkes bana mı gülüyor?"
 - **Tuzak:** Gülmek, "haha" yazmak ya da çıkartmayı iletmek; paylaşım yayılır.
@@ -944,7 +945,7 @@ Kartlar:
 
 #### Senaryo: İtiraf hesabında senin hakkında gönderi
 
-Başlık: "#okulitiraflari" · Sahne: Akış · Sonuç: Yeni: kavga büyüdü · Yazılacak
+Başlık: "#okulitiraflari" · Sahne: Akış · Şablon: T1 · Sonuç: Yeni: kavga büyüdü · Yazılacak
 
 - **Hikâye:** Okulun adını taşıyan anonim bir "itiraf" hesabı senin hakkında uydurma bir gönderi paylaşmış; altında tanıdık kullanıcı adlarıyla yorumlar birikiyor.
 - **Tuzak:** Altına öfkeli bir cevap yazmak ya da aynı şekilde karşılık vermek.
@@ -959,7 +960,7 @@ Başlık: "#okulitiraflari" · Sahne: Akış · Sonuç: Yeni: kavga büyüdü ·
 
 #### Senaryo: Senin adına açılmış sahte hesap
 
-Başlık: "Bu ben değilim" · Sahne: Akış · Sonuç: Yeni: kavga büyüdü · Yazılacak
+Başlık: "Bu ben değilim" · Sahne: Akış · Şablon: T1 · Sonuç: Yeni: kavga büyüdü · Yazılacak
 
 - **Hikâye:** Arkadaşların "Bu hesap senin mi? Herkese hakaret ediyor" diye yazıyor. Profil fotoğrafın ve adınla açılmış bir hesap sınıf arkadaşlarına kötü mesajlar atıyor.
 - **Tuzak:** Sahte hesapla tartışmak ya da kendi hesabından herkese öfkeli bir gönderi yapmak.
@@ -992,7 +993,7 @@ Kartlar:
 
 #### Senaryo: Fotoğraf isteyen "yaşıt"
 
-Başlık: "Sadece bende kalır" · Sahne: Mesajlar · Sonuç: Yeni: fotoğraf kontrolden çıktı · Yazılacak
+Başlık: "Sadece bende kalır" · Sahne: Mesajlar · Şablon: T1 (+T3) · Sonuç: Yeni: fotoğraf kontrolden çıktı · Yazılacak
 
 - **Hikâye:** Bir oyun sunucusunda tanıştığın "Selin, 14" ile birkaç gündür konuşuyorsun. Önce iltifat, sonra "bir fotoğrafını atsana, sadece bende kalır"; sen istemeyince "arkadaş değil miyiz, herkes atıyor".
 - **Tuzak:** Fotoğraf göndermek (M6: hazır "Fotoğraf gönder" düğmesi).
@@ -1007,7 +1008,7 @@ Başlık: "Sadece bende kalır" · Sahne: Mesajlar · Sonuç: Yeni: fotoğraf ko
 
 #### Senaryo: "Fotoğrafını yayarım"
 
-Başlık: "24 saatin var" · Sahne: Mesajlar · Sonuç: Yeni: ödedin ama durmadı · Yazılacak · Lise için önerilir
+Başlık: "24 saatin var" · Sahne: Mesajlar · Şablon: T1 (+T3) · Sonuç: Yeni: ödedin ama durmadı · Yazılacak · Lise için önerilir
 
 - **Hikâye:** Tanımadığın bir hesap senin bir fotoğrafını (yapay zekâyla değiştirilmiş olabilir) atıp yazıyor: "24 saat içinde 500 TL'lik oyun kartı kodu göndermezsen bunu okul grubuna atarım." Ekranın köşesinde annenin hediye ettiği oyun kartının kodu duruyor.
 - **Tuzak:** Kodu göndermek (gizli bilgi) ya da pazarlık etmek.
@@ -1041,7 +1042,7 @@ Kartlar:
 
 #### Senaryo: Gece 01:00 bildirimleri
 
-Başlık: "Serin bitmek üzere!" · Sahne: Mesajlar · Sonuç: Yeni: uykusuz kaldın · Yazılacak
+Başlık: "Serin bitmek üzere!" · Sahne: Mesajlar · Şablon: T1 · Sonuç: Yeni: uykusuz kaldın · Yazılacak
 
 - **Hikâye:** Yarın sınav var, saat 01:00. Grup sohbeti hâlâ akıyor, bir uygulama "Serin 1 saat içinde bitecek!" diye bildirim atıyor, bir arkadaşın "uyuyor musun, cevap ver" diye üst üste yazıyor.
 - **Tuzak:** Hepsine cevap verip ekranda kalmak.
@@ -1057,7 +1058,7 @@ Başlık: "Serin bitmek üzere!" · Sahne: Mesajlar · Sonuç: Yeni: uykusuz kal
 
 #### Senaryo: Tehlikeli akım videosu
 
-Başlık: "#cesaretdenemesi" · Sahne: Akış · Sonuç: Yeni: akım yayıldı · Yazılacak
+Başlık: "#cesaretdenemesi" · Sahne: Akış · Şablon: T1 · Sonuç: Yeni: akım yayıldı · Yazılacak
 
 - **Hikâye:** Akışında hızla yayılan bir "cesaret akımı" videosu var; arkadaşların seni etiketleyip "sıra sende, yapamazsın" yazıyor. Akım kendine zarar verebilecek bir hareket içeriyor.
 - **Tuzak:** Akımı yapmak ya da videoyu paylaşmak.
@@ -1085,6 +1086,7 @@ Odaların beklediği eklentiler ve yeni sahne türleri. Boyut tahminidir.
 | Akış | Sosyal medya (yeni şablon) | Profil, gönderi, yorum, takip isteği, özel mesaj, gizlilik ayarı, "yeni gönderi" ekranı. Kararlar: bildir, engelle, gizliye al, konumu sil. Planlanmıştı; önce tuvalde çizilir. | Büyük |
 | Cihaz | Telefon ve bilgisayar ekranı (yeni şablon) | Bildirim çubuğu, kurulum ve izin penceresi, USB ve dosya penceresi (tür, yayıncı), Wi‑Fi listesi, QR önizleme, "şifreyi kaydet?" sorusu, güncelleme. Ana sayfadaki üç sahne bunu ister. | Büyük |
 | Tarayıcı | Web sayfası (yeni şablon) | Adres çubuğu, indirme sayfası (birden çok İNDİR), tam ekran sahte uyarı, ilan sayfası. Bugünkü sahte sayfa bileşeni çekirdeği olabilir. | Orta |
+| Şablon | Oda sahne şablonu (M1, T1, T2, T3) | **Onaylandı ve kodlandı (18 Kasım).** Postam, Mesajlar, tarayıcı ve diğer uygulamalar bu sahnelerin içinde açılır: M1'de görev çubuğu, T1'de masadan alınan telefon, T2'de ikisi birden, T3'te konuşma. Oda dosyasında `stage`, T3 soru görevinde `talk` (`docs/guides/new-lab.md` 2.15). Kargo (M1), Kulaklık (T2), Eski telefon (T1) taşındı; T3'ü kullanan oda henüz yok. | Büyük |
 
 ## Kararlar (17 Ekim önerileri)
 

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // Ziyaretçi: siber şehir, mahalle sayfası ve lablar kataloğu açık; labın kendisi kayıtla açılır.
-// Örnek veride Oltalama Limanı'nda eğitim labı ve "Sahte kargo maili" senaryosu var (labs/examples).
+// Örnek veride Oltalama Limanı'nda eğitim labı ve "Sahte kargo maili" senaryosu var (labs/examples, kargo labs/rooms/oltalama-limani).
 
 
 test("siber şehir: mahalleler görünür, mahalleye girilir", async ({ page }) => {

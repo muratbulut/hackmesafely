@@ -29,6 +29,10 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Görüntülü arama (görevli odanın açılışı ve bitişleri), arayan | call (`MissionCall`, `CallerAvatar`, `components/lab/mission/`; aşama `call`) |
 | Satış görevi, ilan, kargodan önceki hazırlık | sale (`mission.sale`: `product`, `price`, `platform`, `prep`, `unprepared`; panelde `ListingCard`) |
 | Arayanın çizimi (anne, baba) | look (`mission.look`: `mother`, `father`; `caller-rig.ts`, `father-rig.ts`) |
+| Oda sahnesi (oda sahne şablonu): M1 masaüstü, T1 masadaki telefon, T2 bilgisayar ve telefon | stage (`scenario.stage`, `stageSchema`; `type`: `DESKTOP`, `PHONE`, `DESKTOP_PHONE`; `components/lab/stage/`) |
+| Bilgisayarın sahibi, kilit ekranı, şifre ipucu | `stage.owner`, `LockScreen` (`Desktop.tsx`), `stage.password` (`value`, `hint`, `hintFrom`) |
+| Masadaki telefon, telefonu al / masaya bırak | `DeskPhone` (`inHand`, `onPick`, `onDrop`), T2'de ekranı `StagePhoneContext` |
+| T3 karşılıklı konuşma (S1 sinema şeritleri), konuşan, silüet | talk (soru görevinde `task.talk`: `speaker`, `look`; `TalkScene`) |
 | Ödeme isteği (bankanın ekranı) | request (mesajda `request`; `opensRequest`, `RequestSite`; hacklenme yolu `request`) |
 | Sipariş, kargoya verme | order, ship (mesajda `order`; `opensOrder`, `OrderSite`, `shipOrder`; olay `item_shipped`) |
 | Mağaza sayfası, ödeme, onay kodu SMS'i | shop, payment (`item.payment`, `ShopSite`, `payShop`), `answerCode`; olaylar `code_entered`, `code_refused` |

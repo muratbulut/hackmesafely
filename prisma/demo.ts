@@ -149,7 +149,7 @@ async function freeJoinCode(tx: Tx): Promise<string> {
   }
 }
 
-/** Yayındaki eğitim ve senaryo labı; senaryo içeriği örnek dosyayla aynı değilse denemeler eklenmez. */
+/** Yayındaki eğitim ve senaryo labı; senaryo içeriği oda dosyasıyla aynı değilse denemeler eklenmez. */
 async function readLabs(db: PrismaClient): Promise<{ labs: Labs; notes: string[] }> {
   const notes: string[] = [];
   const published = async (slug: string) => {
@@ -168,9 +168,9 @@ async function readLabs(db: PrismaClient): Promise<{ labs: Labs; notes: string[]
 
   let scenario: Labs["scenario"] = null;
   const s = await published(demo.scenarioSlug);
-  const example = JSON.parse(await readFile(path.join(import.meta.dirname, "..", "labs", "examples", `${demo.scenarioSlug}.json`), "utf8")) as { content: unknown };
+  const example = JSON.parse(await readFile(path.join(import.meta.dirname, "..", "labs", "rooms", "oltalama-limani", `${demo.scenarioSlug}.json`), "utf8")) as { content: unknown };
   if (s && isDeepStrictEqual(s.content, example.content)) scenario = { id: s.id, version: s.version };
-  else if (s) notes.push(`Senaryo labının (${demo.scenarioSlug}) yayındaki içeriği örnek dosyadan farklı; raporlar tutmayacağı için denemeler eklenmedi.`);
+  else if (s) notes.push(`Senaryo labının (${demo.scenarioSlug}) yayındaki içeriği oda dosyasından farklı; raporlar tutmayacağı için denemeler eklenmedi.`);
   else notes.push(`Senaryo labı (${demo.scenarioSlug}) yayında değil; denemeler eklenmedi.`);
   if (!training) scenario = null;
   return { labs: { training, scenario }, notes };

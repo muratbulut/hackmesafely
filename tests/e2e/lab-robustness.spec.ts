@@ -16,7 +16,7 @@ import { withDb } from "./support/db";
 test.skip(isLive, "veritabanına yazan ve hesap açan testler canlı sitede çalışmaz");
 
 
-const kargo = JSON.parse(readFileSync("labs/examples/sahte-kargo-maili.json", "utf8")).content;
+const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
 const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content as {
   cards: { id: string; type: string; question?: string }[];
 };
