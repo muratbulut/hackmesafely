@@ -48,6 +48,8 @@ Senaryo odalarının sahne türleri:
 | Cihaz | Telefon ve bilgisayar ekranı: kurulum, izin, USB, Wi‑Fi, QR | 6 | Yeni şablon |
 | Tarayıcı | Web sayfası: indirme sayfası, sahte uyarı, ilan | 3 | Yeni şablon |
 
+Bu uygulamalar bir **oda sahne şablonunun** içinde açılır (18 Kasım, Murat): **M1** masaüstü (yalnız bilgisayar, 8 senaryo), **T1** masadaki telefon (yalnız telefon, 33 senaryo; 4'ünün sonunda kısa bir T3 konuşması önerilir), **T2** bilgisayar ve telefon (2 senaryo), **T3** karşılıklı konuşma. Her senaryonun şablonu [`room-plan.md`](room-plan.md)'de "Şablon:" alanında, kurallar [`room-scene-template.md`](../design/room-scene-template.md)'de.
+
 ## Mahalle mahalle odalar
 
 61 odanın 23'ü bugünkü sahnelerle hemen yazılabilir: 12 eğitim ve 11 senaryo (3'ü zaten sitede). Kalan 38 oda kod işi bekler: 6 eğitim ve 15 senaryo küçük bir eklenti, 17 senaryo yeni bir sahne şablonu. Tablolarda her eğitim kalın yazılır, açtığı senaryolar hemen altındadır. "Yazmak için gereken" sütunu odanın hangi kod işini beklediğini söyler; "Hazır" bugünkü sahnelerle yazılabilir demektir. Her odanın hikâyesi, tuzağı, doğru kararı ve üç işareti [`room-plan.md`](room-plan.md)'deki kendi bölümündedir.

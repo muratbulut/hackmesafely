@@ -15,6 +15,7 @@ Murat Bulut'un bitirme projesidir. Ekip iki kişidir; fikirleri ve lab senaryola
 - `docs/labs/room-overview.md`: planın tek sayfalık özeti (mahalle başına odalar, sahneleri, bekledikleri kod işi) ve mahalle paylaşımı (29 Ekim: Hesap Kalesi ve Yazılım Ormanı Dilek, Oltalama Limanı ve Para Çarşısı Murat, Dostluk Parkı beklemede).
 - `docs/labs/rooms/`: odaların tam senaryoları (mahalle başına bir klasör, `training/` ve `scenario/`; şablonlar `templates/`). Kimin hangi odayı yazdığı ve odanın durumu mahalle README'sindeki tabloda.
 - `docs/platform-document.md`: asıl doküman. Bölüm 3'ün sonundaki tasarım kısımları, Bölüm 4 lab yapısı, Bölüm 6 veri modeli, Bölüm 9 faz planı. Bu dosya Claude Docs'taki asıl dokümanın kopyasıdır; çelişki olursa asıl doküman geçerlidir.
+- `docs/design/room-scene-template.md`: oda sahne şablonu (M1, T1, T2, T3); senaryo odası yazmadan ya da sahne kodlamadan önce oku.
 - `docs/design/screen-list.md`: her ekranın son kararı ve hangi tuvalde olduğu.
 - `docs/design/round-1-plan.md` ... `round-5-plan.md`: ekran ekran ayrıntılı tasarım kararları (Tur 1-5). Bir ekranı kodlamadan önce ilgili turun notunu oku.
 - Görsel son haller tasarım tuvallerinde durur (bağlantılar `docs/design/README.md` içinde).
@@ -70,6 +71,7 @@ Next.js (App Router) ve TypeScript, Tailwind CSS ve shadcn/ui, lucide ikonları,
 ### Lablar
 
 - Lablar kod değil içeriktir: veritabanında durur. Asıl yeri depodaki oda dosyasıdır (`labs/rooms/<mahalle>/<oda-adresi>.json`, 27 Ekim, Murat): PR'la girer, her yayında başlangıç verisi dosya değişince odayı günceller (gerekirse yeni sürüm yayınlar; kurallar `prisma/rooms.ts`), `tests/unit/room-files.test.ts` şemayı, yayına hazırlığı ve 10 puanı denetler. Yönetimdeki Odalar sayfası odayı dener, yayınlar, gizler, geri alır ve sırasını değiştirir (sıra ilk eklemeden sonra dosyadan değil panelden gelir); içerik değiştirmez. `labs/examples/` örnek odalardır (testler); seed onları yalnızca yoksa ekler.
+- Oda sahne şablonu (18 Kasım, Murat): bütün senaryo odaları dört sahneden biriyle açılır: **M1** masaüstü (yalnız bilgisayar), **T1** masadaki telefon (yalnız telefon), **T2** bilgisayar ve telefon, **T3** karşılıklı konuşma (sinema şeritleri). Postam, Mesajlar ve tarayıcı bu sahnelerin içinde uygulama olarak açılır. Kurallar ve tuval `docs/design/room-scene-template.md`, her odanın şablonu `docs/labs/room-plan.md`'de "Şablon:" alanında. Kodu henüz yok; yeni oda yazılırken şablonu planla birlikte seçilir.
 - Sahne türleri (şablonlar) kodda durur: içerik şeması `lib/lab/content.ts`, sahneler `components/lab/` (`inbox/`, `messaging/`, `training/`). Yeni oda yeni bir dosyadır, yeni sahne türü eklemek yeni bir şablon gerektirir. Hangi dosyalara dokunulacağı ve hangi testlerin yazılacağı `docs/guides/new-lab.md` 2. kısımda.
 - İçerik şeması geriye uyumlu değişir ya da veri migration'ıyla gelir (oda dosyaları da aynı PR'da güncellenir): şemaya uymayan taslak "Taslak okunamadı" olur ve üstüne yazılmaz, şemaya uymayan yayındaki sürüm öğrenciye "bulunamadı" olur. Taslak yazan her eylem `Lab.draftRevision` ile koşullu yazar.
 
