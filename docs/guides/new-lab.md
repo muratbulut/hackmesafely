@@ -48,6 +48,8 @@ Haritada mahallenin rotası şöyle görünür: her eğitim, hemen ardından onu
 
 Şablon dosyada yazılır ve oda eklendikten sonra **değişmez**. Yanlış şablon seçildiyse yeni bir adresle yeni bir dosya açılır.
 
+**Oda sahne şablonu (18 Kasım).** Senaryo odasının uygulaması (Postam, Mesajlar...) bir sahnenin içinde açılır: **M1** masaüstü (yalnız bilgisayar), **T1** masadaki telefon (yalnız telefon), **T2** bilgisayar ve telefon (ör. kod telefona gelir), **T3** karşılıklı konuşma (bir büyükle ya da yabancıyla yüz yüze). Odanı yazmadan önce `docs/labs/room-plan.md`'de odanın "Şablon:" alanına bak; kurallar `docs/design/room-scene-template.md`'de. Şablonun kodu henüz yok; kodlanınca oda dosyasına sahne alanı eklenir ve bu bölüm güncellenir.
+
 Başka bir sahne gerekiyorsa (sahte giriş sayfası, indirme sayfası, sosyal medya gibi) bunu mevcut şablonlarla yapamazsın. Geliştiriciden yeni bir şablon iste (2. kısım).
 
 ## 1.3 Yönetimdeki Odalar sayfası
