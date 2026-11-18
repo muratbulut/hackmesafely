@@ -41,8 +41,9 @@ test.describe("öğrenci", () => {
     await page.goto("/yol-haritasi");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Siber şehrin");
     await expect(visible(page, "Genel ilerlemen")).toBeVisible();
-    // 27 (11 Kasım): devam düğmesi açacağı odanın adını yazar.
-    await expect(page.getByRole("link", { name: /^Devam et: Oltalama eğitim odası/ }).filter({ visible: true })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
+    // 27 (11 Kasım): devam düğmesi açacağı odanın adını yazar. Şehir Kapısı yol haritasında en
+    // başta (18 Kasım): yeni öğrencinin ilk odası onun temel eğitimi Mesajı okumak.
+    await expect(page.getByRole("link", { name: /^Devam et: Mesajı okumak/ }).filter({ visible: true })).toHaveAttribute("href", "/oda/mesaji-okumak/oyna");
     await expect(page.getByText("Mahalle sayısı arttıkça")).toHaveCount(0);
 
     await page.goto("/yol-haritasi/oltalama-limani");
