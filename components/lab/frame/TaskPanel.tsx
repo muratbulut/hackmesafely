@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, ChevronUp, Flag, Lock, Play } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Flag, Lock, MessagesSquare, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ClientMission, ClientTask } from "@/lib/lab/client";
 import type { ScenarioTemplate } from "@/lib/lab/content";
@@ -27,6 +27,8 @@ export type TaskPanelProps = {
   mission?: ClientMission | null;
   missionShown?: boolean;
   onReplay?: () => void;
+  /** T3: yüz yüze sorulan soruda konuşmayı yeniden açar. */
+  onTalk?: () => void;
 };
 
 /** Görevli odada panelin en üstündeki "Annenin isteği" kutusu ve annenin kartı. */
@@ -170,7 +172,16 @@ function TaskList(props: TaskPanelProps) {
                 </p>
               ) : null}
 
-              {isCurrent && task.type === "question" ? (
+              {isCurrent && task.type === "question" && task.talk ? (
+                <div className="flex flex-col gap-2 pl-10 [animation:pop_.25s_ease-out_both]">
+                  <button type="button" onClick={props.onTalk} className={primary} data-testid="talk-open">
+                    <MessagesSquare className="size-4" strokeWidth={2.4} aria-hidden="true" />
+                    {getMessages().lab.stage.talk.back}
+                  </button>
+                </div>
+              ) : null}
+
+              {isCurrent && task.type === "question" && !task.talk ? (
                 <div className="flex flex-col gap-2 pl-10 [animation:pop_.25s_ease-out_both]" role="radiogroup" aria-label={task.text}>
                   {task.options.map((option, o) => (
                     <button

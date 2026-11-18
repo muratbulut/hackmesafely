@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
-import { finishTraining } from "./support/lab";
+import { finishTraining, signInDesktop } from "./support/lab";
 
 // Maskot (components/mascot): menüdeki canlı logonun gözü (gözlü a) fareyi izler, 10 saniyede bir
 // a'nın içinde gezer; ana sayfada öbür a'ya kaçar, diğer sayfalarda a'nın içinde kalır; hesap
@@ -187,6 +187,7 @@ test.describe("odadaki maskot", () => {
     await finishTraining(email);
     await page.goto("/oda/sahte-kargo-maili/oyna");
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
+    await signInDesktop(page);
 
     const app = page.getByTestId("scenario-player");
     const mascot = page.locator("svg[data-mood]").filter({ visible: true }).first();

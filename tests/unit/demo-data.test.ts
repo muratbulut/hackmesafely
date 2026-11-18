@@ -1,7 +1,7 @@
 // Örnek veri (prisma/demo-data.ts) uygulamanın kurallarıyla tutarlı mı? Betik migration imajında
 // lib/'e bağlanmadan çalıştığı için kuralları kendisi tekrarlar; bu test ikisini karşılaştırır.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { verifyPassword } from "better-auth/crypto";
 import { describe, expect, it } from "vitest";
 import { avatars, isAvatarCode } from "@/lib/avatars";
@@ -33,7 +33,9 @@ import { reasonError, textError } from "@/lib/tips/rules";
 import { turkeyDay } from "@/lib/tips/schedule";
 import * as demo from "@/prisma/demo-data";
 
-const example = (slug: string) => JSON.parse(readFileSync(`labs/examples/${slug}.json`, "utf8")) as { content: unknown };
+// Senaryo 18 Kasım'dan beri gerçek oda dosyası, eğitim hâlâ örnek oda.
+const roomFile = (slug: string) => [`labs/rooms/oltalama-limani/${slug}.json`, `labs/examples/${slug}.json`].find((file) => existsSync(file))!;
+const example = (slug: string) => JSON.parse(readFileSync(roomFile(slug), "utf8")) as { content: unknown };
 const now = new Date("2026-10-12T09:30:00Z");
 const allStudents = [...demo.demoClasses.flatMap((c) => c.students), ...demo.demoLoneStudents];
 const applicantEmail = (a: demo.DemoApplicant) => `${demo.emailSlug(a.name)}@${demo.demoEmailDomain}`;

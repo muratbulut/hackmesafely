@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
-import { attemptsOf, finishTraining } from "./support/lab";
+import { attemptsOf, finishTraining, signInDesktop } from "./support/lab";
 
 // Güvenlik turu 2 (Faz 3): lab motorunun korumalarını sabitler. Doğru kararlar ve rapor
 // metinleri öğrencinin tarayıcısına hiç gitmez; sahte sayfa, tıklama kaydedilmeden açılmaz.
 
-const kargo = JSON.parse(readFileSync("labs/examples/sahte-kargo-maili.json", "utf8")).content;
+const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
 const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content;
 const playPath = "/oda/sahte-kargo-maili/oyna";
 
@@ -54,11 +54,13 @@ test.describe("lab güvenliği", () => {
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
     // Deneme sunucuda açılınca başlangıç penceresi kapanır; ikinci sekme ancak ondan sonra açılır.
     await expect(page.getByRole("button", { name: "Hazırım, başla" })).toBeHidden();
+    await signInDesktop(page);
 
     // İkinci sekme denemeyi kaldığı yerden (henüz olay yokken) açar.
     const other = await context.newPage();
     await other.goto(playPath);
     await expect(other.getByTestId("scenario-player")).toBeVisible();
+    await expect(other.getByTestId("stage-lock")).toHaveCount(0);
 
     // İlk sekmede iki mail açılır; olaylar sunucuya yazılana kadar beklenir.
     await openMail(page, "okul", isMobile);

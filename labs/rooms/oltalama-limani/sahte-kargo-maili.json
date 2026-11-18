@@ -134,6 +134,7 @@
       { "text": "Şifreni sadece uygulamayı kendin açarak gir, mail linkinden asla.", "when": "hacked" },
       { "text": "Gönderen adresinde @ işaretinden sonrasına bak.", "when": "missedFake" },
       { "text": "Gerçek mailleri de tanı: bildiğin adres ve senden bir şey istemiyorsa büyük ihtimalle güvenli.", "when": "reportedReal" }
-    ]
+    ],
+    "stage": { "type": "DESKTOP" }
   }
 }

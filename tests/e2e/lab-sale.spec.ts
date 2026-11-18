@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
-import { attemptsOf, checkMissionCover, continueFromScene } from "./support/lab";
+import { attemptsOf, checkMissionCover, continueFromScene, pickUpPhone } from "./support/lab";
 
 // Satış görevli oda (Para Çarşısı "Eski telefonunu sat", 2 Kasım): babanın görüntülü araması, ilan
 // kutusu, Mesajlar'daki alıcılar, bankanın ödeme isteği (sahte), pazar yerindeki sipariş ve kargodan
@@ -76,6 +76,8 @@ async function answerIntro(page: Page, isMobile: boolean) {
   await shot(page, "3-gorev-karti", isMobile);
   await call.getByRole("button", { name: room.mission.accept }).click();
   await expect(call).toHaveCount(0);
+  // T1 sahnesi (oda sahne şablonu): telefon masada, öğrenci alır.
+  await pickUpPhone(page);
 }
 
 /** Mesajlar'da bir sohbeti açar, mesajdaki bağlantıya dokunur. */
@@ -108,8 +110,8 @@ test("telefonu sıfırlayıp gerçek alıcıya gönderen, sahteyi bildiren: iyi 
     if (!isMobile) await expect(page.getByTestId("mission-listing").filter({ visible: true })).toContainText("4.000 TL");
     await shot(page, "4-mesajlar", isMobile);
 
-    // Sahne masaüstünde de telefon çerçevesinin içinde, telefon düzeninde (PhoneFrame): sohbetten geri dönülür.
-    await expect(page.getByTestId("phone-frame")).toBeVisible();
+    // T1 sahnesi: Mesajlar masadan alınan telefonun içinde, her ekranda telefon düzeninde: sohbetten geri dönülür.
+    await expect(page.getByTestId("stage-phone")).toBeVisible();
     const app = page.getByTestId("scenario-player");
     const back = page.getByRole("button", { name: "Sohbetlere dön" });
     for (const name of ["Selin K.", "Emre T.", "Babam"]) {

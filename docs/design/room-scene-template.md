@@ -4,7 +4,7 @@
 
 Tuval (oynanabilir, bütün sahneler ve 390 px telefon hâli): [Odalar için masaüstü şablonu](https://claude.ai/artifact/FUZhpRbnDoWiu25f845vfe) (10. tur). Tuvalin kaynağı ve 3B eşyaların üretici sayfaları proje dosyalarında, `masaustu-sablonu/` klasöründe.
 
-Durum: tasarım onaylı, **kod henüz yok**. Bugünkü odalar Postam'ı ve Mesajlar'ı doğrudan açıyor; şablon kodlanınca aynı uygulamalar bu sahnelerin içinde açılır (aşağıda "Koda geçerken").
+Durum: tasarım onaylı, kod yazıldı (18 Kasım; koddan alınmış ekranlar [Sahne şablonu kodda](https://claude.ai/artifact/KZuc9b6jDJ2dEwg2pEh2y2)). Oda dosyasında `stage` yazılmayan oda eski görünümüyle açılır. Geliştirici ayrıntısı `docs/guides/new-lab.md` 2.15.
 
 ## Hangi oda hangi şablonu kullanır
 
@@ -52,14 +52,10 @@ Her senaryonun şablonu `docs/labs/room-plan.md`'de "Şablon:" alanında yazıl�
 - 390 px telefon genişliğidir. M1 ve T2'de pencereler tam ekran açılır, görev paneli alttan çekmece olur.
 - T3'te altyazı üstte siyah bir şeritte (sola yaslı), seçenekler en altta yatay kayan bir şeritte; sehpa ve telefon ikisinin arasında. Dokunma alanları en az 40 px.
 
-## Koda geçerken
+## Kodda
 
-Kod ayrı bir işte (yeni konu) yapılır. Plan:
-
-1. Oda dosyasına geriye uyumlu bir sahne alanı (`stage`: `DESKTOP` M1, `PHONE` T1, `DESKTOP_PHONE` T2, `TALK` T3) eklenir; alan yoksa oda bugünkü gibi açılır. Şema `lib/lab/content.ts`, sahneler `components/lab/stage/`.
-2. Postam, Mesajlar ve tarayıcı bu sahnelerin içinde uygulama olarak açılır; 3B eşyaların görselleri `public/` altında durur.
-3. T3'teki seçimler de diğer kararlar gibi sunucuda puanlanır ve rapora yazılır; doğru seçenek tarayıcıya gönderilmez.
-4. İlk taşınacak odalar: Sahte kargo maili (M1), Kulaklık için veli kartı (T2), Eski telefonunu sat (T1).
+1. Oda dosyasında geriye uyumlu `stage` alanı: `type` `DESKTOP` (M1), `PHONE` (T1), `DESKTOP_PHONE` (T2); `owner`, `password`. Şema `lib/lab/content.ts`, sahneler `components/lab/stage/`.
+2. T3 ayrı bir sahne türü olmadı (planda `TALK` diye yazılmıştı): bir soru görevinin görünüşüdür (`talk`: `speaker`, `look`). Böylece M1, T1 ya da T2 odasının ortasında da konuşma olabilir. Seçim diğer kararlar gibi sunucuda puanlanır ve rapora yazılır; doğru seçenek tarayıcıya gitmez.
+3. Postam, Mesajlar ve tarayıcı sahnelerin içinde uygulama olarak açılır; 3B eşyaların görselleri `public/stage/`.
+4. Taşınan odalar: Sahte kargo maili (M1), Kulaklık için veli kartı (T2), Eski telefonunu sat (T1). Kargo odası bu işle örnek oda klasöründen gerçek oda klasörüne (`labs/rooms/oltalama-limani/`) taşındı (Murat 18 Kasım); yayında aynı adresle mevcut odayı devralır ve yeni sürüm olarak yeni sahneyle açılır.
 5. Yeni odalar `docs/labs/room-plan.md`'deki şablonla yazılır.
-
-Ayrıntılı dosya listesi ve testler kod işiyle birlikte `docs/guides/new-lab.md` 2. kısma yazılır.

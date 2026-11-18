@@ -1,5 +1,5 @@
 // Başlangıç verisi: siber şehrin beş mahallesi, depodaki odalar (labs/rooms/) ve örnek lablar
-// (labs/examples/). Tekrar çalıştırmak güvenlidir. Var olan mahalleye ve örnek laba dokunulmaz: ad,
+// (labs/examples/; Sahte kargo maili 18 Kasım'da gerçek oda oldu, aynı adresle yayındaki odayı devralır). Tekrar çalıştırmak güvenlidir. Var olan mahalleye ve örnek laba dokunulmaz: ad,
 // renk ve örnek lab içeriği yönetim panelinden değiştirilebildiği için sonraki çalıştırmalar o
 // değişikliklerin üzerine yazmaz; silinmiş bir örnek lab ise yeniden eklenir. Depodaki oda ise
 // dosyası değişince güncellenir (kurallar prisma/rooms.ts'te).
