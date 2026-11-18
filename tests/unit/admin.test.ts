@@ -20,7 +20,7 @@ import { draftIssues, validateContent } from "@/lib/admin/validate";
 import { maskEmail, personShown, typedEmailOf } from "@/lib/admin/users-model";
 import { parseScenario, type ScenarioContent } from "@/lib/lab/content";
 
-const example = (file: string) => JSON.parse(readFileSync(`labs/examples/${file}.json`, "utf8"));
+const example = (file: string) => JSON.parse(readFileSync(`tests/fixtures/rooms/${file}.json`, "utf8"));
 const kargo = parseScenario(example("sahte-kargo-maili").content)!;
 const sms = parseScenario(example("kodu-soran-arkadas").content)!;
 

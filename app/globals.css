@@ -238,6 +238,62 @@
   --qr-bg: #ffffff;
   --qr-fg: #141517;
 
+  /*
+   * Oda sahne şablonu (M1 masaüstü, T1 masadaki telefon, T2 ikisi, T3 konuşma; components/lab/stage/,
+   * docs/design/room-scene-template.md): kurgusal bilgisayarın gri duvarı ve sitedeki sarı ağ,
+   * telefonun gövdesi, sinema şeritli konuşma. Bir odanın içidir; temayla değişmez.
+   */
+  --stage-wall: #2e3034;
+  --stage-wall-2: #383b40;
+  --stage-road: #f5c400;
+  --stage-road-ink: #141517;
+  --stage-os-bar: rgb(20 21 23 / 0.9);
+  --stage-os-glass: rgb(38 41 45 / 0.92);
+  --stage-os-fg: #f1f2f3;
+  --stage-os-fg-2: #d2d4d7;
+  --stage-os-muted: #a8acb1;
+  --stage-os-line: #3a3d42;
+  --stage-os-hover: rgb(255 255 255 / 0.1);
+  --stage-os-active: rgb(255 255 255 / 0.14);
+  --stage-os-title: #26292d;
+  --stage-os-title-idle: #202226;
+  --stage-os-shadow: rgb(0 0 0 / 0.45);
+  --stage-lock-scrim: rgb(10 11 12 / 0.45);
+  --stage-avatar: #f472b6;
+  --stage-avatar-ink: #3b0a24;
+  --stage-avatar-ring: #fbcfe8;
+  --stage-error: #fca5a5;
+  --stage-monitor: #16181b;
+  --stage-monitor-edge: #34373c;
+  --stage-bezel: #0b0c0e;
+  --stage-bezel-hi: #3a3d44;
+  --stage-bezel-lo: #15161a;
+  --stage-bezel-edge: #555963;
+  --stage-sleep: #050607;
+  --stage-sleep-shine: rgb(255 255 255 / 0.08);
+  --stage-wood: #683e22;
+  --stage-wood-lamp: rgb(255 240 215 / 0.2);
+  --stage-vignette: rgb(0 0 0 / 0.45);
+  --stage-shadow: rgb(0 0 0 / 0.55);
+  --stage-shadow-soft: rgb(0 0 0 / 0.4);
+  --stage-dim: rgb(0 0 0 / 0.55);
+  --stage-talk-bg: #0b0b0c;
+  --stage-letterbox: #000000;
+  --stage-silhouette: #110c09;
+  --stage-rim: #ffe7c4;
+  --stage-tea: #d9772e;
+  --stage-tea-plate: #3a2a20;
+  --stage-sub: #ffffff;
+  --stage-sub-you: #d4d4d4;
+  --stage-sub-you-name: #9a9a9a;
+  --stage-sub-shadow: rgb(0 0 0 / 0.9);
+  --stage-choice-line: rgb(255 255 255 / 0.18);
+  --stage-choice-num: rgb(255 255 255 / 0.14);
+  --stage-choice-hover: rgb(10 10 12 / 0.8);
+  --stage-phone-glow: rgb(190 210 255 / 0.4);
+  --stage-steam: rgb(255 255 255 / 0.22);
+  --stage-grain: #ffffff;
+
   /* Animasyonlardaki fare imleci (iki temada da beyaz, koyu kenarlı) */
   --cursor-fill: #ffffff;
   --cursor-stroke: #141517;
@@ -526,6 +582,61 @@
 
   --qr-bg: #ffffff;
   --qr-fg: #141517;
+  /*
+   * Oda sahne şablonu (M1 masaüstü, T1 masadaki telefon, T2 ikisi, T3 konuşma; components/lab/stage/,
+   * docs/design/room-scene-template.md): kurgusal bilgisayarın gri duvarı ve sitedeki sarı ağ,
+   * telefonun gövdesi, sinema şeritli konuşma. Bir odanın içidir; temayla değişmez (koyu temadakiyle aynı).
+   */
+  --stage-wall: #2e3034;
+  --stage-wall-2: #383b40;
+  --stage-road: #f5c400;
+  --stage-road-ink: #141517;
+  --stage-os-bar: rgb(20 21 23 / 0.9);
+  --stage-os-glass: rgb(38 41 45 / 0.92);
+  --stage-os-fg: #f1f2f3;
+  --stage-os-fg-2: #d2d4d7;
+  --stage-os-muted: #a8acb1;
+  --stage-os-line: #3a3d42;
+  --stage-os-hover: rgb(255 255 255 / 0.1);
+  --stage-os-active: rgb(255 255 255 / 0.14);
+  --stage-os-title: #26292d;
+  --stage-os-title-idle: #202226;
+  --stage-os-shadow: rgb(0 0 0 / 0.45);
+  --stage-lock-scrim: rgb(10 11 12 / 0.45);
+  --stage-avatar: #f472b6;
+  --stage-avatar-ink: #3b0a24;
+  --stage-avatar-ring: #fbcfe8;
+  --stage-error: #fca5a5;
+  --stage-monitor: #16181b;
+  --stage-monitor-edge: #34373c;
+  --stage-bezel: #0b0c0e;
+  --stage-bezel-hi: #3a3d44;
+  --stage-bezel-lo: #15161a;
+  --stage-bezel-edge: #555963;
+  --stage-sleep: #050607;
+  --stage-sleep-shine: rgb(255 255 255 / 0.08);
+  --stage-wood: #683e22;
+  --stage-wood-lamp: rgb(255 240 215 / 0.2);
+  --stage-vignette: rgb(0 0 0 / 0.45);
+  --stage-shadow: rgb(0 0 0 / 0.55);
+  --stage-shadow-soft: rgb(0 0 0 / 0.4);
+  --stage-dim: rgb(0 0 0 / 0.55);
+  --stage-talk-bg: #0b0b0c;
+  --stage-letterbox: #000000;
+  --stage-silhouette: #110c09;
+  --stage-rim: #ffe7c4;
+  --stage-tea: #d9772e;
+  --stage-tea-plate: #3a2a20;
+  --stage-sub: #ffffff;
+  --stage-sub-you: #d4d4d4;
+  --stage-sub-you-name: #9a9a9a;
+  --stage-sub-shadow: rgb(0 0 0 / 0.9);
+  --stage-choice-line: rgb(255 255 255 / 0.18);
+  --stage-choice-num: rgb(255 255 255 / 0.14);
+  --stage-choice-hover: rgb(10 10 12 / 0.8);
+  --stage-phone-glow: rgb(190 210 255 / 0.4);
+  --stage-steam: rgb(255 255 255 / 0.22);
+  --stage-grain: #ffffff;
 
   --cursor-fill: #ffffff;
   --cursor-stroke: #141517;
@@ -812,6 +923,31 @@
   --color-call-dark-red: var(--call-dark-red);
   --color-call-light: var(--call-light);
   --color-call-light-red: var(--call-light-red);
+  --color-stage-road: var(--stage-road);
+  --color-stage-road-ink: var(--stage-road-ink);
+  --color-stage-os-bar: var(--stage-os-bar);
+  --color-stage-os-glass: var(--stage-os-glass);
+  --color-stage-os-fg: var(--stage-os-fg);
+  --color-stage-os-fg-2: var(--stage-os-fg-2);
+  --color-stage-os-muted: var(--stage-os-muted);
+  --color-stage-os-line: var(--stage-os-line);
+  --color-stage-os-hover: var(--stage-os-hover);
+  --color-stage-os-active: var(--stage-os-active);
+  --color-stage-os-title: var(--stage-os-title);
+  --color-stage-os-title-idle: var(--stage-os-title-idle);
+  --color-stage-lock-scrim: var(--stage-lock-scrim);
+  --color-stage-avatar: var(--stage-avatar);
+  --color-stage-avatar-ink: var(--stage-avatar-ink);
+  --color-stage-avatar-ring: var(--stage-avatar-ring);
+  --color-stage-error: var(--stage-error);
+  --color-stage-sleep: var(--stage-sleep);
+  --color-stage-dim: var(--stage-dim);
+  --color-stage-letterbox: var(--stage-letterbox);
+  --color-stage-sub: var(--stage-sub);
+  --color-stage-sub-you: var(--stage-sub-you);
+  --color-stage-choice-line: var(--stage-choice-line);
+  --color-stage-choice-num: var(--stage-choice-num);
+  --color-stage-choice-hover: var(--stage-choice-hover);
   --color-call-phone: var(--call-phone);
   --color-call-phone-edge: var(--call-phone-edge);
   --color-call-screen: var(--call-screen);

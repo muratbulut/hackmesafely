@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { readMuted } from "../sound";
+import { useStagePhone } from "../stage/common";
 import { smsTone } from "./tones";
 
 /**
@@ -38,9 +39,13 @@ export function MissionSms({
 }) {
   const t = getMessages().lab.shop;
   const call = getMessages().lab.call;
+  const newSms = getMessages().lab.stage.phone.newSms;
   const [mounted, setMounted] = useState(false);
   const first = useRef<HTMLButtonElement>(null);
   const close = useRef<HTMLButtonElement>(null);
+  // T2 sahnesinde (bilgisayar ve telefon) mesaj masadaki telefona düşer: telefon titrer, öğrenci alır.
+  const stagePhone = useStagePhone();
+  const notify = stagePhone?.notify;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- portal yalnızca tarayıcıda
@@ -49,10 +54,80 @@ export function MissionSms({
   }, []);
 
   useEffect(() => {
+    if (notify) notify(caller, newSms);
+  }, [notify, caller, newSms]);
+
+  useEffect(() => {
     (decided ? close : first).current?.focus({ preventScroll: true });
   }, [decided, mounted]);
 
   if (!mounted) return null;
+
+  const screen = (
+    <>
+      <div className="flex flex-none items-center gap-2 border-b border-scene-line px-3 pb-2.5">
+        <ChevronLeft aria-hidden="true" className="size-5 text-scene-blue" strokeWidth={2.4} />
+        <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-call-avatar-bg text-sm font-bold text-call-ink">
+          {caller.slice(0, 1)}
+        </span>
+        <span className="text-[15px] font-bold">{caller}</span>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-3" aria-live="polite">
+        <span className="self-center text-[11px] font-medium text-scene-ink-muted">{t.now}</span>
+        <p className="max-w-[92%] rounded-[18px_18px_18px_4px] bg-scene-bubble px-3 py-2 text-[14px] leading-snug" data-testid="shop-sms">
+          {message}
+        </p>
+        {reply ? <p className="max-w-[92%] rounded-[18px_18px_18px_4px] bg-scene-bubble px-3 py-2 text-[14px] leading-snug [animation:fade-up_.35s_ease-out_both]">{reply}</p> : null}
+      </div>
+
+      <div className="flex flex-none flex-col gap-2 px-3 pt-2 pb-5">
+        {decided ? (
+          <button
+            ref={close}
+            type="button"
+            onClick={() => {
+              onClose();
+              stagePhone?.putDown();
+            }}
+            className="min-h-12 cursor-pointer rounded-2xl bg-scene-blue font-bold text-scene-white"
+          >
+            {t.phoneOk}
+          </button>
+        ) : (
+          <>
+            <button
+              ref={first}
+              type="button"
+              disabled={busy}
+              onClick={() => onDecide(true)}
+              className="min-h-12 cursor-pointer rounded-2xl bg-scene-ink font-bold text-scene-white disabled:opacity-60"
+            >
+              {enter}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onDecide(false)}
+              className="min-h-12 cursor-pointer rounded-2xl border border-scene-line-strong bg-scene-white font-bold text-scene-ink hover:border-scene-ink-2 disabled:opacity-60"
+            >
+              {refuse}
+            </button>
+          </>
+        )}
+      </div>
+    </>
+  );
+
+  if (stagePhone) {
+    if (!stagePhone.screen) return null;
+    return createPortal(
+      <div className="flex min-h-0 flex-1 flex-col bg-scene-paper pt-2 text-scene-ink" data-testid="mission-sms">
+        {screen}
+      </div>,
+      stagePhone.screen,
+    );
+  }
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={format(t.phoneDialog, { caller })} className="fixed inset-0 z-[65] flex items-center justify-center px-4 py-6" data-testid="mission-sms">
@@ -68,49 +143,7 @@ export function MissionSms({
           <span aria-hidden="true" className="flex h-11 flex-none items-center px-6 text-[13px] font-medium">
             {call.time}
           </span>
-          <div className="flex flex-none items-center gap-2 border-b border-scene-line px-3 pb-2.5">
-            <ChevronLeft aria-hidden="true" className="size-5 text-scene-blue" strokeWidth={2.4} />
-            <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-call-avatar-bg text-sm font-bold text-call-ink">
-              {caller.slice(0, 1)}
-            </span>
-            <span className="text-[15px] font-bold">{caller}</span>
-          </div>
-
-          <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-3" aria-live="polite">
-            <span className="self-center text-[11px] font-medium text-scene-ink-muted">{t.now}</span>
-            <p className="max-w-[92%] rounded-[18px_18px_18px_4px] bg-scene-bubble px-3 py-2 text-[14px] leading-snug" data-testid="shop-sms">
-              {message}
-            </p>
-            {reply ? <p className="max-w-[92%] rounded-[18px_18px_18px_4px] bg-scene-bubble px-3 py-2 text-[14px] leading-snug [animation:fade-up_.35s_ease-out_both]">{reply}</p> : null}
-          </div>
-
-          <div className="flex flex-none flex-col gap-2 px-3 pt-2 pb-5">
-            {decided ? (
-              <button ref={close} type="button" onClick={onClose} className="min-h-12 cursor-pointer rounded-2xl bg-scene-blue font-bold text-scene-white">
-                {t.phoneOk}
-              </button>
-            ) : (
-              <>
-                <button
-                  ref={first}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => onDecide(true)}
-                  className="min-h-12 cursor-pointer rounded-2xl bg-scene-ink font-bold text-scene-white disabled:opacity-60"
-                >
-                  {enter}
-                </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => onDecide(false)}
-                  className="min-h-12 cursor-pointer rounded-2xl border border-scene-line-strong bg-scene-white font-bold text-scene-ink hover:border-scene-ink-2 disabled:opacity-60"
-                >
-                  {refuse}
-                </button>
-              </>
-            )}
-          </div>
+          {screen}
         </div>
       </div>
     </div>,

@@ -8,9 +8,15 @@ import { containsSecret, reduceEvents, taskProgress, type LabEventData } from "@
 import { scoreScenario } from "@/lib/lab/scoring";
 import { checkQuiz, checkSpot, firstUnanswered } from "@/lib/lab/training";
 
-const examplesDir = "labs/examples";
-const examples = readdirSync(examplesDir).map((file) => ({ file, json: JSON.parse(readFileSync(join(examplesDir, file), "utf8")) }));
-const example = (slug: string) => examples.find((e) => e.json.slug === slug)!.json;
+// Motor testleri sabit test odalarını okur (tests/fixtures/rooms); örnek odalar (labs/examples, başlangıç
+// verisi yalnızca yoksa ekler) de aynı denetimlerden geçer.
+const read = (dir: string) =>
+  readdirSync(dir)
+    .filter((file) => file.endsWith(".json"))
+    .map((file) => ({ file: `${dir}/${file}`, json: JSON.parse(readFileSync(join(dir, file), "utf8")) }));
+const fixtures = read("tests/fixtures/rooms");
+const examples = [...fixtures, ...read("labs/examples")];
+const example = (slug: string) => fixtures.find((e) => e.json.slug === slug)!.json;
 
 const kargo = parseScenario(example("sahte-kargo-maili").content)!;
 const sms = parseScenario(example("kodu-soran-arkadas").content)!;
@@ -24,7 +30,7 @@ const answers = (okul: number, market: number): LabEventData[] => [
   { type: "answer", task: "market-sorusu", option: market },
 ];
 
-describe("örnek lablar (labs/examples)", () => {
+describe("test ve örnek odalar (tests/fixtures/rooms, labs/examples)", () => {
   it.each(examples)("$file şemaya uyar ve yayına hazır", ({ json }) => {
     if (json.type === "TRAINING") {
       const content = parseTraining(json.content);

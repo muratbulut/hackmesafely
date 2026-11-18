@@ -327,6 +327,7 @@
           "/sesler/kulaklik-icin-veli-karti/kotu-3.mp3"
         ]
       }
-    }
+    },
+    "stage": { "type": "DESKTOP_PHONE" }
   }
 }

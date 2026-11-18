@@ -8,7 +8,7 @@ import { buildReportView } from "@/lib/lab/report";
 import { scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
 import { compromisedAccount, hackedStory, linkPageFor } from "@/lib/lab/story";
 
-const load = (file: string) => JSON.parse(readFileSync(`labs/examples/${file}.json`, "utf8")).content;
+const load = (file: string) => JSON.parse(readFileSync(`tests/fixtures/rooms/${file}.json`, "utf8")).content;
 const kargo = parseScenario(load("sahte-kargo-maili"))!;
 const sms = parseScenario(load("kodu-soran-arkadas"))!;
 const training = parseTraining(load("oltalama-egitimi"))!;

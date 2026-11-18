@@ -16,7 +16,7 @@ import { goodCall, linkPageFor, smsFor } from "@/lib/lab/story";
 
 const file = JSON.parse(readFileSync("labs/rooms/para-carsisi/kulaklik-icin-veli-karti.json", "utf8"));
 const room = parseScenario(file.content)!;
-const kargo = parseScenario(JSON.parse(readFileSync("labs/examples/sahte-kargo-maili.json", "utf8")).content)!;
+const kargo = parseScenario(JSON.parse(readFileSync("tests/fixtures/rooms/sahte-kargo-maili.json", "utf8")).content)!;
 
 const opened: LabEventData[] = ["teknopazar-sahte", "teknopazar", "annem", "okul"].map((item) => ({ type: "item_opened", item }));
 const buyReal: LabEventData[] = [

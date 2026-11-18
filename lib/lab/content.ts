@@ -1,6 +1,6 @@
 // Lab içeriğinin biçimi (doküman Bölüm 4, Tur 4 Lab düzenleme formu). Lablar kod değil içeriktir:
 // bu biçimde JSON olarak veritabanında durur (Lab.draftContent, yayınlanınca LabVersion.content)
-// ve yönetimdeki formla yazılır. Örnekleri labs/examples/ altında.
+// ve yönetimdeki formla yazılır. Odalar labs/rooms/, örnekleri labs/examples/, testlerin sabit kopyaları tests/fixtures/rooms/.
 //
 // Şema biçimi denetler; taslak eksik olabilir (boş metin geçerlidir). Yayına çıkmak için
 // eksiksiz olması gerekir, onu lib/lab/checklist.ts denetler.
@@ -333,6 +333,10 @@ export const trapSchema = z.object({
 });
 export type Trap = z.infer<typeof trapSchema>;
 
+/** Arayanın çizimi: anne ya da baba (components/lab/mission/CallerAvatar.tsx). */
+export const callerLooks = ["mother", "father"] as const;
+export type CallerLook = (typeof callerLooks)[number];
+
 export const taskTypes = ["action", "review", "question", "mission"] as const;
 export type TaskType = (typeof taskTypes)[number];
 
@@ -348,6 +352,12 @@ export const taskSchema = z.object({
   /** Raporda "Doğrusu" ve "Neden?"; yalnızca soru görevinde. Eski BİLDİR görevlerinde dolu olabilir, kullanılmaz. */
   right: line(300).default(""),
   why: line(400).default(""),
+  /**
+   * T3 karşılıklı konuşma (oda sahne şablonu, 18 Kasım, Murat): soru görevi panelde değil yüz yüze
+   * sorulur. Sinema şeritli sahnede karşıdakinin silüeti, sözü (görevin metni) üstte altyazı,
+   * seçenekler altta 1, 2, 3. Puanı ve raporu diğer sorularla aynıdır; yalnızca soru görevinde.
+   */
+  talk: z.object({ speaker: line(40), look: z.enum(callerLooks).default("mother") }).optional(),
 });
 export type Task = z.infer<typeof taskSchema>;
 
@@ -372,9 +382,6 @@ export const missionPoints = 1;
 /** Görevli odadaki arama sesleri: yalnızca sitenin kendi dosyası ("//site" dış adrestir). */
 const voiceSrc = z.string().trim().max(200).regex(/^(\/(?!\/)[\w\-./]*\.mp3)?$/, "ses sitenin kendi mp3 dosyası olmalı");
 
-/** Arayanın çizimi: anne ya da baba (components/lab/mission/CallerAvatar.tsx). */
-export const callerLooks = ["mother", "father"] as const;
-export type CallerLook = (typeof callerLooks)[number];
 
 export const missionSchema = z.object({
   /** Arayanın telefondaki adı: "Annem". */
@@ -465,6 +472,33 @@ export function iconedPoints(points: string[], icons: CardIcon[] = []) {
   return { points: pairs.map((p) => p.text), pointIcons: pairs.map((p) => p.icon) };
 }
 
+/**
+ * Oda sahne şablonu (docs/design/room-scene-template.md, 18 Kasım, Murat). Odanın uygulaması
+ * (Postam, Mesajlar) hangi sahnenin içinde açılır: DESKTOP M1 kurgusal bilgisayar masaüstü
+ * (gelen kutusu), PHONE T1 masadaki telefon (mesajlaşma), DESKTOP_PHONE T2 bilgisayar ve yanında
+ * masadaki telefon (gelen kutusu; velinin SMS'i telefona düşer). T3 konuşma oda değil soru
+ * görevinin sahnesidir (`task.talk`). Alan yazılmazsa oda eskisi gibi doğrudan uygulamayla açılır.
+ */
+export const stageKinds = ["DESKTOP", "PHONE", "DESKTOP_PHONE"] as const;
+export type StageKind = (typeof stageKinds)[number];
+
+export const stageSchema = z.object({
+  type: z.enum(stageKinds),
+  /** Bilgisayarın ya da telefonun sahibi, kilit ekranında ve başlat menüsünde: "Ayça". Boşsa "Sen". */
+  owner: line(30).default(""),
+  /**
+   * İleri eğitimin odalarında bilgisayarın şifresi (temel eğitimde yazılmaz: "Oturum aç" yeter).
+   * Odadan odaya değişmez, ipucu kilit ekranındaki mesajdadır; yazılan şifre kaydedilmez.
+   */
+  password: z.object({ value: line(40), hint: line(200).default(""), hintFrom: line(60).default("") }).optional(),
+});
+export type Stage = z.infer<typeof stageSchema>;
+
+/** Sahne bu şablonla açılabilir mi: masaüstü gelen kutusunda, masadaki telefon mesajlaşmada. */
+export function stageFits(type: StageKind, template: ScenarioTemplate) {
+  return type === "PHONE" ? template === "MESSAGING" : template === "INBOX";
+}
+
 export const scenarioSchema = z.object({
   meta: metaSchema,
   /** "Bu odada şunlara dikkat et" başlangıç kartı. */
@@ -475,6 +509,8 @@ export const scenarioSchema = z.object({
   tips: z.array(z.object({ text: line(240), when: z.enum(tipConditions) })).max(8).default([]),
   /** Görevli oda, isteğe bağlı: alış görevi gelen kutusunda, satış görevi (sale) mesajlaşmada. */
   mission: missionSchema.optional(),
+  /** Oda sahne şablonu, isteğe bağlı (stageSchema). */
+  stage: stageSchema.optional(),
 });
 export type ScenarioContent = z.infer<typeof scenarioSchema>;
 

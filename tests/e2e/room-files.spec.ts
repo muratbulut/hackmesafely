@@ -13,7 +13,7 @@ import { withDb } from "./support/db";
 
 test.skip(isLive, "veritabanına yazan testler canlı sitede çalışmaz");
 
-const read = (slug: string) => JSON.parse(readFileSync(`labs/examples/${slug}.json`, "utf8")).content;
+const read = (slug: string) => JSON.parse(readFileSync(`tests/fixtures/rooms/${slug}.json`, "utf8")).content;
 const stamp = () => `${Date.now().toString(36)}${randomUUID().slice(0, 4)}`;
 
 async function query<T = Record<string, unknown>>(sql: string, params: unknown[] = []) {
