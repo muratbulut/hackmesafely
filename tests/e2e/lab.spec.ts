@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signOutHere, signUp, signUpVerified, uniqueEmail } from "./support/account";
-import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep } from "./support/lab";
+import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep, signInDesktop } from "./support/lab";
 
 // Faz 3 bitti ölçütünün öğrenci tarafı: eğitim labı, sahte kargo maili (hacklenme ve güvende
 // kalma yolları), sunucuda hesaplanan puan ve rapor. Doğru cevaplar örnek labdan okunur
 // (labs/examples); oynatıcı onları hiç bilmez.
 
 const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content;
-const kargo = JSON.parse(readFileSync("labs/examples/sahte-kargo-maili.json", "utf8")).content;
+const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
 
 const playPath = "/oda/sahte-kargo-maili/oyna";
 const toast = (page: Page, text: string | RegExp) => page.getByRole("status").filter({ hasText: text, visible: true });
@@ -75,6 +75,7 @@ test.describe("lab", () => {
     await expect(page.getByRole("button", { name: "Hazırım, başla" })).toBeVisible();
     await expect(page.getByRole("banner")).toHaveCount(0);
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
+    await signInDesktop(page);
     await page.getByRole("button", { name: /^Kargo Takip/ }).click();
     await page.getByRole("button", { name: "Adresi güncelle" }).click();
     const secret = "gizli-sifre-123";
@@ -133,6 +134,7 @@ test.describe("lab", () => {
 
     await page.goto(playPath);
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
+    await signInDesktop(page);
 
     const app = page.getByTestId("scenario-player");
     const back = page.getByRole("button", { name: "Listeye dön" });

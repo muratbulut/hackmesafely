@@ -277,7 +277,7 @@ export type AttemptProfile = "perfect" | "deleted" | "falseAlarm" | "clickedRepo
 /**
  * sahte-kargo-maili için örnek denemeler. Olaylar öğrencinin yapacağı sırayla; rapor puanlama
  * fonksiyonunun (lib/lab/scoring.ts scoreScenario) bu olaylardan çıkardığıdır. Birim testi raporları
- * labs/examples/sahte-kargo-maili.json içeriğiyle yeniden hesaplar; içerik değişirse test düşer.
+ * labs/rooms/oltalama-limani/sahte-kargo-maili.json içeriğiyle yeniden hesaplar; içerik değişirse test düşer.
  */
 export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; status: "COMPLETED" | "HACKED"; report: unknown }> = {
   // Sahte maili linke dokunmadan bildirdi, soruların en iyi cevabı.

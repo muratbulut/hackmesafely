@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { isLive, signUp, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
-import { dismissLevelUps } from "./support/lab";
+import { dismissLevelUps, pickUpPhone, signInDesktop } from "./support/lab";
 import { layoutProblems, smallTargets } from "./support/layout";
 import { createSchool, makeCoordinator, makeTeacher } from "./support/teacher";
 
@@ -421,7 +421,9 @@ const studentScreens: Screen<StudentData>[] = [
   { name: "Oda kapağı", path: "/oda/sahte-kargo-maili" },
   // Önce perde odanın adını yazar, sonra kutu gelir (18. revize).
   { name: "Oda başlangıç penceresi", path: playPath, open: (page) => expect(page.getByRole("button", { name: "Hazırım, başla" })).toBeVisible() },
-  { name: "Postam, gelen kutusu", open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  // M1 sahnesi (oda sahne şablonu): önce bilgisayarın kilit ekranı, "Oturum aç" deyince Postam penceresi.
+  { name: "Masaüstü, kilit ekranı", open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  { name: "Postam, gelen kutusu", open: (page) => signInDesktop(page) },
   { name: "Postam, mail", open: (page) => page.getByTestId("scenario-player").getByRole("button", { name: /^Kargo Takip/ }).click() },
   { name: "Görevler penceresi", open: (page) => page.getByRole("button", { name: /Görevleri aç/ }).click() },
   {
@@ -712,7 +714,14 @@ const adminScreens: Screen<AdminData>[] = [
   { name: "Oda önizleme, başlangıç", path: (d) => `/yonetim/odalar/${d.labs.messaging}/onizle` },
   { name: "Oda önizleme, Mesajlar", open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
   { name: "Oda önizleme, sohbet", open: (page) => page.getByRole("button", { name: /^Deniz/ }).first().click() },
-  { name: "Oda önizleme, Postam", path: (d) => `/yonetim/odalar/${d.labs.inbox}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  {
+    name: "Oda önizleme, Postam",
+    path: (d) => `/yonetim/odalar/${d.labs.inbox}/onizle`,
+    open: async (page) => {
+      await page.getByRole("button", { name: "Hazırım, başla" }).click();
+      await signInDesktop(page);
+    },
+  },
   // Kutulara ayırma, eşleştirme ve boşluk doldurma kartları: Para Çarşısı temel eğitimi (oda dosyası, taslak).
   { name: "Odanın sayfası, depodaki dosya", path: (d) => `/yonetim/odalar/${d.labs.placement}` },
   { name: "Oda önizleme, video kartı", path: (d) => `/yonetim/odalar/${d.labs.placement}/onizle` },
@@ -772,13 +781,17 @@ const adminScreens: Screen<AdminData>[] = [
     name: "Oda önizleme, mağaza",
     open: async (page) => {
       await page.getByRole("dialog", { name: "Görevler" }).getByRole("button", { name: "Görevleri kapat" }).first().click();
+      // T2 sahnesi: önce bilgisayarın kilit ekranı.
+      await signInDesktop(page);
       const app = page.getByTestId("scenario-player");
       await app.getByRole("button", { name: /^TeknoPazar 19:42/ }).click();
       await app.getByRole("button", { name: "Ürüne git" }).click();
       await app.getByRole("button", { name: "Annenin kartını kullan" }).click();
     },
   },
-  { name: "Oda önizleme, onay kodu SMS'i", open: (page) => page.getByTestId("scenario-player").getByRole("button", { name: "1.199 TL öde" }).click() },
+  // T2: SMS masadaki telefona düşer, telefon titrer; öğrenci telefonu alır.
+  { name: "Oda önizleme, masadaki telefon titriyor", open: (page) => page.getByTestId("scenario-player").getByRole("button", { name: "1.199 TL öde" }).click() },
+  { name: "Oda önizleme, onay kodu SMS'i", open: (page) => pickUpPhone(page) },
   // Satış görevli oda: babanın araması, ilan kutusu, bankanın ödeme isteği ve pazar yerindeki sipariş (Para Çarşısı "Eski telefonunu sat").
   { name: "Oda önizleme, babanın araması", path: (d) => `/yonetim/odalar/${d.labs.sale}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
   { name: "Oda önizleme, babayla görüşme", open: (page) => page.getByTestId("mission-call").getByRole("button", { name: "Aç", exact: true }).click() },
@@ -794,6 +807,8 @@ const adminScreens: Screen<AdminData>[] = [
     name: "Oda önizleme, ödeme isteği",
     open: async (page) => {
       await page.getByRole("dialog", { name: "Görevler" }).getByRole("button", { name: "Görevleri kapat" }).first().click();
+      // T1 sahnesi: telefon masada, öğrenci alır.
+      await pickUpPhone(page);
       const app = page.getByTestId("scenario-player");
       await app.getByRole("button", { name: /^Selin K\./ }).first().click();
       await app.getByRole("button", { name: "bankam.com.tr/odeme-istegi/48213" }).click();

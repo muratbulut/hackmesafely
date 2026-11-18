@@ -1371,6 +1371,40 @@ export const tr = {
 
     // Görevli oda (Para Çarşısı "Kulaklık için veli kartı"): arama, görev kutusu ve mağaza.
     // Kişi adları içerikten gelir: {caller} "Annem", {owner} "Annenin".
+    // Oda sahne şablonu (M1 masaüstü, T1 masadaki telefon, T2 ikisi, T3 konuşma; components/lab/stage/).
+    stage: {
+      you: "Sen",
+      desktop: "{owner} bilgisayarı",
+      signIn: "Oturum aç",
+      signOut: "Oturumu kapat",
+      start: "Başlat",
+      password: "Şifre",
+      enter: "Giriş yap",
+      wrong: "Şifre yanlış. Aşağıdaki mesaja bak.",
+      browser: "Tarayıcı",
+      newTab: "Yeni sekme",
+      newTabText: "Bu bir simülasyon: tarayıcı yalnızca odadaki bağlantıları açar.",
+      openApps: "Açık uygulamalar",
+      desktopIcons: "Masaüstü",
+      window: { min: "Küçült", max: "Büyüt", restore: "Eski boyutuna getir", close: "Kapat" },
+      phone: {
+        pick: "Telefonu al",
+        drop: "Masaya bırak",
+        label: "Masadaki telefon",
+        noNews: "Yeni bildirim yok",
+        now: "şimdi",
+        newSms: "Yeni mesaj",
+      },
+      talk: {
+        open: "{speaker} ile konuş",
+        back: "Konuşmaya dön",
+        away: "Telefona bak",
+        you: "Sen",
+        choices: "Cevabın",
+        cup: "Kahveden bir yudum al",
+        keys: "1, 2, 3 tuşlarıyla da seçebilirsin",
+      },
+    },
     call: {
       dialog: "{caller} ile görüntülü arama",
       incoming: "Görüntülü arama…",
@@ -2045,6 +2079,7 @@ export const tr = {
           rightWhy: "Her soruda doğrusu ve nedeni yazılı",
           total: "Toplam puan 10",
           tips: "Rapor için en az 3 ipucu",
+          stage: "Sahne şablona uyuyor (M1/T2 Postam, T1 Mesajlar), konuşma yalnızca soruda",
         },
         MESSAGING: {
           cover: "Oda adı en az 4 harf",
@@ -2057,6 +2092,7 @@ export const tr = {
           rightWhy: "Her soruda doğrusu ve nedeni yazılı",
           total: "Toplam puan 10",
           tips: "Rapor için en az 3 ipucu",
+          stage: "Sahne şablona uyuyor (M1/T2 Postam, T1 Mesajlar), konuşma yalnızca soruda",
         },
       },
     },

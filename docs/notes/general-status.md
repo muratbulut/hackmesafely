@@ -2,7 +2,7 @@
 
 Konu (sohbet) devri notu: projenin bugünkü hâli, sıradaki işler ve açık kararlar. İki tarafın Claude'u da yeni bir konuya buradan ve `CLAUDE.md`'den başlar. Büyük bir iş bitince (ya da konu kapanırken) bu dosya güncellenir; değişiklik de PR ile girer.
 
-Son güncelleme: 17 Kasım 2026 (gece).
+Son güncelleme: 18 Kasım 2026 (akşam).
 
 ## Bugün
 
@@ -20,6 +20,7 @@ Son güncelleme: 17 Kasım 2026 (gece).
 - **Hoca öncesi revizeler, 1. grup Odalar (3 Kasım):** Murat 5 Kasım'daki hoca görüşmesinden önce bütün sayfaları kontrol listesinde işaretliyor (tuval https://claude.ai/artifact/5JtADf8jtmSQPAftrBM9Wm). Odalar grubunun revizeleri tek taslak PR'da: odanın çizimi (`public/odalar/`, `lib/lab/art.ts`), kapakta adım yolu ve "Seni neler bekliyor" (dersler oda bitene kadar kilitli), renkli çerçeveli etiketler, perde (oda adı) ve genel "Aklında olsun", hacklendin sonrası sonuç sahnesi (açıklama ekranı kalktı), adım adım okunan rapor, görev kartı ikonları, yeni rozet bildirimi. Notlar `/mnt/project-files/notes/hoca-oncesi-revizeler.md`. Sırada kontrol listesinin 2. grubu (Ziyaretçi sayfaları). Kargo odası hikâyeleri, Oltalama eğitiminin yeniden yazımı ve oda açılma animasyonu sonraya; hangi odada hangi sonuç sahnesi olacağını Murat söyleyecek.
 - **Ad ve logo (17 Kasım, PR #13, #14):** Ürünün adı **Hack Me Safely** (eski adı Careful Mode; depo `muratbulut/hackmesafely`, PR #17). Logo alt alta "hack me / safely"; maskot gözlü a'dır (göz a harfinin iç boşluğunda). Ad ve logo `lib/brand.tsx`'ten okunur. Üst menüdeki logo canlıdır: ana sayfada göz öbür a'ya kaçar, diğer sayfalarda a'nın içinde gezip kalır, şifre yazılırken kapanır (`components/mascot/LiveWordmark.tsx`, `logo-engine.ts`). Hap biçimli eski maskot her yerden kalktı. Sekme ve telefon simgesi, paylaşım görseli ve mail logosu yeni logoyla. Tasarım tuvalleri Murat'ın Claude projesinde (logo tuvali ve "Hack Me Safely sitede" tuvali).
 - **Yeni tema (17 Kasım, PR #21, #22):** Aqua ve lacivert renkler kalktı. Koyu tema "Asfalt ve yol çizgisi" (zemin `#141517`, kart `#26292d`, vurgu sarısı `#f5c400`), açık tema "Tamamen açık": açık temada kartlar da açık (4 Kasım'daki "kartlar koyu kalsın" kuralı kalktı; bilerek koyu kalan yalnızca arka planlı profil kartı ve seviye kutlaması, `keep-dark`). Arayüzde "Gri tema" artık "Açık tema"dır, kodda adı `gray` kaldı. Uyarı rengi sarıdan turuncuya geçti; açık zeminde okunmayan anlam renkleri `-fg` karşılıklarıyla yazılıyor. Sekme ve telefon simgeleri, paylaşım görseli, mail logosu ve mail renkleri de yeni temada. Değişkenler `app/globals.css`, tema kuralları `lib/theme.ts` ve `tests/unit/theme-scope.test.ts`; önce/sonra tuvali Murat'ın Claude projesinde.
+- **Oda sahne şablonu (18 Kasım, PR #26 belge, PR #27 kod):** bütün senaryo odaları dört sahneden biriyle açılır: M1 masaüstü, T1 masadaki telefon, T2 bilgisayar ve telefon, T3 karşılıklı konuşma (soru görevinde `talk`). Oda dosyasında `stage` (`DESKTOP`, `PHONE`, `DESKTOP_PHONE`); kod `components/lab/stage/`, ayrıntı `docs/guides/new-lab.md` 2.15, tasarım `docs/design/room-scene-template.md`. Kargo (M1), Kulaklık (T2), Eski telefon (T1) taşındı; T3'ü kullanan oda henüz yok (planda dört T1 odası). Sahte kargo maili gerçek oda oldu (`labs/rooms/oltalama-limani/`); motor testleri sabit kopyaları okur (`tests/fixtures/rooms/`). Yeni odalar plandaki "Şablon:" alanıyla yazılır.
 
 ## Sırada
 
