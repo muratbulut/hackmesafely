@@ -1554,6 +1554,16 @@ export const tr = {
         pick: "Bir şık seç",
         oneTl: "1 TL",
         qmark: "?",
+        // Sorunun üstündeki mail düğmesi: basmadan gerçek adrese bakmayı gösterir (LinkPeek).
+        link: {
+          preview: "BAĞLANTI ÖNİZLEMESİ",
+          watch: "İzle: basmadan önce bağlantının adresine bakılıyor.",
+          tryMouse: "Sıra sende: farenle düğmenin üstüne gel, basma.",
+          tryTouch: "Sıra sende: düğmeye parmağınla basılı tut.",
+          shown: "Gerçek adres {where} çıktı. Şimdi soruyu cevapla.",
+          whereMouse: "ekranın alt köşesinde",
+          whereTouch: "önizlemede",
+        },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.
       sort: {

@@ -139,7 +139,18 @@ export const cardSchema = z.discriminatedUnion("type", [
      */
     spots: z.array(z.object({ part: mailPart, text: line(300), hint: line(160).optional() })).max(5).default([]),
   }),
-  z.object({ id, type: z.literal("quiz"), ...quizSchema.shape, art: z.enum(quizArts).optional() }),
+  z.object({
+    id,
+    type: z.literal("quiz"),
+    ...quizSchema.shape,
+    art: z.enum(quizArts).optional(),
+    /**
+     * Sorunun üstünde bir mail düğmesi (Şehir Kapısı, 18 Kasım): düğmede `text` yazar; üstüne gelince
+     * (telefonda basılı tutunca) gerçek adres `url` görünür. Açılışta bir kez kendisi gösterir, sonra
+     * öğrenci dener. Gerçek bağlantı değildir, hiçbir yere gitmez. Yazılırsa `art` yerine çıkar.
+     */
+    link: z.object({ text: line(60), url: line(120) }).optional(),
+  }),
   z.object({
     id,
     type: z.literal("video"),

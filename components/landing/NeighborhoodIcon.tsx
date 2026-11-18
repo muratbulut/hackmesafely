@@ -1,4 +1,4 @@
-import { Castle, CreditCard, Download, HeartHandshake, LockKeyhole, Mail, type LucideIcon } from "lucide-react";
+import { Castle, CreditCard, DoorOpen, Download, HeartHandshake, LockKeyhole, Mail, type LucideIcon } from "lucide-react";
 import type { NeighborhoodColor, NeighborhoodIconName } from "@/lib/content/landing";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const icons: Record<NeighborhoodIconName, LucideIcon> = {
   download: Download,
   card: CreditCard,
   heart: HeartHandshake,
+  door: DoorOpen,
 };
 
 // Tailwind sınıfları tam yazılmalı (dinamik sınıf adı üretilmez).
@@ -18,6 +19,7 @@ export const neighborhoodColors: Record<NeighborhoodColor, { text: string; bg: s
   purple: { text: "text-purple-fg", bg: "bg-purple/12" },
   warning: { text: "text-warning-fg", bg: "bg-warning/12" },
   pink: { text: "text-pink-fg", bg: "bg-pink/12" },
+  orange: { text: "text-orange-fg", bg: "bg-orange/12" },
 };
 
 export function NeighborhoodIcon({ icon, color, className }: { icon: NeighborhoodIconName; color: NeighborhoodColor; className?: string }) {

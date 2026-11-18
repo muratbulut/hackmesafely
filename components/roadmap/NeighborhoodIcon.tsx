@@ -1,6 +1,7 @@
 import {
   Castle,
   CreditCard,
+  DoorOpen,
   Download,
   HeartHandshake,
   KeyRound,
@@ -29,6 +30,7 @@ const icons: Record<string, LucideIcon> = {
   message: MessageCircle,
   phone: Smartphone,
   shield: Shield,
+  door: DoorOpen,
 };
 
 export type Tone = {

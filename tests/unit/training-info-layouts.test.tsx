@@ -183,7 +183,7 @@ describe("mini test: 4 şık ve çizim", () => {
 
   it("tarayıcıya giden testte çizim var, doğru cevap ve açıklama yok", () => {
     const client = toClientCard(quiz);
-    expect(client).toEqual({ id: "test", type: "quiz", question: quiz.type === "quiz" ? quiz.question : "", options: quiz.type === "quiz" ? quiz.options : [], art: "gift" });
+    expect(client).toEqual({ id: "test", type: "quiz", question: quiz.type === "quiz" ? quiz.question : "", options: quiz.type === "quiz" ? quiz.options : [], art: "gift", link: null });
   });
 });
 

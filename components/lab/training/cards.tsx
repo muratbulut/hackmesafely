@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { PostamLogo } from "../inbox/InboxScene";
 import { RichLine, SenderAvatar } from "../scene/parts";
 import { QuizArtView } from "./art";
+import { LinkPeek } from "./LinkPeek";
 import { cardIconMap } from "./card-icons";
 import { CardTag, CardTitle, Mark } from "./common";
 import { BankCardInfo, ExploreInfo, StepsInfo } from "./InfoLayouts";
@@ -414,7 +415,7 @@ export function QuizView({ card, answer, busy, onAnswer }: { card: QuizCard; ans
         <CardTag>{t.tags.quiz}</CardTag>
         {!answer ? <span className="text-[13px] font-bold text-fg-3">{t.quiz.pick}</span> : null}
       </div>
-      {card.art ? <QuizArtView art={card.art} /> : null}
+      {card.link ? <LinkPeek link={card.link} /> : card.art ? <QuizArtView art={card.art} /> : null}
       <CardTitle>{card.question}</CardTitle>
       <Options options={card.options} answer={answer} busy={busy} onAnswer={onAnswer} />
       {answer ? <Feedback answer={answer} /> : null}
