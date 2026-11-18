@@ -21,7 +21,7 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
   const mission = content.mission;
   const missionTasks = content.tasks.filter((t) => t.type === "mission");
   // Görevli odaya özgü bağlantılar: mağaza ödemesi, ödeme isteği, sipariş.
-  const linked = content.items.filter((i) => i.payment || i.request || i.order);
+  const linked = content.items.filter((i) => i.payment || i.request || i.order || i.form);
 
   const checks: CheckItem<ScenarioCheck>[] = [
     // Odanın kendi hatırlatmaları artık zorunlu değil: öğrenci odaya girerken genel hatırlatmaları görür (18. revize).
@@ -44,7 +44,8 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
       ok:
         filled(trap.ask) &&
         // Görevli odada tuzak sahte mağazadır: sayfası mağaza sayfası, adresi sahte maildeki bağlantı.
-        (mission
+        // Kayıt görevinde tuzak yine sahte sayfadır.
+        (mission && !mission.signup
           ? true
           : template === "INBOX"
           ? filled(trap.url) && filled(trap.title)
@@ -89,6 +90,7 @@ function stageReady(content: ScenarioContent, template: ScenarioTemplate) {
  * Görevli oda hazır mı: arama, görev ve bitişler dolu, tek "görev" maddesi. Alış görevi (Postam):
  * kart, mağaza ve onay kodu; en az bir gerçek ve bir sahte bağlantının ödemesi yazılı. Satış görevi
  * (Mesajlar): ilan ve hazırlık maddeleri; bir sahte mesajda ödeme isteği, bir gerçek mesajda sipariş.
+ * Kayıt görevi (Postam): form dolu; bir gerçek mailin bağlantısı formu açar, ödeme ve sipariş yok.
  */
 function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
   const mission = content.mission!;
@@ -97,8 +99,22 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
     [mission.caller, mission.owner, mission.title, mission.accept, mission.goodTitle, mission.done].every(filled) &&
     mission.lines.some(filled) &&
     mission.good.some(filled) &&
-    mission.bad.some(filled);
+    // Kayıt görevinde kötü bitiş araması yok: yanlış yol "Az kalsın"a gider, oda sürer.
+    (!!mission.signup || mission.bad.some(filled));
   if (!common) return false;
+  if (mission.signup) {
+    const forms = content.items.filter((i) => i.form);
+    return (
+      template === "INBOX" &&
+      !mission.shop &&
+      !mission.card &&
+      !mission.sale &&
+      [mission.signup.site, mission.signup.title, mission.signup.button, mission.signup.done].every(filled) &&
+      forms.length >= 1 &&
+      forms.every((i) => i.kind === "real" && i.link !== null) &&
+      content.items.every((i) => !i.payment && !i.request && !i.order)
+    );
+  }
   if (mission.sale) {
     const requests = content.items.filter((i) => i.request);
     const orders = content.items.filter((i) => i.order);

@@ -4,10 +4,14 @@
 
 import { getMessages } from "@/lib/i18n";
 import { siteTimeZone } from "@/lib/site";
-import { domainOf, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate } from "./content";
+import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate } from "./content";
 
 export type LinkPage =
-  | { kind: "trap"; url: string; site: string; title: string; text: string; ask: string; compromise: CompromiseKind; account: CompromisedAccount }
+  /**
+   * tapFill: "Az kalsın" odasında öğrenci şifre yazmaz, kutuya dokununca şifre noktalarla kendiliğinden
+   * yazılır (Murat 18 Kasım); "gerçek şifreni yazma" uyarısı da çıkmaz.
+   */
+  | { kind: "trap"; url: string; site: string; title: string; text: string; ask: string; compromise: CompromiseKind; account: CompromisedAccount; tapFill: boolean }
   | { kind: "site"; url: string }
   /**
    * Görevli odada mağaza sayfası. Gerçek ve sahte bağlantıda aynıdır (fark adres çubuğunda);
@@ -20,7 +24,26 @@ export type LinkPage =
    */
   | { kind: "request"; url: string; bank: string; from: string; amount: string }
   /** Satış görevli odada pazar yerindeki sipariş: ilan, alıcı ve kargodan önceki hazırlık. */
-  | { kind: "order"; url: string; sale: NonNullable<Mission["sale"]>; buyer: string };
+  | { kind: "order"; url: string; sale: NonNullable<Mission["sale"]>; buyer: string }
+  /**
+   * Kayıt görevli odada görevdeki form (okulun kulüp kayıt formu): site adı, başlık, kutular ve
+   * düğme. Gönderince yazan "Kaydın alındı" cümlesi göndermeden sonra sunucudan gelir.
+   */
+  | { kind: "form"; url: string; form: Omit<NonNullable<Mission["signup"]>, "done"> };
+
+/**
+ * "Az kalsın" ekranı (trap.almost): sahte sayfaya bilgi girince hacklendin alarmı yerine çıkar.
+ * Bilgi girildikten sonra söylenir; o an hangi mailin sahte olduğu zaten bellidir.
+ */
+export type AlmostStory = {
+  /** Düğmede yazan ve bağlantının gerçek adresi (yan yana). */
+  linkText: string;
+  url: string;
+  /** Alan adının sahibi: adres sağdan okununca ("kayit-formu.xyz"). */
+  owner: string;
+  realLife: string;
+  steps: string[];
+};
 
 /** Görevli odada ödeyince veliden gelen SMS (sunucu ödeme anında söyler). */
 export type ShopSms = { shop: string; amount: string; code: string; note: string };
@@ -95,6 +118,10 @@ export function linkPageFor(content: ScenarioContent, template: ScenarioTemplate
   if (content.mission?.sale && item.request && opensRequest(content, item)) {
     return { kind: "request", url: item.link.url, bank: item.request.bank, from: item.request.from, amount: item.request.amount };
   }
+  if (content.mission?.signup && opensForm(content, item)) {
+    const { site, title, fields, button } = content.mission.signup;
+    return { kind: "form", url: item.link.url, form: { site, title, fields: fields.filter((f) => f.trim()), button } };
+  }
   if (content.mission?.sale && item.order && opensOrder(content, item)) {
     // Hazırlamadan gönderince gelen mesaj kargoya verince söylenir (shipOrder).
     return { kind: "order", url: item.link.url, sale: { ...content.mission.sale, unprepared: "" }, buyer: item.order.buyer };
@@ -109,6 +136,7 @@ export function linkPageFor(content: ScenarioContent, template: ScenarioTemplate
         ask: trap.ask,
         compromise: trap.kind,
         account: compromisedAccount(trap.account),
+        tapFill: trap.almost,
       }
     : { kind: "site", url: item.link.url };
 }
@@ -157,6 +185,29 @@ export function hackedStory(
       ? { alarm: { line: content.trap.alarm.line, notifications: content.trap.alarm.notifications } }
       : {}),
   };
+}
+
+/** "Az kalsın" ekranının metinleri (sahte sayfaya bilgi girilince). */
+export function almostStory(content: ScenarioContent, item: Item): AlmostStory {
+  const url = content.trap.url || item.link?.url || "";
+  return {
+    linkText: item.link?.text ?? "",
+    url,
+    owner: ownerOf(domainOf(url)),
+    realLife: content.trap.realLife,
+    steps: content.trap.actions.filter((a) => a.trim()),
+  };
+}
+
+/**
+ * Alan adının sahibi: sağdan iki parça, ülke ve kurum uzantılarında (k12.tr, com.tr, co.uk) üç.
+ * "cinarortaokulu.k12.tr.kayit-formu.xyz" -> "kayit-formu.xyz".
+ */
+export function ownerOf(domain: string) {
+  const parts = domain.toLowerCase().split(".").filter(Boolean);
+  const second = new Set(["com", "net", "org", "edu", "gov", "k12", "gen", "co", "ac", "sch", "bel", "av"]);
+  const n = parts.length >= 3 && parts[parts.length - 1].length === 2 && second.has(parts[parts.length - 2]) ? 3 : 2;
+  return parts.slice(-n).join(".");
 }
 
 /** Ödeme sonrası veliye gelen SMS; öğede ödeme yazılı değilse null. */

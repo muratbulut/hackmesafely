@@ -295,6 +295,11 @@ export const itemSchema = z.object({
    * sayfasında kargodan önceki hazırlık (mission.sale.prep) ve "Kargoya ver" durur.
    */
   order: z.object({ buyer: line(40) }).optional(),
+  /**
+   * Kayıt görevli odada (mission.signup, Şehir Kapısı) bu bağlantı görevdeki formu açar (okulun
+   * kulüp kayıt formu). Formu gönderince görev biter. Gerçek öğede yazılır; isteğe bağlı.
+   */
+  form: z.boolean().optional(),
 });
 export type Item = z.infer<typeof itemSchema>;
 
@@ -330,11 +335,19 @@ export const trapSchema = z.object({
   alarm: z
     .object({ line: line(80).default(""), notifications: z.array(z.object({ title: line(60), text: line(80) })).max(3).default([]) })
     .optional(),
+  /**
+   * "Az kalsın" (Şehir Kapısı, 18 Kasım): sahte sayfaya bilgi girmek odayı bitirmez. Hacklendin
+   * alarmı yerine yumuşak bir ekran çıkar: `realLife` ne olabileceğini, `actions` "Bir dahaki
+   * sefere" maddelerini söyler, düğmenin yazısı ile gerçek adres yan yana durur. Öğrenci gelen
+   * kutusuna döner, görevi bitirebilir; sahte öğenin puanı yine 0'dır. Yalnızca sahte sayfada
+   * (bağlantı) geçerlidir.
+   */
+  almost: z.boolean().default(false),
 });
 export type Trap = z.infer<typeof trapSchema>;
 
-/** Arayanın çizimi: anne ya da baba (components/lab/mission/CallerAvatar.tsx). */
-export const callerLooks = ["mother", "father"] as const;
+/** Arayanın çizimi: anne, baba ya da arkadaş (Deniz) (components/lab/mission/CallerAvatar.tsx). */
+export const callerLooks = ["mother", "father", "friend"] as const;
 export type CallerLook = (typeof callerLooks)[number];
 
 export const taskTypes = ["action", "review", "question", "mission"] as const;
@@ -363,7 +376,8 @@ export type Task = z.infer<typeof taskSchema>;
 
 /**
  * Rapordaki "Bir dahaki sefere" ipucunun ne zaman çıkacağı. engaged: sahte maildeki linke
- * tıkladıysa (mesajlaşmada cevap yazdıysa), hacked: hacklendiyse, missedFake: sahte olanı
+ * tıkladıysa (mesajlaşmada cevap yazdıysa), hacked: hacklendiyse ("Az kalsın" odasında sahte
+ * sayfaya bilgi girdiyse), missedFake: sahte olanı
  * bildirmediyse, reportedReal: gerçek olanı bildirdiyse, always: her zaman.
  */
 export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always"] as const;
@@ -426,6 +440,21 @@ export const missionSchema = z.object({
       icon: z.enum(cardIcons).default("phone"),
       prep: z.array(line(80)).max(4).default([]),
       unprepared: line(200).default(""),
+    })
+    .optional(),
+  /**
+   * Kayıt görevi (Postam, Şehir Kapısı "Bağlantı nereye gidiyor?"): `form: true` yazılan öğenin
+   * bağlantısı bu formu açar (gerçek site; başlık, kutular, düğme), gönderince `done` yazar.
+   * Kutulara yazılan hiçbir yere gitmez; yalnızca "form gönderildi" olayı kaydedilir. Bu görevde
+   * sahte öğenin bağlantısı yine sahte sayfayı (trap) açar.
+   */
+  signup: z
+    .object({
+      site: line(60),
+      title: line(80),
+      fields: z.array(line(30)).max(3).default([]),
+      button: line(30),
+      done: line(120),
     })
     .optional(),
   /** SMS'teki onay kodu: "481 920". */
@@ -530,13 +559,28 @@ export function isScenario(template: Template): template is ScenarioTemplate {
  * cevapta gönderilen koddur (eski odalar böyle kalır).
  */
 export function usesTrapPage(content: Pick<ScenarioContent, "trap"> & { mission?: Mission }, template: ScenarioTemplate) {
-  if (content.mission) return false;
+  // Kayıt görevinde sahte bağlantı sahte sayfayı açar; mağaza ve satış görevinde açmaz.
+  if (content.mission) return !!content.mission.signup && template === "INBOX";
   return template === "INBOX" || content.trap.title.trim().length > 0;
 }
 
 /** Görevli odada bu öğenin bağlantısı mağaza sayfasını açar mı (ödemesi yazılmış öğe)? */
 export function opensShop(content: Pick<ScenarioContent, "mission">, item: Pick<Item, "link" | "payment">) {
   return !!content.mission?.shop && !!item.link && !!item.payment;
+}
+
+/** Kayıt görevli odada bu öğenin bağlantısı görevdeki formu açar mı? */
+export function opensForm(content: Pick<ScenarioContent, "mission">, item: Pick<Item, "link" | "form" | "kind">) {
+  return !!content.mission?.signup && !!item.link && item.form === true && item.kind === "real";
+}
+
+/** Görevli odanın türü: alış (mağaza), satış ya da kayıt; görevli değilse null. */
+export type MissionMode = "shop" | "sale" | "signup";
+
+export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown } | null }): MissionMode | null {
+  const mission = content.mission;
+  if (!mission) return null;
+  return mission.sale ? "sale" : mission.signup ? "signup" : "shop";
 }
 
 /** Satış görevli odada bu öğenin bağlantısı bankanın ödeme isteğini açar mı? */

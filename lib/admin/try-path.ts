@@ -12,9 +12,13 @@ export const fakeChoices = ["reported", "deleted", "ignored", "reportedAfterEnga
 /** Görevli odada bir seçenek daha: sahte mağazaya ödedi ama onay kodunu yazmadı. */
 export const missionFakeChoices = ["reported", "deleted", "ignored", "reportedAfterEngaging", "engagedLeft", "stopped", "hacked"] as const satisfies readonly FakeOutcome[];
 
-export function fakeChoicesFor(content: Pick<ScenarioContent, "mission">): readonly FakeOutcome[] {
-  // Satış görevinde "son anda durma" yok: ödeme isteği ya onaylanır ya reddedilir.
-  return content.mission && !content.mission.sale ? missionFakeChoices : fakeChoices;
+/** "Az kalsın" odasında sahte sayfaya bilgi girmek "hacklendi" değil "az kalsın"dır. */
+export const almostFakeChoices = ["reported", "deleted", "ignored", "reportedAfterEngaging", "engagedLeft", "almost"] as const satisfies readonly FakeOutcome[];
+
+export function fakeChoicesFor(content: Pick<ScenarioContent, "mission"> & { trap?: Pick<ScenarioContent["trap"], "almost"> }): readonly FakeOutcome[] {
+  if (content.trap?.almost) return almostFakeChoices;
+  // Satış ve kayıt görevinde "son anda durma" yok: ödeme isteği ya onaylanır ya reddedilir, kayıtta ödeme yok.
+  return content.mission && !content.mission.sale && !content.mission.signup ? missionFakeChoices : fakeChoices;
 }
 export const realChoices = ["kept", "deleted", "reported"] as const satisfies readonly RealOutcome[];
 
@@ -61,7 +65,7 @@ export function mergeTryPath(content: ScenarioContent, previous: TryPath): TryPa
   return base;
 }
 
-function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | null): LabEventData[] {
+function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | "signup" | null): LabEventData[] {
   const opened: LabEventData = { type: "item_opened", item };
   // Satış görevinde sahte mesaja kanmak bağlantıdaki ödeme isteğini açmaktır.
   const engage: LabEventData = template === "INBOX" || mission === "sale" ? { type: "link_clicked", item } : { type: "reply_sent", item, secret: false };
@@ -74,9 +78,11 @@ function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: 
       return [opened, { type: "item_moved", item, to: "trash" }];
     case "engagedLeft":
       return [opened, engage];
+    case "almost":
+      return [opened, engage, { type: "info_entered", item }];
     case "hacked":
       if (mission === "sale") return [opened, engage, { type: "code_entered", item }];
-      if (mission) return [opened, engage, { type: "info_entered", item }, { type: "code_entered", item }];
+      if (mission === "buy") return [opened, engage, { type: "info_entered", item }, { type: "code_entered", item }];
       return template === "INBOX"
         ? [opened, engage, { type: "info_entered", item }]
         : [opened, { type: "reply_sent", item, secret: true }];
@@ -91,7 +97,7 @@ function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: 
 /** Seçilen yolu öğrencinin olaylarına, olayları sahne durumuna çevirir. */
 export function stateFromPath(content: ScenarioContent, template: ScenarioTemplate, path: TryPath): SceneState {
   const events: LabEventData[] = [];
-  const mission = content.mission ? (content.mission.sale ? "sale" : "buy") : null;
+  const mission = content.mission ? (content.mission.sale ? "sale" : content.mission.signup ? "signup" : "buy") : null;
   for (const item of content.items) {
     const fallback = item.kind === "fake" ? "reported" : "kept";
     events.push(...itemEvents(item.id, path.items[item.id] ?? fallback, template, mission));
@@ -102,6 +108,10 @@ export function stateFromPath(content: ScenarioContent, template: ScenarioTempla
   const order = content.items.find((i) => i.kind === "real" && i.order);
   if (mission === "sale" && order && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: order.id }, { type: "item_shipped", item: order.id, prepared: true });
+  }
+  const form = content.items.find((i) => i.kind === "real" && i.form);
+  if (mission === "signup" && form && path.missionDone !== false) {
+    events.push({ type: "link_clicked", item: form.id }, { type: "form_sent", item: form.id });
   }
   if (mission === "buy" && shop && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: shop.id }, { type: "info_entered", item: shop.id }, { type: "code_entered", item: shop.id });
@@ -129,7 +139,7 @@ export function outcomePoints(kind: "fake" | "real", outcome: FakeOutcome | Real
     meta: { name: "", title: "", summary: "", story: "", learn: [], difficulty: "EASY", durationMin: 5 },
     reminders: [],
     items: [item],
-    trap: { url: "", title: "", text: "", ask: "", secret: "", kind: "account", account: "", scene: "", realLife: "", actions: [] },
+    trap: { url: "", title: "", text: "", ask: "", secret: "", kind: "account", account: "", scene: "", realLife: "", actions: [], almost: outcome === "almost" },
     tasks: [],
     tips: [],
   } satisfies ScenarioContent;

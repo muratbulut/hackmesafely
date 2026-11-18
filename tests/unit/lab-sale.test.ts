@@ -112,7 +112,7 @@ describe("satış görevi: puan ve görev", () => {
   it("sıfırlamadan gönderen: görev yarım (0), hacklenmez", () => {
     const state = reduceEvents([...opened, ...sell(false)]);
     expect(missionDone(room, state)).toBe(false);
-    expect(taskProgress(room.tasks, state, true).done[1]).toBe(true);
+    expect(taskProgress(room.tasks, state, "sale").done[1]).toBe(true);
     const report = scoreScenario(room, state);
     expect(report.status).not.toBe("hacked");
     expect(report.rows.find((r) => r.type === "mission")).toMatchObject({ done: false, points: 0 });
@@ -120,7 +120,7 @@ describe("satış görevi: puan ve görev", () => {
 
   it("ödeme isteğini reddetmek görevi bitirmez; onaylamak hacklenmektir (Para türü)", () => {
     const refused = reduceEvents([...opened, { type: "link_clicked", item: "selin" }, { type: "code_refused", item: "selin" }]);
-    expect(taskProgress(room.tasks, refused, true).done[1]).toBe(false);
+    expect(taskProgress(room.tasks, refused, "sale").done[1]).toBe(false);
     const hacked = score([...opened, { type: "link_clicked", item: "selin" }, { type: "code_entered", item: "selin" }]);
     expect(hacked).toMatchObject({ status: "hacked", compromise: "financial" });
     expect(hacked.rows[0]).toMatchObject({ outcome: "hacked", by: "request", points: 0 });
