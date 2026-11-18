@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
-import { attemptsOf, checkMissionCover, continueFromScene } from "./support/lab";
+import { attemptsOf, checkMissionCover, continueFromScene, pickUpPhone, signInDesktop } from "./support/lab";
 
 // Görevli oda (Para Çarşısı "Kulaklık için veli kartı", 2 Kasım): annenin görüntülü araması, görev
 // kutusu ve kartı, mağaza sayfası, ödeme sonrası SMS, onay kodu kararı, iyi ve kötü bitiş. Oda
@@ -74,6 +74,8 @@ async function answerIntro(page: Page, isMobile: boolean) {
   await shot(page, "3-gorev-karti", isMobile);
   await call.getByRole("button", { name: room.mission.accept }).click();
   await expect(call).toHaveCount(0);
+  // T2 sahnesi (oda sahne şablonu): önce bilgisayarın kilit ekranı.
+  await signInDesktop(page);
 }
 
 /** Postam'da bir TeknoPazar mailini açar ("19:42" sahte, "18:10" gerçek), mağazaya gidip öder. */
@@ -87,7 +89,8 @@ async function payFrom(page: Page, time: string, isMobile: boolean) {
   await app.getByRole("button", { name: "Annenin kartını kullan" }).click();
   await expect(app.getByTestId("shop-card")).toContainText("4821");
   await app.getByRole("button", { name: "1.199 TL öde" }).click();
-  // Velinin mesajı ortaya gelen telefonda açılır (sahnenin dışında, kendi penceresi).
+  // T2 sahnesi: velinin mesajı masadaki telefona düşer; telefon titrer, öğrenci alır.
+  await pickUpPhone(page);
   await expect(page.getByTestId("mission-sms").getByTestId("shop-sms")).toBeVisible();
   await shot(page, `4-sms-${time.replace(":", "")}`, isMobile);
   return app;

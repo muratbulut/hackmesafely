@@ -8,6 +8,7 @@ import { withNext } from "@/lib/account/shared";
 import type { HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
 import type { ClientItem, ClientScenario } from "@/lib/lab/client";
 import { containsSecret, emptyState, taskProgress, type Folder, type SceneState } from "@/lib/lab/events";
+import { stageFits } from "@/lib/lab/content";
 import { getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import type { EndingCall, FailReason, LabDriver } from "../driver";
@@ -17,6 +18,8 @@ import { BrowserPage } from "../inbox/BrowserPage";
 import { InboxScene } from "../inbox/InboxScene";
 import { MessagingScene } from "../messaging/MessagingScene";
 import { MissionCall } from "../mission/MissionCall";
+import { StageView } from "../stage/StageView";
+import { TalkScene } from "../stage/TalkScene";
 import { useLabSession, type SessionProblem } from "../useLabSession";
 import { LabBar } from "./LabBar";
 import { PhoneFrame } from "./PhoneFrame";
@@ -83,6 +86,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [finishing, setFinishing] = useState(false);
   // Şeritteki maskot: bildirilen mesajda bir an şüphelenir, hacklenince kırmızıya döner.
   const [mood, setMood] = useState<MascotMood>("idle");
+  // T3: öğrenci "Telefona bak" deyince konuşma o görev için kapanır, görev panelinden geri açılır.
+  const [talkAway, setTalkAway] = useState<string | null>(null);
   const moodTimer = useRef<number | null>(null);
   useEffect(() => () => {
     if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
@@ -311,17 +316,17 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     mission,
     missionShown,
     onReplay: () => setReplay(true),
+    onTalk: () => setTalkAway(null),
   };
 
   const sceneProps = { items, state, avatar, onOpen: open, onMove: move, onAttachment: attachment, onLink: openLink };
 
-  // Satış görevli odada sahne masaüstünde bir telefonun içinde açılır (PhoneFrame).
-  const phone = template === "MESSAGING" && !!mission?.sale;
-  const sceneBody = (
-    <>
-      {template === "INBOX" ? <InboxScene {...sceneProps} /> : <MessagingScene {...sceneProps} onReply={reply} phone={phone} />}
-      {browser ? (
-        <div className="absolute inset-0 z-20 [animation:fade-in_.2s_ease-out_both]">
+  // Oda sahne şablonu (M1, T1, T2; components/lab/stage/). Şablona uymayan sahne yok sayılır.
+  const stage = scenario.stage && stageFits(scenario.stage.type, template) ? scenario.stage : null;
+  // Satış görevli odada (sahnesi yazılmamışsa) sahne masaüstünde bir telefonun içinde açılır (PhoneFrame).
+  const phone = template === "MESSAGING" && (!!mission?.sale || stage?.type === "PHONE");
+  const appScene = template === "INBOX" ? <InboxScene {...sceneProps} /> : <MessagingScene {...sceneProps} onReply={reply} phone={phone} />;
+  const browserPage = browser ? (
           <BrowserPage
             app={template}
             page={browser.page}
@@ -340,10 +345,32 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                 : undefined
             }
           />
-        </div>
-      ) : null}
+  ) : null;
+  // Masaüstünde (M1, T2) sayfa tarayıcı penceresinde açılır; diğerlerinde uygulamanın üstünde.
+  const desktopStage = stage && stage.type !== "PHONE";
+  const sceneBody = (
+    <>
+      {appScene}
+      {browserPage && !desktopStage ? <div className="absolute inset-0 z-20 [animation:fade-in_.2s_ease-out_both]">{browserPage}</div> : null}
     </>
   );
+  const first = items[0];
+
+  // T3: sıradaki görev yüz yüze sorulan bir soruysa konuşma sahnesi açılır.
+  const currentTask = progress.finished ? null : tasks[progress.current];
+  const talkTask = phase === "playing" && currentTask?.type === "question" && currentTask.talk && state.answers[currentTask.id] === undefined ? currentTask : null;
+  const talk =
+    talkTask?.talk && talkAway !== talkTask.id ? (
+      <TalkScene
+        key={talkTask.id}
+        speaker={talkTask.talk.speaker}
+        look={talkTask.talk.look}
+        text={talkTask.text}
+        options={talkTask.options}
+        onAnswer={(option) => answer(talkTask.id, option)}
+        onAway={() => setTalkAway(talkTask.id)}
+      />
+    ) : null;
 
   return (
     <div
@@ -363,14 +390,34 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
       />
 
       <main className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 gap-5 lg:items-start lg:px-6 lg:pt-5 lg:pb-8">
-        {phone ? (
-          <PhoneFrame inert={phase === "intro" || phase === "call"}>{sceneBody}</PhoneFrame>
+        {stage ? (
+          <div
+            inert={phase === "intro" || phase === "call"}
+            className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden keep-dark bg-canvas lg:h-[var(--lab-height)] lg:rounded-2xl lg:border lg:border-line lg:shadow-card"
+            data-testid="scenario-stage"
+          >
+            <StageView
+              stage={stage}
+              appNode={desktopStage ? appScene : sceneBody}
+              browserNode={browserPage}
+              onCloseBrowser={() => setBrowser(null)}
+              firstNotice={first ? { title: first.sender, text: (first.body.split("\n")[0] ?? "").replace(/\*\*/g, "") } : null}
+              resumed={!!resume}
+            />
+            {talk}
+          </div>
+        ) : phone ? (
+          <PhoneFrame inert={phase === "intro" || phase === "call"}>
+            {sceneBody}
+            {talk}
+          </PhoneFrame>
         ) : (
           <div
             inert={phase === "intro" || phase === "call"}
             className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-scene-white lg:h-[var(--lab-height)] lg:rounded-2xl lg:border lg:border-scene-line-strong lg:shadow-card"
           >
             {sceneBody}
+            {talk}
           </div>
         )}
         <TaskAside {...panel} />

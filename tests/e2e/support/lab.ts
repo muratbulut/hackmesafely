@@ -93,3 +93,16 @@ export async function dismissLevelUps(page: Page) {
     await dialog.getByRole("button", { name: "Harika" }).click();
   });
 }
+
+/** M1 ve T2 sahnesi (oda sahne şablonu): bilgisayarın kilit ekranında "Oturum aç". */
+export async function signInDesktop(page: Page) {
+  const lock = page.getByTestId("stage-lock");
+  await lock.getByRole("button", { name: "Oturum aç" }).click();
+  await expect(lock).toHaveCount(0);
+}
+
+/** T1 ve T2 sahnesi: masadaki telefonu alır (telefon ortaya gelir, ekranı açılır). */
+export async function pickUpPhone(page: Page) {
+  await page.getByTestId("stage-phone-pick").click();
+  await expect(page.getByTestId("stage-phone-drop")).toBeVisible();
+}

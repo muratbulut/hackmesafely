@@ -48,6 +48,8 @@ Haritada mahallenin rotası şöyle görünür: her eğitim, hemen ardından onu
 
 Şablon dosyada yazılır ve oda eklendikten sonra **değişmez**. Yanlış şablon seçildiyse yeni bir adresle yeni bir dosya açılır.
 
+**Oda sahne şablonu (18 Kasım).** Senaryo odasının uygulaması (Postam, Mesajlar...) bir sahnenin içinde açılır: **M1** masaüstü (yalnız bilgisayar), **T1** masadaki telefon (yalnız telefon), **T2** bilgisayar ve telefon (ör. kod telefona gelir), **T3** karşılıklı konuşma (bir büyükle ya da yabancıyla yüz yüze). Odanı yazmadan önce `docs/labs/room-plan.md`'de odanın "Şablon:" alanına bak; kurallar `docs/design/room-scene-template.md`'de. Oda dosyasında sahne şöyle yazılır: `"stage": { "type": "DESKTOP" }` M1, `"PHONE"` T1 (yalnızca Mesajlar), `"DESKTOP_PHONE"` T2 (Postam; veli SMS'i masadaki telefona düşer). Bilgisayarın sahibi `owner` (boşsa kilitte "Sen"); şifreli kilit yalnızca ileri odalarda: `"password": { "value": "gunes2009", "hint": "...", "hintFrom": "Ayça" }`. T3 bir soru görevine yazılır: `"talk": { "speaker": "Annen", "look": "mother" }`; soru sırası gelince sahnenin üstünde konuşma olarak açılır. `stage` yazılmayan oda eski görünümüyle açılır. Geliştirici ayrıntısı 2.15.
+
 Başka bir sahne gerekiyorsa (sahte giriş sayfası, indirme sayfası, sosyal medya gibi) bunu mevcut şablonlarla yapamazsın. Geliştiriciden yeni bir şablon iste (2. kısım).
 
 ## 1.3 Yönetimdeki Odalar sayfası
@@ -436,7 +438,7 @@ Bu yüzden şema değişikliği ya **geriye uyumlu** olur ya da **veri migration
 - Yeni alan `.default(...)` ile eklenir; eski içerik o değerle okunur.
 - Sınır daraltılacaksa (daha kısa metin, daha sıkı adres), önce veritabanındaki `Lab.draftContent` ve `LabVersion.content` içinde yeni sınıra uymayan satır olup olmadığına bakılır. Varsa aynı PR'da bir Prisma migration'ı (SQL) ile düzeltilir.
 - Taslak okunamadığında odanın sayfası "Uymayan alanlar" yollarını gösterir (`draftIssues`, `lib/admin/validate.ts`). Düzeltme oda dosyasında yapılır.
-- `labs/examples/*.json` her zaman şemaya uymalı (`tests/unit/lab.test.ts` denetler).
+- `labs/examples/*.json` ve `tests/fixtures/rooms/*.json` her zaman şemaya uymalı (`tests/unit/lab.test.ts` denetler). Motor testleri sabit kopyaları (`tests/fixtures/rooms/`) okur; gerçek oda değişince onlar değişmez.
 
 ## 2.3 Yeni sahne türü (şablon) eklemek
 
@@ -662,3 +664,22 @@ Oda kapağının (`/oda/[oda]`) sağı görevli odada bildirim telefonu değil, 
 - **Veri** (`lib/lab/cover.ts`, `coverOf`; `LabDetailData.cover`): arayan, `look`, alış (`shop`) ya da satış (`sale`), ikon ve fiyat, ilk iki öğenin gönderen baş harfi (aynı gönderen aynı renk), hazırlık maddesi sayısı (en çok 3), etiket ikonu. Hangi öğenin sahte olduğu, adresler, SMS tutarı ve bitişler kapağa gitmez. Görevi olmayan ya da ne alış ne satış olan odada `cover` null'dır, bildirim telefonu (`PhoneMockup`) kalır.
 - **Şema**: `mission.coverIcon` (isteğe bağlı, `cardIcons`): alış görevinde etiketin ikonu (Kulaklık odasında `gift`, doğum günü). Boşsa alışta etiket çıkmaz; satışta etiket hep iki cüzdan arasında gidip gelen paradır.
 - **Testler**: `tests/unit/lab-mission.test.ts` ve `lab-sale.test.ts` (`coverOf`: alış, satış, görevsiz oda, gizli bilgi gitmez), `tests/e2e/lab-mission.spec.ts` ve `lab-sale.spec.ts` (`checkMissionCover`: kapak görünür, bildirim telefonu yok, sayfa yana kaymaz, gizli metin yok; masaüstü ve telefon, `LAYOUT_SHOTS` ile `0-kapak`). Oda dosyaları taslak olduğu için kapak `mobile-layout.spec.ts`'te değil bu testlerde denetlenir.
+
+## 2.15 Oda sahnesi (M1, T1, T2, T3; 18 Kasım)
+
+Tasarım ve kararlar `docs/design/room-scene-template.md` (tuval https://claude.ai/artifact/FUZhpRbnDoWiu25f845vfe; koddan alınmış ekranlar https://claude.ai/artifact/KZuc9b6jDJ2dEwg2pEh2y2). Odanın uygulaması (Postam, Mesajlar) ve bağlantıdan açılan sayfa bir sahnenin içinde çizilir; sahne yalnızca görünüştür, her eylem yine oynatıcıdan sürücüye gider. Puan, olay ve rapor değişmez.
+
+- **Şema** (`lib/lab/content.ts`), isteğe bağlı ve geriye uyumlu:
+  - `scenario.stage` (`stageSchema`): `type` `DESKTOP` (M1), `PHONE` (T1), `DESKTOP_PHONE` (T2) (`stageKinds`); `owner` (kilitteki ad, en çok 30), `password` (`value`, `hint`, `hintFrom`). Alanın adı `type`'tır: tarayıcıya giden JSON'da `kind` sızıntı testine takılır. Sahne şablona uymalı (`stageFits`: `PHONE` yalnızca Mesajlar, diğerleri yalnızca Postam); uymayan sahne oynatıcıda yok sayılır.
+  - Soru görevinde `talk` (`speaker`, `look`: `mother` ya da `father`, `callerLooks`): T3 karşılıklı konuşma. Ayrı bir sahne türü değildir; soru sırası gelince sahnenin üstünde açılır, cevap yine `answer` ile sunucuda puanlanır ve rapora yazılır. Böylece herhangi bir odanın ortasında konuşma olabilir.
+- **Tarayıcıya giden içerik** (`lib/lab/client.ts`): `ClientScenario.stage` (şifre ve ipucu dahil: kilit tarayıcıda açılır, puanla ilgisi yoktur), `ClientTask.talk` (yalnızca soru görevinde).
+- **Yayına hazırlık** (`lib/lab/checklist.ts`, "Sahne şablona uyuyor"): yalnızca sahnesi ya da konuşması olan odada görünür; sahne şablona uyar, şifre varsa değeri dolu, konuşma yalnızca soru görevinde ve konuşanı yazılı.
+- **Sahneler** (`components/lab/stage/`, sınıflar `st-`, stiller `stage.css`, renkler `--stage-*` `globals.css`'te iki tema bloğunda da; görseller `public/stage/*.webp`, `public/lab/` olmaz çünkü `/lab/*` adresleri `/oda/*`'ya yönlenir):
+  - `StageView.tsx`: türe göre sahneyi seçer. T1 `PhoneDesk` (ahşap masa, defter, kupa, kalem, kulaklık; ilk mesaj kilit ekranında bildirim), T2 `DesktopPhone` (monitör, kupa, masadaki telefon; telefonun ekranı `StagePhoneContext` ile verilir).
+  - `Desktop.tsx` (M1): kilit ekranı (`Oturum aç` ya da şifre ve ipucu; yanlışta sallanır), pencereler (sürükle, küçült, büyüt, kapat; dar ekranda hep tam boy), masaüstü simgeleri, başlat menüsü (gözlü a; "Oturumu kapat" kilide döner), görev çubuğu ve gerçek saat. Bağlantıdan açılan sayfa "Tarayıcı" penceresinde açılır.
+  - `DeskPhone.tsx`: masada ekranı kararmış telefon (saat, tarih, bildirim kartı; bildirimde titrer ve parlar), dokununca ele gelir, "Masaya bırak" ile geri. Masadayken ekran `inert`. Ekran `data-device="phone"` taşır, Mesajlar ve tarayıcı sayfası telefon düzenini seçer (2.13).
+  - `TalkScene.tsx` (T3, S1 sinema şeritleri): bulanık oda, silik silüet (anne topuzlu, baba kısa saçlı), sehpa ve kupa (dokununca bir yudum), üst şeritte altyazı, alt şeritte seçenekler (1, 2, 3 tuşları), "Telefona bak" (konuşma kapanır, görev panelindeki "Konuşmaya dön" geri açar). Doğru cevap burada bilinmez.
+  - `common.tsx`: saat (`useClock`), gri duvar ve sarı ağ (`StageWall`), uygulama simgeleri.
+- **Oynatıcı** (`ScenarioPlayer.tsx`): sahnesi olan odada ana alan `scenario-stage`'dir ve `StageView` çizilir; tarayıcı sayfası sahnenin içinde açılır, ayrı örtü olmaz. Yarım kalan denemeye dönülünce bilgisayar açık, telefon elde başlar. T2'de velinin SMS'i (`MissionSms.tsx`) masadaki telefona çizilir (`useStagePhone`), sahnesiz odada eski ortadaki telefon kalır. Satış görevinde `PHONE` sahnesi `PhoneFrame`'in yerini alır.
+- **Hareketi azalt**: titreşim, sallanma, nefes ve yudum durur (`globals.css`'teki genel kural ve `prefersReducedMotion()`).
+- **Testler**: uçtan uca testlerde sahneli odada önce `signInDesktop` (M1, T2) ya da `pickUpPhone` (T1, T2'de SMS) çağrılır (`tests/e2e/support/lab.ts`); `tests/e2e/mobile-layout.spec.ts` kilit ekranını, masadaki telefonu ve SMS'i denetler.

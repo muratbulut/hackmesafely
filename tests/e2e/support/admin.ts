@@ -42,7 +42,7 @@ export async function deleteTestLabs({ slug, olderThanMinutes }: { slug?: string
 }
 
 /**
- * Testin odası: örnek odanın (labs/examples/) kopyası, verilen ad ve "e2e-" adresle taslak olarak
+ * Testin odası: test odasının (tests/fixtures/rooms/) kopyası, verilen ad ve "e2e-" adresle taslak olarak
  * veritabanına yazılır (odalar panelde açılmaz, depodaki dosyadan gelir; 39, 17 Kasım). Mahallenin
  * senaryolarının sonuna eklenir. Silmek için deleteTestLabs.
  */
@@ -58,7 +58,7 @@ export async function insertTestLab({
   /** İçeriği yazmadan önce değiştirir (ör. yayına hazır olmayan taslak için görevleri siler). */
   change?: (content: Record<string, unknown>) => void;
 }) {
-  const room = JSON.parse(readFileSync(`labs/examples/${example}.json`, "utf8")) as {
+  const room = JSON.parse(readFileSync(`tests/fixtures/rooms/${example}.json`, "utf8")) as {
     neighborhood: string;
     type: string;
     template: string;
@@ -90,7 +90,7 @@ export async function insertTestNeighborhood(name: string) {
 /** Geçici mahalleye taslak oda ekler (eğitim ya da gelen kutusu senaryosu); kimliğini döner. */
 export async function insertNeighborhoodLab(neighborhoodId: string, { name, type, sortOrder }: { name: string; type: "TRAINING" | "SCENARIO"; sortOrder: number }) {
   // Örnek odanın içeriği (şemaya uyan taslak; adı listede okunur).
-  const content = JSON.parse(readFileSync(`labs/examples/${type === "TRAINING" ? "oltalama-egitimi" : "sahte-kargo-maili"}.json`, "utf8")).content;
+  const content = JSON.parse(readFileSync(`tests/fixtures/rooms/${type === "TRAINING" ? "oltalama-egitimi" : "sahte-kargo-maili"}.json`, "utf8")).content;
   content.meta.name = name;
   const id = `e2e${randomUUID().replace(/-/g, "").slice(0, 21)}`;
   await withDb((client) =>

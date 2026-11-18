@@ -1,0 +1,632 @@
+/*
+ * Oda sahne şablonu (components/lab/stage/, docs/design/room-scene-template.md). Sınıflar st- ile
+ * başlar. Renkler globals.css'teki --stage-* değişkenlerinden gelir; "Hareketi azalt" açıksa
+ * globals.css bütün animasyonları ve geçişleri durdurur. Telefon kırılımı: 64rem (lg).
+ */
+
+/* --- M1 duvar: gri, sarı ağ %50 --- */
+.st-wall {
+  background: radial-gradient(ellipse at 70% 25%, var(--stage-wall-2), var(--stage-wall) 65%);
+}
+.st-net {
+  opacity: 0.5;
+}
+.st-net path {
+  fill: none;
+  stroke: var(--stage-road);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-opacity: 0.55;
+}
+.st-net path.st-net-halo {
+  stroke-width: 7;
+  stroke-opacity: 0.06;
+}
+.st-net circle {
+  fill: var(--stage-road);
+  opacity: 0.7;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* --- Ahşap masa (T1, T2): doku görseli, lamba ışığı, kenarlarda gölge --- */
+.st-wood {
+  background: var(--stage-wood) url("/stage/wood.webp") center / cover;
+  container-type: size;
+  /* --cm: telefonun masadaki boyundan bir santim (telefon 15 cm); eşyalar buna göre (%90). */
+  --st-phone-h: min(740px, 100cqh - 24px);
+  --cm: calc(var(--st-phone-h) * var(--st-desk-scale) / 15 * 0.9);
+}
+.st-lamp {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 60% at 38% 30%, var(--stage-wood-lamp), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, transparent 50%, var(--stage-vignette));
+}
+.st-prop {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  height: auto;
+  max-width: none;
+}
+.st-prop-notebook {
+  width: calc(21 * var(--cm));
+  left: 2%;
+  top: 4%;
+}
+.st-prop-pencil {
+  width: calc(21 * var(--cm));
+  left: 3%;
+  bottom: 2%;
+}
+.st-prop-mug {
+  width: calc(18 * var(--cm));
+  right: 3%;
+  top: 3%;
+}
+.st-prop-earbuds {
+  width: calc(10 * var(--cm));
+  right: 7%;
+  bottom: 6%;
+}
+.st-stage[data-stage="t1"] {
+  --st-desk-scale: 0.5;
+}
+.st-stage[data-stage="t2"] {
+  --st-desk-scale: 0.4;
+}
+.st-stage[data-stage="t2"] .st-prop-mug {
+  right: 14px;
+  top: 3%;
+  width: calc(15 * var(--cm));
+}
+
+/* --- Masadaki telefon --- */
+.st-handset {
+  position: absolute;
+  z-index: 10;
+  left: var(--hx);
+  top: var(--hy);
+  width: 360px;
+  height: var(--st-phone-h, min(740px, calc(100% - 24px)));
+  transform: translate(-50%, -50%) rotate(var(--hr)) scale(var(--hs));
+  transition:
+    left 0.6s cubic-bezier(0.5, 0, 0.25, 1),
+    top 0.6s cubic-bezier(0.5, 0, 0.25, 1),
+    transform 0.6s cubic-bezier(0.5, 0, 0.25, 1);
+}
+.st-handset[data-place="t1"][data-hand="false"],
+.st-deskhint[data-place="t1"] {
+  --hx: 55%;
+  --hy: 54%;
+  --hr: -11deg;
+  --hs: 0.5;
+}
+.st-handset[data-place="t2"][data-hand="false"],
+.st-deskhint[data-place="t2"] {
+  --hx: calc(100% - 100px);
+  --hy: 60%;
+  --hr: 6deg;
+  --hs: 0.4;
+}
+.st-handset[data-hand="true"] {
+  --hx: 50%;
+  --hy: 50%;
+  --hr: 0deg;
+  --hs: 1;
+}
+.st-phone-body {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: 46px;
+  padding: 9px;
+  background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel-lo) 30%, var(--stage-bezel) 70%, var(--stage-bezel-hi));
+  box-shadow:
+    0 0 0 1.5px var(--stage-bezel-edge),
+    0 30px 60px var(--stage-shadow);
+  transition: box-shadow 0.6s, filter 0.2s;
+}
+.st-handset[data-hand="false"] .st-phone-body {
+  box-shadow:
+    0 0 0 1.5px var(--stage-bezel-edge),
+    14px 22px 34px var(--stage-shadow),
+    4px 6px 8px var(--stage-shadow-soft);
+}
+.st-handset[data-hand="false"]:hover .st-phone-body {
+  filter: brightness(1.12);
+}
+.st-phone-screen {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 38px;
+  background: var(--stage-sleep);
+}
+.st-sleep {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 96px 20px 20px;
+  border: 0;
+  background: var(--stage-sleep);
+  color: var(--stage-os-fg);
+}
+.st-sleep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(118deg, var(--stage-sleep-shine) 0 26%, transparent 44%);
+}
+.st-sleep-card {
+  margin-top: 18px;
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  border: 1px solid var(--stage-os-line);
+  border-radius: 18px;
+  background: var(--stage-os-glass);
+  padding: 12px;
+  animation: fade-up 0.4s ease-out both;
+}
+.st-deskhint {
+  position: absolute;
+  z-index: 11;
+  left: var(--hx);
+  top: max(8px, calc(var(--hy) - var(--st-phone-h) * var(--hs) / 2 - 52px));
+  transform: translateX(-50%);
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid var(--stage-os-line);
+  border-radius: 999px;
+  background: var(--stage-os-glass);
+  padding: 8px 14px;
+  color: var(--stage-os-fg);
+  font-size: 13px;
+  pointer-events: none;
+  animation: fade-up 0.3s ease-out 0.6s both;
+}
+.st-buzz {
+  animation: call-buzz 0.9s 1;
+}
+.st-glow {
+  box-shadow:
+    0 0 0 1.5px var(--stage-bezel-edge),
+    0 0 46px var(--stage-phone-glow),
+    14px 22px 34px var(--stage-shadow) !important;
+}
+
+/* Telefon eldeyken arkası kararır (T2'de masaüstüne dokunulamaz). */
+.st-stage[data-hand="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background: var(--stage-dim);
+  animation: fade-in 0.4s ease-out both;
+}
+
+/* --- T2: masadaki monitör --- */
+.st-monitor {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  bottom: 12px;
+  right: 196px;
+  display: flex;
+  border-radius: 12px;
+  padding: 6px 6px 16px;
+  background: linear-gradient(180deg, var(--stage-monitor), var(--stage-bezel));
+  box-shadow:
+    0 0 0 1px var(--stage-monitor-edge),
+    0 20px 40px var(--stage-shadow);
+}
+.st-monitor-screen {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+/* --- Telefon genişliği (390 px): telefon eldeyken bütün sahneyi kaplar --- */
+@media (width < 64rem) {
+  .st-wood {
+    --st-phone-h: min(560px, 100cqh - 24px);
+  }
+  .st-stage[data-stage="t1"] {
+    --st-desk-scale: 0.42;
+  }
+  .st-stage[data-stage="t2"] {
+    --st-desk-scale: 0.2;
+  }
+  .st-handset {
+    width: calc(var(--st-phone-h) * 9 / 19);
+  }
+  .st-handset[data-place="t2"][data-hand="false"],
+  .st-deskhint[data-place="t2"] {
+    --hx: 34%;
+    --hy: calc(100% - 62px);
+    --hr: 86deg;
+    --hs: 0.2;
+  }
+  .st-handset[data-hand="true"] {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+  .st-handset[data-hand="true"] .st-phone-body {
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .st-handset[data-hand="true"] .st-phone-screen {
+    border-radius: 0;
+  }
+  .st-monitor {
+    left: 6px;
+    right: 6px;
+    top: 6px;
+    bottom: 124px;
+    padding: 4px 4px 12px;
+  }
+  .st-stage[data-stage="t2"] .st-prop-mug {
+    top: auto;
+    bottom: 12px;
+    right: 12%;
+    width: 92px;
+  }
+  .st-prop-notebook {
+    left: -8%;
+  }
+}
+
+/* --- T3 karşılıklı konuşma, S1 sinema şeritleri --- */
+.st-talk {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  background: var(--stage-talk-bg);
+  color: var(--stage-sub);
+  animation: fade-in 0.4s ease-out both;
+}
+.st-talk-room,
+.st-talk-person {
+  position: absolute;
+  inset: -4%;
+}
+.st-talk-room img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(6px) saturate(1.05);
+}
+.st-talk-person {
+  filter: blur(7px);
+}
+.st-talk-person svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: st-breathe 4.5s ease-in-out infinite;
+  transform-origin: 70% 80%;
+}
+.st-person-body,
+.st-person-head path,
+.st-person-head circle {
+  fill: var(--stage-silhouette);
+}
+.st-person-arms {
+  fill: none !important;
+  stroke: var(--stage-silhouette);
+  stroke-width: 34;
+  stroke-linecap: round;
+}
+.st-person-head .st-person-rim,
+.st-person-rim {
+  fill: none !important;
+  stroke: var(--stage-rim);
+  stroke-width: 5;
+  opacity: 0.5;
+}
+.st-person-rim-soft {
+  opacity: 0.35;
+}
+.st-person-tea {
+  fill: var(--stage-tea);
+}
+.st-person-plate {
+  fill: var(--stage-tea-plate);
+}
+.st-talking .st-person-head {
+  animation: st-nod 0.55s ease-in-out 4 alternate;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes st-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.012) translateY(-2px); }
+}
+@keyframes st-nod {
+  from { transform: rotate(0); }
+  to { transform: rotate(-3deg) translateY(2px); }
+}
+.st-talk-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0.06;
+  background: repeating-radial-gradient(circle at 30% 40%, var(--stage-grain) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+/* Sehpa: 3B çizim; uzak kenarı biraz bulanık (alan derinliği). */
+.st-talk-table {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: 14%;
+  height: 31%;
+}
+.st-tbl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+  pointer-events: none;
+  user-select: none;
+}
+.st-tbl.st-far {
+  filter: blur(2.5px);
+  mask-image: linear-gradient(180deg, var(--stage-letterbox) 8%, transparent 42%);
+}
+.st-tbl.st-mug {
+  transform-origin: var(--ox) var(--oy);
+}
+.st-mug-hit {
+  position: absolute;
+  z-index: 2;
+  cursor: pointer;
+  border: 0;
+  border-radius: 30%;
+  background: none;
+  padding: 0;
+}
+.st-mug-hit:focus-visible {
+  outline: 2px solid var(--stage-road);
+  outline-offset: 4px;
+}
+.st-steam {
+  position: absolute;
+  left: 38%;
+  bottom: 86%;
+  width: 16%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 70%, var(--stage-steam), transparent 70%);
+  filter: blur(6px);
+  opacity: 0;
+  animation: st-steam 4s ease-in-out infinite;
+  pointer-events: none;
+}
+.st-steam-2 {
+  left: 52%;
+  animation-delay: 2s;
+}
+@keyframes st-steam {
+  0% { opacity: 0; transform: translateY(20%) scaleX(0.8); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-60%) scaleX(1.4); }
+}
+.st-sip .st-mug {
+  animation: st-sip 2.6s cubic-bezier(0.45, 0, 0.3, 1) both;
+}
+.st-sip .st-mug-shadow {
+  animation: st-sip-shadow 2.6s ease both;
+}
+.st-sip .st-mug-hit {
+  pointer-events: none;
+}
+@keyframes st-sip {
+  0% { transform: none; }
+  30%, 62% { transform: translateY(-55%) scale(2.1) rotate(-14deg); }
+  100% { transform: none; }
+}
+@keyframes st-sip-shadow {
+  0%, 100% { opacity: 1; }
+  30%, 62% { opacity: 0; }
+}
+
+/* Sehpadaki telefon: yatık, kalınlığı görünür (kâğıt gibi ince değil). */
+.st-talk-phone {
+  position: absolute;
+  z-index: 3;
+  left: 77%;
+  bottom: 22%;
+  width: 74px;
+  height: 152px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel) 40%);
+  box-shadow:
+    0 0 0 1.5px var(--stage-bezel-edge),
+    0 4px 0 -1px var(--stage-bezel-hi),
+    0 7px 0 -1px var(--stage-bezel-lo),
+    14px 22px 26px var(--stage-shadow);
+  transform: translate(-50%, 0) perspective(600px) rotateX(58deg) rotate(10deg);
+}
+.st-talk-phone::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 10px;
+  background: linear-gradient(118deg, var(--stage-sleep-shine) 0 30%, var(--stage-sleep) 30%);
+}
+
+/* Şeritler: söz üstte ortada, seçenekler altta. */
+.st-talk-top,
+.st-talk-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 11;
+  background: var(--stage-letterbox);
+}
+.st-talk-top {
+  top: 0;
+  height: 16%;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 9%;
+}
+.st-talk-bottom {
+  bottom: 0;
+  height: 14%;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 3%;
+}
+.st-talk-sub {
+  max-width: 780px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 1.38;
+  text-shadow: 0 2px 8px var(--stage-sub-shadow);
+  animation: fade-up 0.45s ease-out both;
+}
+.st-talk-sub b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--stage-road);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.st-talk-sub.st-talk-you {
+  color: var(--stage-sub-you);
+  font-style: italic;
+}
+.st-talk-sub.st-talk-you b {
+  color: var(--stage-sub-you-name);
+  font-style: normal;
+}
+.st-talk-choices {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.st-talk-choices button,
+.st-talk-away {
+  display: flex;
+  min-height: 44px;
+  cursor: pointer;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--stage-choice-line);
+  border-radius: 8px;
+  background: transparent;
+  padding: 6px 14px 6px 8px;
+  color: var(--stage-sub);
+  font-size: 15px;
+  text-align: left;
+}
+.st-talk-choices button > span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--stage-choice-num);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+.st-talk-choices button:hover:not(:disabled),
+.st-talk-choices button:focus-visible,
+.st-talk-away:hover:not(:disabled) {
+  border-color: var(--stage-road);
+  background: var(--stage-choice-hover);
+}
+.st-talk-choices button:hover:not(:disabled) > span,
+.st-talk-choices button[aria-pressed="true"] > span {
+  background: var(--stage-road);
+  color: var(--stage-road-ink);
+}
+.st-talk-choices button:disabled:not([aria-pressed="true"]) {
+  opacity: 0.45;
+}
+.st-talk-away {
+  flex: none;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--stage-sub-you);
+}
+
+/* 390 px: yazı üstte (sola yaslı), seçenekler en altta yatay kayan şerit, sehpa ikisinin arasında. */
+@media (width < 64rem) {
+  .st-talk-top {
+    height: 104px;
+    justify-content: flex-start;
+    padding: 8px 14px;
+  }
+  .st-talk-sub {
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.32;
+  }
+  .st-talk-bottom {
+    height: 64px;
+    min-height: 64px;
+    padding: 0 8px;
+  }
+  .st-talk-choices {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .st-talk-choices button {
+    flex: none;
+    font-size: 13px;
+  }
+  .st-talk-table {
+    bottom: 64px;
+    height: 28%;
+  }
+  .st-tbl {
+    object-position: 16% 0;
+  }
+  .st-talk-phone {
+    left: 62%;
+    bottom: calc(64px + 4%);
+    width: 52px;
+    height: 106px;
+  }
+}
