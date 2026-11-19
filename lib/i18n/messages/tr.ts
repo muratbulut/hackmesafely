@@ -1821,6 +1821,18 @@ export const tr = {
           deny: "Reddet",
           once: "Yalnızca bu sefer",
         },
+        // Sorunun üstündeki Wi‑Fi listesi (WifiPeek): telefonun "Ağ seçin" ekranı.
+        wifi: {
+          title: "Wi‑Fi",
+          pick: "Bir ağ seçin",
+          locked: "Şifreli",
+          open: "Açık ağ",
+        },
+        // Sorunun üstündeki sahte pencere (PopupPeek): bir sitenin içinde açılan uyarı.
+        popup: {
+          countdown: "0:09",
+          countdownLabel: "Kalan süre",
+        },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.
       sort: {
