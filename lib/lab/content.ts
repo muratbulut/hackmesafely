@@ -87,7 +87,7 @@ export const cardIcons = [
   "globe", "users", "lock", "eye", "shield", "ban",
   "gamepad", "school", "camera", "house", "key", "phone", "card", "mail", "user", "id", "pin", "calendar", "message", "image", "heart", "tag",
   "call", "flip", "stop", "ask", "search", "flag", "gift", "pen",
-  "headphones", "file", "cog", "download", "flashlight", "map",
+  "headphones", "file", "cog", "download", "flashlight", "map", "wifi", "bell", "qr",
 ] as const;
 export type CardIcon = (typeof cardIcons)[number];
 
@@ -166,6 +166,16 @@ export const cardSchema = z.discriminatedUnion("type", [
      * istediği ve ikonu. "İzin ver" ve "Reddet" yalnızca çizimdir, basılmaz. `link`, `sms`, `file` yoksa çıkar.
      */
     permission: z.object({ app: line(40), text: line(120), icon: z.enum(cardIcons).default("camera") }).optional(),
+    /**
+     * Sorunun üstünde telefonun Wi‑Fi listesi (Şehir Kapısı, Telefonun ve internet): ağ adları ve
+     * kilitli (şifreli) olup olmadıkları. Yalnızca gösterilir, dokunulacak bir şey yoktur.
+     */
+    wifi: z.array(z.object({ name: line(32), locked: z.boolean() })).min(2).max(4).optional(),
+    /**
+     * Sorunun üstünde bir sitenin içinde açılan korkutucu pencere (Telefonun ve internet): sitenin
+     * adresi, başlık, metin ve düğme yazısı. Düğme hiçbir şey yapmaz; geri sayım yalnızca görünür.
+     */
+    popup: z.object({ site: line(60), title: line(80), text: line(160), button: line(30) }).optional(),
     /**
      * Kuraldan önce gelen soru (Şehir Kapısı, 18 Kasım, Murat): etiketi "Mini test" yerine "Önce
      * tahmin", geri bildirimi yumuşak ("Tahminin doğru!", "İyi tahmin, ama doğrusu B."). Puanlama aynı.

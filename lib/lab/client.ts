@@ -205,7 +205,7 @@ function withoutNext(login: NonNullable<Mission["login"]>) {
 export type ClientCard =
   | Extract<Card, { type: "info" }>
   | (Omit<Extract<Card, { type: "clickFind" }>, "spots"> & { spotCount: number })
-  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; guess: boolean }
+  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; wifi: { name: string; locked: boolean }[] | null; popup: { site: string; title: string; text: string; button: string } | null; guess: boolean }
   | {
       id: string;
       type: "video";
@@ -237,7 +237,7 @@ export function toClientCard(card: Card): ClientCard {
       return { ...rest, spotCount: spots.length };
     }
     case "quiz":
-      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null, sms: card.sms ?? null, file: card.file ?? null, permission: card.permission ?? null, guess: card.guess ?? false };
+      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null, sms: card.sms ?? null, file: card.file ?? null, permission: card.permission ?? null, wifi: card.wifi ?? null, popup: card.popup ?? null, guess: card.guess ?? false };
     case "video":
       return {
         id: card.id,
