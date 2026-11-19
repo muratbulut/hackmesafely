@@ -223,6 +223,8 @@
 /* --- T2: masadaki monitör --- */
 .st-monitor {
   position: absolute;
+  /* Kendi katmanı: içindeki kilit ekranı (z-20) masadaki telefonun (10) üstüne çıkmasın. */
+  z-index: 1;
   left: 12px;
   top: 12px;
   bottom: 12px;
@@ -485,6 +487,52 @@
   background: linear-gradient(118deg, var(--stage-sleep-shine) 0 30%, var(--stage-sleep) 30%);
 }
 
+/* Okulda (Şehir Kapısı, okul bilgisayarı): oda soğuk tonda (sınıf), önde sıra; üstünde klavye ve telefon (3B çizim). */
+.st-talk[data-place="school"] .st-talk-room img {
+  filter: blur(6px) saturate(0.7) hue-rotate(150deg) brightness(0.9);
+}
+.st-talk-desk {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  bottom: 14%;
+  height: 30%;
+  background: linear-gradient(180deg, var(--stage-desk-top) 0, var(--stage-desk) 12%, var(--stage-desk) 60%, var(--stage-desk-low) 100%);
+  box-shadow: inset 0 10px 18px var(--stage-desk-shade);
+}
+.st-talk-desk img {
+  position: absolute;
+  left: 0;
+  top: -14%;
+  width: 100%;
+  height: 118%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  pointer-events: none;
+  user-select: none;
+}
+.st-talk-choices button.st-talk-next {
+  border-color: var(--stage-road);
+}
+.st-talk-mute {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid var(--stage-choice-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--stage-sub-you);
+}
+.st-talk-mute:hover {
+  border-color: var(--stage-road);
+}
+
 /* Şeritler: söz üstte ortada, seçenekler altta. */
 .st-talk-top,
 .st-talk-bottom {
@@ -623,10 +671,61 @@
   .st-tbl {
     object-position: 16% 0;
   }
+  .st-talk-desk {
+    bottom: 64px;
+    height: 34%;
+  }
+  .st-talk-desk img {
+    object-position: 62% 50%;
+  }
+  .st-talk[data-place="school"] .st-talk-room img {
+    object-position: 88% 50%;
+  }
+  /* Okulda seçenekler uzun: yatay şerit yerine alt alta (sıranın önüne biner). */
+  .st-talk[data-place="school"] .st-talk-bottom {
+    height: auto;
+    padding: 8px;
+    align-items: flex-end;
+  }
+  .st-talk[data-place="school"] .st-talk-choices {
+    flex-direction: column;
+    overflow: visible;
+  }
+  .st-talk[data-place="school"] .st-talk-choices button {
+    white-space: normal;
+    text-align: left;
+  }
+  .st-talk-mute {
+    top: 8px;
+    right: 8px;
+    transform: none;
+  }
+  .st-talk-top:has(.st-talk-mute) {
+    padding-right: 56px;
+  }
   .st-talk-phone {
     left: 62%;
     bottom: calc(64px + 4%);
     width: 52px;
     height: 106px;
   }
+}
+
+/* Okul bilgisayarı, telefonda: ekran uzun, "Telefonu al" görev çubuğuna binmesin; telefonun sağında durur. */
+@media (width < 64rem) {
+  .st-login .st-deskhint[data-place="t2"] {
+    left: 72%;
+    top: calc(var(--hy) - 18px);
+  }
+}
+
+/* Okul bilgisayarı (giriş görevi): ödev yükleme çubuğu ve çalan zil. */
+@keyframes upload-bar {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
 }

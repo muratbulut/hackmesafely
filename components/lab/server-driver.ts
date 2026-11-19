@@ -1,10 +1,12 @@
 import {
   answerCode,
+  answerTalk,
   checkTrainingAnswer,
   checkTrainingPlacement,
   checkTrainingSpot,
   getTrainingHint,
   finishAttempt,
+  leaveDesk,
   openLink,
   payShop,
   restartAttempt,
@@ -32,6 +34,8 @@ export function serverDriver(slug: string): LabDriver {
     answerCode,
     shipOrder,
     sendForm,
+    answerTalk,
+    leaveDesk,
     finish: finishAttempt,
   };
 }

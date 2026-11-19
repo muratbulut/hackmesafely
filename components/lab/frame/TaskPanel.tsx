@@ -34,15 +34,17 @@ export type TaskPanelProps = {
 /** Görevli odada panelin en üstündeki "Annenin isteği" kutusu ve annenin kartı. */
 function MissionBox({ mission, onReplay }: { mission: ClientMission; onReplay?: () => void }) {
   const t = getMessages().lab.mission;
+  // Giriş görevinde görevi arama değil öğretmenin notu verir: "Emre Hoca'nın notu".
+  const label = format(mission.login ? getMessages().lab.login.noteBox : t.request, { owner: mission.owner });
   return (
     <section
-      aria-label={format(t.request, { owner: mission.owner })}
+      aria-label={label}
       className="flex flex-col gap-2 rounded-2xl border border-orange/55 bg-[linear-gradient(160deg,color-mix(in_srgb,var(--orange)_14%,transparent),color-mix(in_srgb,var(--orange)_4%,transparent))] p-3 [animation:fade-up_.5s_ease-out_both]"
       data-testid="mission-box"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-bold tracking-[0.8px] text-orange-fg">{format(t.request, { owner: mission.owner }).toLocaleUpperCase("tr")}</span>
-        {onReplay ? (
+        <span className="text-[11px] font-bold tracking-[0.8px] text-orange-fg">{label.toLocaleUpperCase("tr")}</span>
+        {onReplay && !mission.login ? (
           <button type="button" onClick={onReplay} className="flex min-h-8 cursor-pointer items-center gap-1 text-xs font-bold text-accent-fg">
             <Play className="size-3" strokeWidth={2.6} aria-hidden="true" />
             {t.replay}
@@ -166,7 +168,13 @@ function TaskList(props: TaskPanelProps) {
                 </div>
               ) : null}
 
-              {isCurrent && task.type === "mission" && props.mission ? (
+              {isCurrent && task.hint && task.type !== "question" && task.type !== "review" ? (
+                <p className="ml-10 text-[13px] leading-normal text-fg-3 [animation:pop_.25s_ease-out_both]" data-testid="task-hint">
+                  {task.hint}
+                </p>
+              ) : null}
+
+              {isCurrent && task.type === "mission" && props.mission && !task.hint ? (
                 <p className="ml-10 rounded-xl border border-card bg-surface-deep px-3 py-2.5 text-[13px] leading-normal text-fg-3 [animation:pop_.25s_ease-out_both]">
                   {props.mission.sale
                     ? format(m.saleNote, { platform: props.mission.sale.platform })

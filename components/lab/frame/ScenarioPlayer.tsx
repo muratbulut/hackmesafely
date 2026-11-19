@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { MascotMood } from "@/components/mascot/Mascot";
 import { Toast } from "@/components/status/Toast";
 import { withNext } from "@/lib/account/shared";
-import type { AlmostStory, HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
+import type { AlmostStory, EndingTalk, HackedStory, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
 import { missionMode } from "@/lib/lab/content";
 import type { ClientItem, ClientScenario } from "@/lib/lab/client";
 import { containsSecret, emptyState, taskProgress, type Folder, type SceneState } from "@/lib/lab/events";
@@ -13,11 +13,12 @@ import { stageFits } from "@/lib/lab/content";
 import { getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import type { EndingCall, FailReason, LabDriver } from "../driver";
-import { AlmostDialog } from "../almost/AlmostDialog";
+import { AlmostDialog, LeaveAlmostDialog } from "../almost/AlmostDialog";
 import { HackedAlarm } from "../hacked/HackedAlarm";
 import { HackedScene } from "../hacked/HackedScene";
 import { BrowserPage } from "../inbox/BrowserPage";
 import { InboxScene } from "../inbox/InboxScene";
+import { LoginStage } from "../login/LoginStage";
 import { MessagingScene } from "../messaging/MessagingScene";
 import { MissionCall } from "../mission/MissionCall";
 import { StageView } from "../stage/StageView";
@@ -96,6 +97,14 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [mood, setMood] = useState<MascotMood>("idle");
   // T3: öğrenci "Telefona bak" deyince konuşma o görev için kapanır, görev panelinden geri açılır.
   const [talkAway, setTalkAway] = useState<string | null>(null);
+  // T3: cevaplanan konuşma, karşıdakinin cevabı okunana kadar açık kalır ("Ekranına dön").
+  const [talkHold, setTalkHold] = useState<string | null>(null);
+  // Giriş görevinde konuşma kendiliğinden açılmaz: kod telefona gelip bakılınca arkadaş konuşur.
+  const [talkReady, setTalkReady] = useState(false);
+  // Oda bitince yüz yüze son konuşma (sunucudan), sonra rapor.
+  const [endTalk, setEndTalk] = useState<{ talk: EndingTalk; reportPath: string } | null>(null);
+  // Giriş görevi: çıkış yapmadan kalkınca "Az kalsın".
+  const [leaveAlmost, setLeaveAlmost] = useState<LeaveStory | null>(null);
   const moodTimer = useRef<number | null>(null);
   useEffect(() => () => {
     if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
@@ -103,6 +112,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
 
   const { state } = session;
   const { template, items, tasks } = scenario;
+  const login = mission?.login ?? null;
   const progress = taskProgress(tasks, state, missionMode({ mission }));
   const problem = failure ?? session.problem;
   const title = scenario.meta.title || scenario.meta.name;
@@ -146,7 +156,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     // Başka bir sekmede başka sürümle başlamış bir deneme var: o sürümle açılsın.
     if (result.version !== version) return window.location.reload();
     session.begin(result.attemptId);
-    setPhase(mission ? "call" : "playing");
+    // Giriş görevinde arama yok: görevi masaüstündeki not verir.
+    setPhase(mission && !login ? "call" : "playing");
     setStarting(false);
   }
 
@@ -247,6 +258,39 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     setNotice(t.frame.toasts.answer);
   }
 
+  /** T3: yüz yüze cevap sunucuya gider; karşıdakinin cevabını sunucu söyler. */
+  async function answerTalk(task: string, option: number): Promise<TalkLine | null> {
+    setTalkHold(task);
+    const result = await session.immediate((attemptId, seq) => driver.answerTalk(attemptId, seq, task, option));
+    if (!result) return null;
+    if (!result.ok) {
+      fail(result.reason);
+      return null;
+    }
+    session.applyLocal({ type: "talk_answered", task, option });
+    setNotice(t.frame.toasts.answer);
+    return result.reply;
+  }
+
+  /** Giriş görevi: zil çalınca kalktı. Oturum açık kaldıysa sunucu "Az kalsın" der, oda sürer. */
+  async function leaveDesk(closed: boolean): Promise<"left" | "almost" | null> {
+    const result = await session.immediate((attemptId, seq) => driver.leaveDesk(attemptId, seq, closed));
+    if (!result) return null;
+    if (!result.ok) {
+      fail(result.reason);
+      return null;
+    }
+    if (result.almost) {
+      session.applyLocal({ type: "desk_left", open: true, closed });
+      flashMood("surprised", 2400);
+      setLeaveAlmost(result.almost);
+      return "almost";
+    }
+    session.applyLocal({ type: "desk_left", open: false, closed });
+    setNotice(login?.bell.left ?? null);
+    return "left";
+  }
+
   async function finish() {
     setFinishing(true);
     const result = await session.immediate((attemptId) => driver.finish(attemptId));
@@ -257,6 +301,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     }
     // Görevli odada iş doğru yerden yapıldıysa önce velinin teşekkür araması.
     if (result.call && result.call.lines.length > 0) return setEnding({ kind: "good", call: result.call, reportPath: result.reportPath });
+    // Yüz yüze sorunun son sözleri yazılmışsa önce son konuşma (Deniz: "Hadi, kantine!").
+    if (result.talk && result.talk.lines.length > 0) return setEndTalk({ talk: result.talk, reportPath: result.reportPath });
     showReport(result.reportPath);
   }
 
@@ -352,11 +398,14 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     onReviewDone: reviewDone,
     onAnswer: answer,
     onFinish: finish,
-    footer: t.frame.footer[template],
+    footer: login ? t.login.footer : t.frame.footer[template],
     mission,
     missionShown,
     onReplay: () => setReplay(true),
-    onTalk: () => setTalkAway(null),
+    onTalk: () => {
+      setTalkAway(null);
+      setTalkReady(true);
+    },
   };
 
   const sceneProps = { items, state, avatar, onOpen: open, onMove: move, onAttachment: attachment, onLink: openLink };
@@ -397,21 +446,44 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   );
   const first = items[0];
 
-  // T3: sıradaki görev yüz yüze sorulan bir soruysa konuşma sahnesi açılır.
+  // T3: sıradaki görev yüz yüze sorulan bir soruysa konuşma sahnesi açılır (giriş görevinde kod
+  // telefona gelip bakılınca). Cevaplanan konuşma karşıdakinin cevabı okunana kadar açık kalır.
   const currentTask = progress.finished ? null : tasks[progress.current];
-  const talkTask = phase === "playing" && currentTask?.type === "question" && currentTask.talk && state.answers[currentTask.id] === undefined ? currentTask : null;
-  const talk =
-    talkTask?.talk && talkAway !== talkTask.id ? (
+  const pendingTalk =
+    phase === "playing" && currentTask?.type === "question" && currentTask.talk && state.answers[currentTask.id] === undefined && talkAway !== currentTask.id && (!login || talkReady)
+      ? currentTask
+      : null;
+  const talkTask = (talkHold ? tasks.find((task) => task.id === talkHold) : null) ?? pendingTalk;
+  // Son konuşma telefonda bütün ekranı kaplar (açık kalan Görevler penceresinin de üstünde).
+  const talk = endTalk ? (
+    <div className="max-lg:fixed max-lg:inset-0 max-lg:z-50 lg:contents">
       <TalkScene
-        key={talkTask.id}
-        speaker={talkTask.talk.speaker}
-        look={talkTask.talk.look}
-        text={talkTask.text}
-        options={talkTask.options}
-        onAnswer={(option) => answer(talkTask.id, option)}
-        onAway={() => setTalkAway(talkTask.id)}
+        key="ending"
+        speaker={endTalk.talk.speaker}
+        look={endTalk.talk.look}
+        place={endTalk.talk.place}
+        lines={endTalk.talk.lines.map((text, i) => ({ text, voice: endTalk.talk.voice[i] ?? null }))}
+        doneLabel={t.login.talk.report}
+        onDone={() => showReport(endTalk.reportPath)}
       />
-    ) : null;
+    </div>
+  ) : talkTask?.talk ? (
+    <TalkScene
+      key={talkTask.id}
+      speaker={talkTask.talk.speaker}
+      look={talkTask.talk.look}
+      place={talkTask.talk.place}
+      lines={talkTask.talk.lines.map((text, i) => ({ text, voice: talkTask.talk?.voice[i] ?? null }))}
+      question={{
+        text: talkTask.text,
+        options: talkTask.options,
+        onAnswer: (option) => answerTalk(talkTask.id, option),
+        onAway: () => setTalkAway(talkTask.id),
+      }}
+      doneLabel={t.login.talk.done}
+      onDone={() => setTalkHold(null)}
+    />
+  ) : null;
 
   return (
     <div
@@ -438,14 +510,38 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
             className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden keep-dark bg-canvas lg:h-[var(--lab-height)] lg:rounded-2xl lg:border lg:border-line lg:shadow-card"
             data-testid="scenario-stage"
           >
-            <StageView
-              stage={stage}
-              appNode={desktopStage ? appScene : sceneBody}
-              browserNode={browserPage}
-              onCloseBrowser={() => setBrowser(null)}
-              firstNotice={first ? { title: first.sender, text: (first.body.split("\n")[0] ?? "").replace(/\*\*/g, "") } : null}
-              resumed={!!resume}
-            />
+            {login && mission ? (
+              <LoginStage
+                stage={stage}
+                mission={mission}
+                login={login}
+                avatar={avatar}
+                state={state}
+                resumed={!!resume}
+                speaker={tasks.find((task) => task.talk)?.talk?.speaker ?? ""}
+                talkAnswered={tasks.filter((task) => task.talk).every((task) => state.answers[task.id] !== undefined)}
+                onNoteOk={() => setMissionShown(true)}
+                onLogin={(remember) => session.track({ type: "login_submitted", remember })}
+                onVerified={() => session.track({ type: "login_verified" })}
+                onSave={(saved) => session.track({ type: "password_saved", saved })}
+                onUploaded={() => session.track({ type: "homework_uploaded" })}
+                onLogout={() => session.track({ type: "logged_out" })}
+                onTalk={() => {
+                  setTalkAway(null);
+                  setTalkReady(true);
+                }}
+                onLeave={leaveDesk}
+              />
+            ) : (
+              <StageView
+                stage={stage}
+                appNode={desktopStage ? appScene : sceneBody}
+                browserNode={browserPage}
+                onCloseBrowser={() => setBrowser(null)}
+                firstNotice={first ? { title: first.sender, text: (first.body.split("\n")[0] ?? "").replace(/\*\*/g, "") } : null}
+                resumed={!!resume}
+              />
+            )}
             {talk}
           </div>
         ) : phone ? (
@@ -518,6 +614,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
         />
       ) : null}
       {almost ? <AlmostDialog story={almost} onBack={() => setAlmost(null)} /> : null}
+      {leaveAlmost ? <LeaveAlmostDialog story={leaveAlmost} onBack={() => setLeaveAlmost(null)} /> : null}
       {phase === "intro" ? <StartDialog name={title} template={template} starting={starting} onStart={start} /> : null}
       <ExitDialog
         open={exitOpen}

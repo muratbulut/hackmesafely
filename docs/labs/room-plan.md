@@ -1086,7 +1086,7 @@ Odaların beklediği eklentiler ve yeni sahne türleri. Boyut tahminidir.
 | Akış | Sosyal medya (yeni şablon) | Profil, gönderi, yorum, takip isteği, özel mesaj, gizlilik ayarı, "yeni gönderi" ekranı. Kararlar: bildir, engelle, gizliye al, konumu sil. Planlanmıştı; önce tuvalde çizilir. | Büyük |
 | Cihaz | Telefon ve bilgisayar ekranı (yeni şablon) | Bildirim çubuğu, kurulum ve izin penceresi, USB ve dosya penceresi (tür, yayıncı), Wi‑Fi listesi, QR önizleme, "şifreyi kaydet?" sorusu, güncelleme. Ana sayfadaki üç sahne bunu ister. | Büyük |
 | Tarayıcı | Web sayfası (yeni şablon) | Adres çubuğu, indirme sayfası (birden çok İNDİR), tam ekran sahte uyarı, ilan sayfası. Bugünkü sahte sayfa bileşeni çekirdeği olabilir. | Orta |
-| Şablon | Oda sahne şablonu (M1, T1, T2, T3) | **Onaylandı ve kodlandı (18 Kasım).** Postam, Mesajlar, tarayıcı ve diğer uygulamalar bu sahnelerin içinde açılır: M1'de görev çubuğu, T1'de masadan alınan telefon, T2'de ikisi birden, T3'te konuşma. Oda dosyasında `stage`, T3 soru görevinde `talk` (`docs/guides/new-lab.md` 2.15). Kargo (M1), Kulaklık (T2), Eski telefon (T1) taşındı; T3'ü kullanan oda henüz yok. | Büyük |
+| Şablon | Oda sahne şablonu (M1, T1, T2, T3) | **Onaylandı ve kodlandı (18 Kasım).** Postam, Mesajlar, tarayıcı ve diğer uygulamalar bu sahnelerin içinde açılır: M1'de görev çubuğu, T1'de masadan alınan telefon, T2'de ikisi birden, T3'te konuşma. Oda dosyasında `stage`, T3 soru görevinde `talk` (`docs/guides/new-lab.md` 2.15). Kargo (M1), Kulaklık (T2), Eski telefon (T1) taşındı; T3'ü ilk kullanan oda Şehir Kapısı "Okul bilgisayarında giriş yap ve çık" (19 Kasım: okulda konuşma, sesli satırlar, karşıdakinin cevabı ve son sözleri; `docs/guides/new-lab.md` 2.17). | Büyük |
 
 ## Kararlar (17 Ekim önerileri)
 

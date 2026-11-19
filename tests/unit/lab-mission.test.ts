@@ -75,7 +75,7 @@ describe("görevli oda: tarayıcıya giden içerik", () => {
       expect(json).not.toContain(secret);
     }
     expect(client.items.some((i) => "payment" in i)).toBe(false);
-    expect(Object.keys(client.mission!).sort()).toEqual(["accept", "caller", "card", "lines", "look", "owner", "pointIcons", "points", "refuse", "sale", "shop", "signup", "title", "voice"]);
+    expect(Object.keys(client.mission!).sort()).toEqual(["accept", "caller", "card", "lines", "login", "look", "owner", "pointIcons", "points", "refuse", "sale", "shop", "signup", "title", "voice"]);
     // Yalnızca açılışın sesleri gider; bitişlerin sesi bitişle birlikte gelir.
     expect(client.mission?.voice).toEqual(room.mission!.voice!.lines.map((src) => src || null));
     expect(client.mission?.voice[2]).toBeNull();
@@ -197,7 +197,7 @@ describe("görevli oda: önizleme sürücüsü (sunucuyla aynı kurallar)", () =
       reply: "İyi ki yazmadın! Kartı hemen kapattırıyorum, kart bilgileri o siteye gitti.",
       done: false,
     });
-    expect(await driver.finish("x")).toEqual({ ok: true, reportPath: "", call: null });
+    expect(await driver.finish("x")).toEqual({ ok: true, reportPath: "", call: null, talk: null });
   });
 
   it("doğru yerden alıp sahteyi bildirince iyi bitişte teşekkür satırı", async () => {

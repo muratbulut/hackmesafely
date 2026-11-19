@@ -1,11 +1,13 @@
 "use client";
 
-import { Smartphone } from "lucide-react";
+import { ChevronRight, Smartphone, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { CallerLook } from "@/lib/lab/content";
+import type { CallerLook, TalkPlace } from "@/lib/lab/content";
+import type { TalkLine } from "@/lib/lab/story";
 import { format, getMessages } from "@/lib/i18n";
 import { prefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { readMuted, writeMuted } from "../sound";
 import "./stage.css";
 
 /** Sehpa çiziminde kupanın yeri (görselin oranı olarak: sol, üst, sağ, alt); tıklama alanı buradan hesaplanır. */
@@ -18,37 +20,107 @@ const SAID_MS = 1600;
 export type TalkSceneProps = {
   speaker: string;
   look: CallerLook;
-  /** Karşıdakinin sözü (soru görevinin metni). */
-  text: string;
-  options: string[];
-  onAnswer: (option: number) => void;
-  /** "Telefona bak": konuşma bir süre kapanır, görev panelinden geri açılır. */
-  onAway: () => void;
+  /** Evde sehpa (varsayılan) ya da okulda sıra. */
+  place?: TalkPlace;
+  /**
+   * Söylenenler, sırayla "Devam" ile. Soruda sorudan önceki satırlar (son satırda seçenekler
+   * gelir; boşsa sorunun metni söylenir); son konuşmada bütün satırlar (sonda `doneLabel`).
+   */
+  lines?: TalkLine[];
+  /** Yüz yüze soru: karşıdakinin sözü (görevin metni), seçenekler ve cevabın gidişi. */
+  question?: {
+    text: string;
+    options: string[];
+    /** Seçim sunucuya gider; karşıdakinin cevabı döner (yoksa null, sahne hemen kapanır). */
+    onAnswer: (option: number) => Promise<TalkLine | null>;
+    /** "Telefona bak": konuşma bir süre kapanır, görev panelinden geri açılır. */
+    onAway: () => void;
+  };
+  /** Son düğmenin yazısı ("Ekranına dön", "Raporu gör"); cevaptan ya da son satırdan sonra. */
+  doneLabel?: string;
+  onDone: () => void;
 };
+
+type Said = { option: number; reply: TalkLine | null | undefined };
 
 /**
  * T3 karşılıklı konuşma, S1 sinema şeritleri (oda sahne şablonu, 18 Kasım, Murat): bulanık oda,
  * karşıda silik bir silüet (yüzü görünmez, nefes alır, konuşurken başını sallar), önde sehpa ve
- * üstünde telefon, kahve kupası, mandalina kâsesi. Söz üst şeritte altyazı, seçenekler alt şeritte
- * (1, 2, 3 tuşlarıyla da). Hangi cevabın doğru olduğu burada bilinmez: seçim sunucuda puanlanır.
- * Küçük sürpriz: kupaya dokununca bir yudum alınır.
+ * üstünde telefon, kahve kupası, mandalina kâsesi; okulda (Şehir Kapısı) sıra, klavye ve telefon.
+ * Söz üst şeritte altyazı (sesi varsa sesiyle), seçenekler alt şeritte (1, 2, 3 tuşlarıyla da).
+ * Hangi cevabın doğru olduğu burada bilinmez: seçim sunucuda puanlanır, karşıdakinin cevabı da
+ * seçimden sonra sunucudan gelir. Küçük sürpriz: kupaya dokununca bir yudum alınır.
  */
-export function TalkScene({ speaker, look, text, options, onAnswer, onAway }: TalkSceneProps) {
+export function TalkScene({ speaker, look, place = "home", lines = [], question, doneLabel, onDone }: TalkSceneProps) {
   const t = getMessages().lab.stage.talk;
-  const [said, setSaid] = useState<number | null>(null);
+  const m = getMessages().lab;
+  // Sorudan önce (ya da son konuşmada) kaçıncı satırda; soruda son satır seçeneklerle gelir.
+  const [line, setLine] = useState(0);
+  const [said, setSaid] = useState<Said | null>(null);
   const [talking, setTalking] = useState(true);
+  const [muted, setMuted] = useState(readMuted);
   const first = useRef<HTMLButtonElement>(null);
+  const alive = useRef(true);
+  useEffect(() => () => void (alive.current = false), []);
+
+  // Ekrandaki söz: önce satırlar, sonra (satır yoksa) sorunun metni, seçimden sonra öğrencinin
+  // sözü, en sonda karşıdakinin cevabı.
+  const lastLine = Math.max(0, lines.length - 1);
+  const asking = !!question && !said && line >= lastLine;
+  const shown: {
+    who: "them" | "you";
+    text: string;
+    voice: string | null;
+    key: string;
+  } = said
+    ? said.reply
+      ? {
+          who: "them",
+          text: said.reply.text,
+          voice: said.reply.voice,
+          key: "reply",
+        }
+      : {
+          who: "you",
+          text: question?.options[said.option] ?? "",
+          voice: null,
+          key: "you",
+        }
+    : lines.length > 0
+      ? {
+          who: "them",
+          text: lines[Math.min(line, lastLine)].text,
+          voice: lines[Math.min(line, lastLine)].voice,
+          key: `l${line}`,
+        }
+      : { who: "them", text: question?.text ?? "", voice: null, key: "q" };
+  const finished = said ? !!said.reply : !question && line >= lastLine;
 
   useEffect(() => {
     first.current?.focus({ preventScroll: true });
+    if (shown.who !== "them") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- konuşurken başını sallar
+    setTalking(true);
     const timer = window.setTimeout(() => setTalking(false), 2400);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [shown.key, shown.who]);
 
-  function choose(option: number) {
-    if (said !== null) return;
-    setSaid(option);
-    window.setTimeout(() => onAnswer(option), prefersReducedMotion() ? 300 : SAID_MS);
+  // Satırın sesi (sitenin kendi mp3'ü); ses kapalıysa ya da çalınamazsa yalnızca altyazı.
+  useEffect(() => {
+    if (!shown.voice || muted) return;
+    const audio = new Audio(shown.voice);
+    audio.play().catch(() => {});
+    return () => audio.pause();
+  }, [shown.key, shown.voice, muted]);
+
+  async function choose(option: number) {
+    if (said || !question) return;
+    setSaid({ option, reply: undefined });
+    const wait = new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion() ? 300 : SAID_MS));
+    const [reply] = await Promise.all([question.onAnswer(option).catch(() => null), wait]);
+    if (!alive.current) return;
+    if (reply) setSaid({ option, reply });
+    else onDone();
   }
 
   // Seçenekler 1, 2, 3 tuşlarıyla da seçilir (yazı kutusundayken değil): tuş düğmeye basar.
@@ -64,13 +136,16 @@ export function TalkScene({ speaker, look, text, options, onAnswer, onAway }: Ta
     return () => window.removeEventListener("keydown", key);
   }, []);
 
+  const options = question?.options ?? [];
+
   return (
     <div
       ref={root}
       role="dialog"
       aria-modal="true"
       aria-label={format(t.open, { speaker })}
-      className={cn("st-talk", talking && "st-talking")}
+      className={cn("st-talk", talking && shown.who === "them" && "st-talking")}
+      data-place={place}
       data-testid="talk-scene"
     >
       <div className="st-talk-room" aria-hidden="true">
@@ -80,47 +155,136 @@ export function TalkScene({ speaker, look, text, options, onAnswer, onAway }: Ta
       <div className="st-talk-person" aria-hidden="true">
         <Silhouette look={look} />
       </div>
-      <TalkTable cup={t.cup} />
-      <span className="st-talk-phone" aria-hidden="true" />
+      {place === "school" ? (
+        <div className="st-talk-desk" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element -- süs görseli: sıradaki klavye ve telefon */}
+          <img src="/stage/talk-desk.webp" alt={""} draggable={false} />
+        </div>
+      ) : (
+        <>
+          <TalkTable cup={t.cup} />
+          <span className="st-talk-phone" aria-hidden="true" />
+        </>
+      )}
       <div className="st-talk-grain" aria-hidden="true" />
 
       <div className="st-talk-top">
-        <p key={said ?? "q"} className={cn("st-talk-sub", said !== null && "st-talk-you")} aria-live="polite">
-          <b>{said !== null ? t.you : speaker}</b>
-          {said !== null ? options[said] : text}
+        <p key={shown.key} className={cn("st-talk-sub", shown.who === "you" && "st-talk-you")} aria-live="polite" data-testid="talk-sub">
+          <b>{shown.who === "you" ? t.you : speaker}</b>
+          {shown.text}
         </p>
+        {lines.some((l) => l.voice) ? (
+          <button
+            type="button"
+            aria-pressed={muted}
+            onClick={() => {
+              writeMuted(!muted);
+              setMuted(!muted);
+            }}
+            className="st-talk-mute"
+          >
+            {muted ? <VolumeX className="size-4" strokeWidth={2.2} aria-hidden="true" /> : <Volume2 className="size-4" strokeWidth={2.2} aria-hidden="true" />}
+            <span className="sr-only">{muted ? m.call.unmute : m.call.mute}</span>
+          </button>
+        ) : null}
       </div>
       <div className="st-talk-bottom">
         <div role="group" aria-label={t.choices} className="st-talk-choices">
-          {options.map((option, i) => (
-            <button
-              key={i}
-              ref={i === 0 ? first : undefined}
-              type="button"
-              disabled={said !== null}
-              aria-pressed={said === i}
-              onClick={() => choose(i)}
-              data-testid="talk-choice"
-            >
-              <span aria-hidden="true">{i + 1}</span>
-              {option}
+          {finished ? (
+            <button ref={first} type="button" className="st-talk-next" onClick={onDone} data-testid="talk-done">
+              <span aria-hidden="true">
+                <ChevronRight className="size-4" strokeWidth={2.6} />
+              </span>
+              {doneLabel}
             </button>
-          ))}
+          ) : !asking && !said ? (
+            <button ref={first} type="button" className="st-talk-next" onClick={() => setLine((n) => n + 1)} data-testid="talk-next">
+              <span aria-hidden="true">
+                <ChevronRight className="size-4" strokeWidth={2.6} />
+              </span>
+              {m.login.talk.next}
+            </button>
+          ) : (
+            options.map((option, i) => (
+              <button
+                key={i}
+                ref={i === 0 ? first : undefined}
+                type="button"
+                disabled={!!said}
+                aria-pressed={said?.option === i}
+                onClick={() => void choose(i)}
+                data-testid="talk-choice"
+              >
+                <span aria-hidden="true">{i + 1}</span>
+                {option}
+              </button>
+            ))
+          )}
         </div>
-        <button type="button" onClick={onAway} disabled={said !== null} className="st-talk-away">
-          <Smartphone className="size-4" strokeWidth={2.2} aria-hidden="true" />
-          <span className="max-lg:sr-only">{t.away}</span>
-        </button>
-        <span className="sr-only">{t.keys}</span>
+        {question && !said ? (
+          <button type="button" onClick={question.onAway} className="st-talk-away">
+            <Smartphone className="size-4" strokeWidth={2.2} aria-hidden="true" />
+            <span className="max-lg:sr-only">{t.away}</span>
+          </button>
+        ) : null}
+        {asking ? <span className="sr-only">{t.keys}</span> : null}
       </div>
     </div>
   );
 }
 
-/** Karşıdaki kişinin silüeti: anne düşük topuzlu, baba kısa saçlı; elinde çay bardağı, kenarında pencere ışığı. */
+/** Silüetin çizimdeki ortası (viewBox 1000 × 600): dar kadrajda görünen dilim buraya ortalanır. */
+const PERSON_X = 702;
+
+/**
+ * Karşıdaki kişinin silüeti: anne düşük topuzlu, baba kısa saçlı (elinde çay bardağı, kenarında
+ * pencere ışığı); arkadaş (Deniz) kıvırcık saçlı ve kapüşonlu. Dar kadrajda (telefon) kişi
+ * kesilmesin diye görünen dilim kişinin üstüne ortalanır.
+ */
 function Silhouette({ look }: { look: CallerLook }) {
+  const svg = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const el = svg.current;
+    const box = el?.parentElement;
+    if (!el || !box) return;
+    const fit = () => {
+      const ratio = box.clientWidth / Math.max(1, box.clientHeight);
+      const w = Math.min(1000, 600 * ratio);
+      const x = Math.max(0, Math.min(1000 - w, PERSON_X - w / 2));
+      el.setAttribute("viewBox", ratio >= 1000 / 600 ? "0 0 1000 600" : `${x} 0 ${w} 600`);
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, []);
+
+  if (look === "friend")
+    return (
+      <svg ref={svg} viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice">
+        <g className="st-person">
+          <g className="st-person-body">
+            <path d="M586 486c2-80 28-128 76-144 18-6 30-8 40-8s22 2 40 8c48 16 74 64 76 144z" />
+            <path d="M640 352c4-30 30-50 62-50s58 20 62 50c-18-10-38-14-62-14s-44 4-62 14z" />
+            <rect x="686" y="292" width="30" height="46" rx="10" />
+          </g>
+          <g className="st-person-head">
+            <path d="M654 252c-4-48 22-62 48-60 34 2 50 24 46 62-2 28-12 46-26 52h-40c-16-8-26-28-28-54z" />
+            <circle cx="664" cy="212" r="18" />
+            <circle cx="684" cy="198" r="19" />
+            <circle cx="706" cy="194" r="19" />
+            <circle cx="728" cy="200" r="18" />
+            <circle cx="744" cy="216" r="15" />
+            <circle cx="656" cy="232" r="13" />
+            <path className="st-person-rim" d="M744 222c8 18 8 42 0 64" />
+          </g>
+          <path className="st-person-rim st-person-rim-soft" d="M742 346c34 12 56 44 64 90" />
+        </g>
+      </svg>
+    );
+
   return (
-    <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice">
+    <svg ref={svg} viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice">
       <g className="st-person">
         <g className="st-person-body">
           <path

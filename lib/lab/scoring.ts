@@ -5,7 +5,7 @@
 // Puan: sahte her öğe en fazla 4, gerçek her öğe 1, her soru seçtiği seçeneğin puanı. Rapor
 // yalnızca kodlar ve sayılar tutar; ekrandaki cümleler sözlükten ve içerikten gelir.
 
-import { maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type ScenarioContent } from "./content";
+import { loginPoints, maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type LoginChoice, type ScenarioContent } from "./content";
 import { codeDecided, folderOf, type SceneState } from "./events";
 
 export type RowState = "ok" | "part" | "bad" | "skip";
@@ -31,7 +31,16 @@ export type ReportRow =
   | { type: "real"; item: string; outcome: RealOutcome; state: RowState; points: number; max: number }
   | { type: "question"; task: string; option: number | null; state: RowState; points: number; max: number }
   /** Görevli oda: işi doğru yerden yaptı mı (gerçek mağazadan aldı). */
-  | { type: "mission"; task: string; done: boolean; state: RowState; points: number; max: number };
+  | { type: "mission"; task: string; done: boolean; state: RowState; points: number; max: number }
+  /** Giriş görevi: kalkmadan önce çıkış, "Beni hatırla", şifreyi kaydetmek. */
+  | { type: "login"; choice: LoginChoice; outcome: LoginOutcome; state: RowState; points: number; max: number };
+
+/**
+ * Giriş görevindeki kararların sonucu. Çıkış: çıkış yapıp kalktı, tarayıcıyı kapatıp kalktı
+ * (oturum açık kaldı), hiçbir şeye dokunmadan kalktı, hiç kalkmadı. Beni hatırla: işareti
+ * kaldırdı ya da bıraktı. Şifre: kaydetmedi ya da kaydettirdi. none: karar verilmedi.
+ */
+export type LoginOutcome = "loggedOut" | "leftClosed" | "leftOpen" | "cleared" | "kept" | "declined" | "saved" | "none";
 
 export type ReportStatus = "safe" | "risky" | "hacked";
 export type ReportTitle = "hacked" | "missed" | "caught" | "safeButMissed";
@@ -102,6 +111,7 @@ export function realOutcome(state: SceneState, item: string): RealOutcome {
  * hazırlayarak (telefonu sıfırlayarak) kargoya verdiyse iş doğru yapıldı.
  */
 export function missionDone(content: Pick<ScenarioContent, "items" | "mission">, state: SceneState) {
+  if (content.mission?.login) return !!state.uploaded;
   if (content.mission?.signup) {
     const sent = state.formSent ?? [];
     return content.items.some((i) => i.kind === "real" && i.form && sent.includes(i.id));
@@ -112,6 +122,23 @@ export function missionDone(content: Pick<ScenarioContent, "items" | "mission">,
   }
   const decided = codeDecided(state);
   return content.items.some((i) => i.kind === "real" && decided.includes(i.id));
+}
+
+/** Giriş görevinin üç karar satırı (çıkış, Beni hatırla, şifre); eski kayıtlarda alanlar boş sayılır. */
+export function loginRows(state: SceneState): Extract<ReportRow, { type: "login" }>[] {
+  const leftOpen = (state.leftOpen ?? 0) > 0;
+  const logout: LoginOutcome = leftOpen ? (state.leftClosed ? "leftClosed" : "leftOpen") : state.left ? "loggedOut" : "none";
+  const remember: LoginOutcome = state.remember === undefined || state.remember === null ? "none" : state.remember ? "kept" : "cleared";
+  const save: LoginOutcome = state.passwordSaved === undefined || state.passwordSaved === null ? "none" : state.passwordSaved ? "saved" : "declined";
+  const row = (choice: LoginChoice, outcome: LoginOutcome, ok: boolean) => ({
+    type: "login" as const,
+    choice,
+    outcome,
+    state: (outcome === "none" ? "skip" : ok ? "ok" : "bad") as RowState,
+    points: ok ? loginPoints[choice] : 0,
+    max: loginPoints[choice],
+  });
+  return [row("logout", logout, logout === "loggedOut"), row("remember", remember, remember === "cleared"), row("save", save, save === "declined")];
 }
 
 export function scoreScenario(content: ScenarioContent, state: SceneState): ScenarioReport {
@@ -134,6 +161,10 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
     }
   }
 
+  // Giriş görevinde karar satırları görevlerin önünde: önce kapı, sonra sorular.
+  const login = mode === "login" ? loginRows(state) : [];
+  rows.push(...login);
+
   for (const task of content.tasks) {
     if (task.type === "mission") {
       const done = missionDone(content, state);
@@ -154,7 +185,9 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
 
   const fakes = rows.filter((r) => r.type === "fake");
   const hacked = fakes.some((r) => r.outcome === "hacked");
-  const status: ReportStatus = hacked ? "hacked" : fakes.every((r) => r.points >= 2) ? "safe" : "risky";
+  // Giriş görevinde kapıyı açık bırakıp kalkmak (Az kalsın) odayı riskli yapar.
+  const leftOpen = login.some((r) => r.choice === "logout" && r.state !== "ok");
+  const status: ReportStatus = hacked ? "hacked" : fakes.every((r) => r.points >= 2) && !leftOpen ? "safe" : "risky";
 
   const raw = rows.reduce((sum, r) => sum + r.points, 0);
   const max = maxScore(content);
@@ -172,8 +205,15 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
     missedFake: fakes.some((r) => r.state !== "ok"),
     reportedReal: rows.some((r) => r.type === "real" && r.outcome === "reported"),
     always: true,
+    leftOpen,
+    remembered: login.some((r) => r.choice === "remember" && r.outcome === "kept"),
+    savedPassword: login.some((r) => r.choice === "save" && r.outcome === "saved"),
+    wrongAnswer: rows.some((r) => r.type === "question" && r.state !== "ok"),
   };
-  const tips = content.tips.flatMap((tip, index) => (conditions[tip.when] ? [index] : [])).slice(0, 3);
+  const missedQuestion = (task: string) => rows.some((r) => r.type === "question" && r.task === task && r.state !== "ok");
+  const tips = content.tips
+    .flatMap((tip, index) => ((tip.when === "wrongAnswer" && tip.task ? missedQuestion(tip.task) : conditions[tip.when]) ? [index] : []))
+    .slice(0, 3);
 
   return {
     status,

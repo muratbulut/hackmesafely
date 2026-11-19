@@ -10,7 +10,7 @@ import type { ReportStatus, RowState, ScenarioReport } from "./scoring";
 
 export type ReportRowView = {
   key: string;
-  kind: "fake" | "real" | "question" | "mission";
+  kind: "fake" | "real" | "question" | "mission" | "login";
   title: string;
   tag: string;
   state: RowState;
@@ -63,7 +63,27 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
       ? t.defaultsPage.fakeRight
       : t.defaults[template].fakeRight;
 
+  // Giriş görevinde başlık, ipuçları ve rapor dili kapıya göredir (mail ya da mesaj yok).
+  const voice = content.mission?.login ? "login" : template;
+
   const rows: ReportRowView[] = report.rows.flatMap((row): ReportRowView[] => {
+    if (row.type === "login") {
+      const text = t.login[row.choice];
+      return [
+        {
+          key: `l-${row.choice}`,
+          kind: "login",
+          title: text.title,
+          tag: t.tags.login,
+          state: row.state,
+          points: scaled(row.points),
+          max: scaled(row.max),
+          did: (text.outcomes as Record<string, string>)[row.outcome] ?? t.skipped,
+          right: text.right,
+          why: text.why,
+        },
+      ];
+    }
     if (row.type === "mission") {
       const task = tasks.get(row.task);
       if (!task) return [];
@@ -145,13 +165,13 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
 
   const tips = [
     ...report.tips.map((i) => content.tips[i]?.text ?? "").filter(Boolean),
-    ...t.genericTips[template].slice(0, Math.max(0, report.genericTips)),
+    ...t.genericTips[voice].slice(0, Math.max(0, report.genericTips)),
   ].slice(0, 3);
 
   return {
     template,
     status: report.status,
-    title: t.titles[template][report.title],
+    title: t.titles[voice][report.title],
     score: report.score,
     rows,
     counts: {

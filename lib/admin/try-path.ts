@@ -116,6 +116,12 @@ export function stateFromPath(content: ScenarioContent, template: ScenarioTempla
   if (mission === "buy" && shop && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: shop.id }, { type: "info_entered", item: shop.id }, { type: "code_entered", item: shop.id });
   }
+  // Giriş görevi: doğru yol (işareti kaldırıp girer, şifreyi kaydetmez, ödevi yükler, çıkıp kalkar).
+  if (content.mission?.login) {
+    events.push({ type: "login_submitted", remember: false }, { type: "login_verified" }, { type: "password_saved", saved: false });
+    if (path.missionDone !== false) events.push({ type: "homework_uploaded" });
+    events.push({ type: "logged_out" }, { type: "desk_left", open: false, closed: false });
+  }
   events.push({ type: "review_done" });
   for (const task of content.tasks) {
     if (task.type !== "question") continue;

@@ -3,7 +3,7 @@
 // çalışan bir sürücüyle açar. Oynatıcı hiçbir zaman doğru cevabı bilmez: bağlantının ne
 // açacağını, hacklenip hacklenmediğini ve raporu hep sürücü söyler.
 
-import type { AlmostStory, HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
+import type { AlmostStory, EndingTalk, HackedStory, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
 import type { BadgeCode } from "@/lib/progress/badges";
@@ -44,11 +44,18 @@ export type LabDriver = {
   shipOrder(attemptId: string, seq: number, itemId: string, prepared: boolean): Promise<{ ok: true; reply: string; done: boolean } | Fail>;
   /** Kayıt görevi: formu gönderir (yazılanlar gitmez); formun "Kaydın alındı" cümlesi döner. */
   sendForm(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; done: string } | Fail>;
+  /** T3: yüz yüze sorunun cevabı; karşıdakinin cevabı döner (yazılmamışsa null). */
+  answerTalk(attemptId: string, seq: number, taskId: string, option: number): Promise<{ ok: true; reply: TalkLine | null } | Fail>;
+  /**
+   * Giriş görevi: zil çaldı, kalktı. closed: tarayıcıyı kapatmıştı. Oturum açık kaldıysa "Az kalsın"
+   * (oda sürer), çıkış yaptıysa null (görev biter).
+   */
+  leaveDesk(attemptId: string, seq: number, closed: boolean): Promise<{ ok: true; almost: LeaveStory | null } | Fail>;
   /**
    * Labı bitirir; sonra rapor sayfasına gidilir (önizlemede rapor yerinde açılır). Görevli odada iş
-   * doğru yerden yapıldıysa önce iyi bitiş araması gösterilir.
+   * doğru yerden yapıldıysa önce iyi bitiş araması, yüz yüze sorunun son sözleri yazılmışsa son konuşma.
    */
-  finish(attemptId: string): Promise<{ ok: true; reportPath: string; call?: EndingCall | null } | Fail>;
+  finish(attemptId: string): Promise<{ ok: true; reportPath: string; call?: EndingCall | null; talk?: EndingTalk | null } | Fail>;
 };
 
 /** Görevli odanın iyi bitiş araması (lib/lab/story.ts goodCall). */

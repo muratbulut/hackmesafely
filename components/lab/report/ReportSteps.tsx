@@ -16,6 +16,7 @@ const tagTone: Record<ReportRowView["kind"], string> = {
   real: "text-success-fg",
   question: "text-warning-fg",
   mission: "text-orange-fg",
+  login: "text-blue-fg",
 };
 
 /**

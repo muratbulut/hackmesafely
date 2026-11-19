@@ -4,7 +4,7 @@
 
 import { getMessages } from "@/lib/i18n";
 import { siteTimeZone } from "@/lib/site";
-import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate } from "./content";
+import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CallerLook, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate, type Task, type TalkPlace } from "./content";
 
 export type LinkPage =
   /**
@@ -44,6 +44,52 @@ export type AlmostStory = {
   realLife: string;
   steps: string[];
 };
+
+/**
+ * Giriş görevinde "Az kalsın" (mission.login): çıkış yapmadan kalkınca açılır. closed: tarayıcıyı
+ * kapatıp kalktı ("Sen" kutusu); next: sıradakinin yaptığı; realLife ve steps tuzaktan. Kalkınca
+ * söylenir; o an doğrusunun çıkış olduğu zaten bellidir.
+ */
+export type LeaveStory = { kind: "leave"; closed: boolean; next: string; realLife: string; steps: string[] };
+
+export function leaveStory(content: ScenarioContent, closed: boolean): LeaveStory {
+  return {
+    kind: "leave",
+    closed,
+    next: content.mission?.login?.next ?? "",
+    realLife: content.trap.realLife,
+    steps: content.trap.actions.filter((a) => a.trim()),
+  };
+}
+
+/** Konuşmada bir satır ve sesi (sesi yoksa null). */
+export type TalkLine = { text: string; voice: string | null };
+
+/** T3: seçenekten sonra karşıdakinin cevabı (seçilince sunucu söyler); yazılmamışsa null. */
+export function talkReply(task: Pick<Task, "talk">, option: number): TalkLine | null {
+  const text = task.talk?.replies[option]?.trim();
+  if (!text) return null;
+  return { text, voice: task.talk?.voice?.replies[option]?.trim() || null };
+}
+
+/** Odanın sonundaki yüz yüze konuşma: konuşan, çizimi, yeri ve satırları (seçilen cevaba göre). */
+export type EndingTalk = { speaker: string; look: CallerLook; place: TalkPlace; lines: string[]; voice: (string | null)[] };
+
+/**
+ * Oda bitince son konuşma: son sözleri yazılmış yüz yüze sorunun, öğrencinin seçtiği cevaba
+ * göre satırları. Cevaplanmadıysa ya da satır yoksa null. Rapor hesaplandıktan sonra döner.
+ */
+export function endingTalk(content: Pick<ScenarioContent, "tasks">, answers: Record<string, number>): EndingTalk | null {
+  for (const task of content.tasks) {
+    const talk = task.talk;
+    const option = answers[task.id];
+    if (task.type !== "question" || !talk || option === undefined || !talk.endings[option]) continue;
+    const pairs = voicedLines(talk.endings[option], talk.voice?.endings[option]);
+    if (pairs.lines.length === 0) continue;
+    return { speaker: talk.speaker, look: talk.look, place: talk.place, ...pairs };
+  }
+  return null;
+}
 
 /** Görevli odada ödeyince veliden gelen SMS (sunucu ödeme anında söyler). */
 export type ShopSms = { shop: string; amount: string; code: string; note: string };

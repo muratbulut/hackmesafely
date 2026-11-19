@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ChevronDown, Lock, Mail, MessageCircle, Phone, Play, RotateCcw, ShoppingBag, Star, Store, type LucideIcon } from "lucide-react";
+import { Check, ChevronDown, Lock, Mail, MessageCircle, Monitor, Phone, Play, RotateCcw, ShoppingBag, Star, Store, type LucideIcon } from "lucide-react";
 import { ProgressBar, ProgressRing } from "@/components/roadmap/ProgressRing";
 import { avatars } from "@/lib/avatars";
 import { format, getMessages, rich } from "@/lib/i18n";
@@ -311,7 +311,9 @@ export function AheadBox({ data, className }: { data: LabDetailData; className?:
     rows.push(
       ahead.deal.kind === "shop"
         ? { key: "deal", Icon: ShoppingBag, title: ahead.deal.name, text: format(t.shopText, { owner: ahead.deal.owner }) }
-        : { key: "deal", Icon: Store, title: ahead.deal.name, text: format(t.saleText, { product: ahead.deal.product }) },
+        : ahead.deal.kind === "sale"
+          ? { key: "deal", Icon: Store, title: ahead.deal.name, text: format(t.saleText, { product: ahead.deal.product }) }
+          : { key: "deal", Icon: Monitor, title: ahead.deal.name, text: t.loginText },
     );
   }
   rows.push({ key: "points", Icon: Star, title: ahead.tasks > 0 ? format(t.points, { n: ahead.tasks }) : t.pointsOnly, text: t.pointsText });

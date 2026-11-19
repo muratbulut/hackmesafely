@@ -17,7 +17,7 @@ import { opensForm, opensOrder, opensRequest, opensShop, parseScenario, usesTrap
 import { findInCity, getCity, getPublishedLab, type PublishedLab } from "./data";
 import { batchEventSchema, reduceEvents, rowToEvent, type ServerEvent } from "./events";
 import { missionDone, scoreScenario, type ScenarioReport } from "./scoring";
-import { almostStory, goodCall, hackedStory, linkPageFor, smsFor, type HackedVia } from "./story";
+import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply, type HackedVia } from "./story";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "./training";
 
 type Fail = { ok: false; reason: "auth" | "unverified" | "not_found" | "locked" | "ended" | "rate_limited" | "invalid" };
@@ -26,6 +26,9 @@ const fail = (reason: Fail["reason"]): Fail => ({ ok: false, reason });
 /** Bir denemede en fazla bu kadar olay olur; fazlası betikle yüklemedir. */
 const maxSeq = 2000;
 const maxBatch = 50;
+
+/** Giriş görevinin tarayıcıdan gelen olayları (lib/lab/events.ts). */
+const loginEvents = new Set(["login_submitted", "login_verified", "password_saved", "homework_uploaded", "logged_out"]);
 
 async function actor(verified: boolean) {
   const user = await getUser();
@@ -141,16 +144,20 @@ export async function sendEvents(attemptId: string, batch: { seq: number; event:
 
   const itemIds = new Set(attempt.content.items.map((i) => i.id));
   const tasks = new Map(attempt.content.tasks.map((t) => [t.id, t]));
+  const login = !!attempt.content.mission?.login && attempt.lab.template === "INBOX";
   const rows: Prisma.LabEventCreateManyInput[] = [];
   for (const entry of batch) {
     const parsed = batchEventSchema.safeParse(entry?.event);
     if (!parsed.success || !validSeq(entry.seq)) return fail("invalid");
     const event = parsed.data;
     if ("item" in event && !itemIds.has(event.item)) return fail("invalid");
+    // Yüz yüze sorunun cevabı karşıdakinin cevabıyla birlikte gelir (answerTalk); topluca gelmez.
     if (event.type === "answer") {
       const task = tasks.get(event.task);
-      if (!task || task.type !== "question" || !task.options[event.option]) return fail("invalid");
+      if (!task || task.type !== "question" || task.talk || !task.options[event.option]) return fail("invalid");
     }
+    // Giriş görevinin olayları yalnızca giriş görevli odada olur.
+    if (loginEvents.has(event.type) && !login) return fail("invalid");
     const { type, ...data } = event;
     rows.push({ attemptId, seq: entry.seq, type, data });
   }
@@ -291,7 +298,48 @@ export async function shipOrder(attemptId: string, seq: number, itemId: string, 
   return { ok: true as const, reply: ready ? "" : sale.unprepared, done: ready && item.kind === "real" };
 }
 
-/** "Odayı bitir, raporu gör". Görevli odada iş doğru yerden yapıldıysa iyi bitiş araması da döner. */
+/**
+ * T3 konuşma: soru yüz yüze cevaplandı. Cevap olay olarak yazılır, karşıdakinin cevabı (doğrusunu
+ * ele verdiği için önceden gitmez) döner. Her soru bir kez cevaplanır.
+ */
+export async function answerTalk(attemptId: string, seq: number, taskId: string, option: number) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const task = attempt.content.tasks.find((t) => t.id === taskId);
+  const answeredBefore = attempt.events.some(
+    (e) => (e.type === "talk_answered" || e.type === "answer") && (e.data as { task?: string })?.task === taskId && e.seq !== seq,
+  );
+  if (!task || task.type !== "question" || !task.talk || !Number.isInteger(option) || !task.options[option] || answeredBefore || !validSeq(seq)) {
+    return fail("invalid");
+  }
+  if (!(await record(attempt.id, seq, { type: "talk_answered", task: task.id, option }))) return fail("invalid");
+  return { ok: true as const, reply: talkReply(task, option) };
+}
+
+/**
+ * Giriş görevi: zil çaldı, öğrenci kalktı. Portalda oturum açıksa (çıkış yapmadı) "Az kalsın"
+ * döner ve oda sürer; çıkış yaptıysa görev biter. closed: tarayıcıyı kapatmıştı (yalnızca Az
+ * kalsın ekranındaki "Sen" kutusu için). Oturumun açık olup olmadığına olaylardan sunucu bakar.
+ */
+export async function leaveDesk(attemptId: string, seq: number, closed: boolean) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const state = reduceEvents(attempt.events.filter((e) => e.seq !== seq).map(rowToEvent));
+  if (!attempt.content.mission?.login || attempt.lab.template !== "INBOX" || !state.uploaded || state.left || !validSeq(seq)) return fail("invalid");
+  const open = state.verified && !state.loggedOut;
+  if (!(await record(attempt.id, seq, { type: "desk_left", open, closed: open && closed === true }))) return fail("invalid");
+  if (open) return { ok: true as const, almost: leaveStory(attempt.content, closed === true) };
+  return { ok: true as const, almost: null };
+}
+
+/**
+ * "Odayı bitir, raporu gör". Görevli odada iş doğru yerden yapıldıysa iyi bitiş araması da döner;
+ * yüz yüze sorunun son sözleri yazılmışsa son konuşma (seçilen cevaba göre).
+ */
 export async function finishAttempt(attemptId: string) {
   const who = await actor(true);
   if (!who.ok) return who;
@@ -301,7 +349,8 @@ export async function finishAttempt(attemptId: string) {
   const state = reduceEvents(attempt.events.map(rowToEvent));
   const reportedFake = report.rows.some((r) => r.type === "fake" && (r.outcome === "reported" || r.outcome === "reportedAfterEngaging"));
   const call = goodCall(attempt.content, missionDone(attempt.content, state), reportedFake);
-  return { ok: true as const, reportPath: paths.labReport(attempt.lab.slug, attempt.id), call };
+  const talk = endingTalk(attempt.content, state.answers);
+  return { ok: true as const, reportPath: paths.labReport(attempt.lab.slug, attempt.id), call, talk };
 }
 
 async function compromise(attempt: LoadedAttempt, itemId: string, via: HackedVia) {

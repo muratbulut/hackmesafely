@@ -639,7 +639,7 @@ type AdminData = {
   teacher: string;
   member: string;
   school: string;
-  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup", string>;
+  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup" | "login", string>;
   article: string;
 };
 
@@ -873,6 +873,56 @@ const adminScreens: Screen<AdminData>[] = [
       await app.getByRole("button", { name: "Kayıt formu", exact: true }).click();
     },
   },
+  // Giriş görevli oda: kilitli ortak bilgisayar, Emre Hoca'nın notu, okul portalı, SMS kodu, Deniz'le konuşma, şifre kaydetme, zil ve Az kalsın (Şehir Kapısı "Okul bilgisayarında giriş yap ve çık").
+  {
+    name: "Oda önizleme, ortak bilgisayarın kilidi",
+    path: (d) => `/yonetim/odalar/${d.labs.login}/onizle`,
+    open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click(),
+  },
+  { name: "Oda önizleme, öğretmenin notu", open: (page) => signInDesktop(page) },
+  { name: "Oda önizleme, okul portalı girişi", open: (page) => page.getByTestId("login-note-ok").click() },
+  {
+    name: "Oda önizleme, telefona gelen kod",
+    open: async (page) => {
+      await page.getByTestId("portal-password").click();
+      await page.getByTestId("portal-password-type").click();
+      await page.getByTestId("portal-remember").click();
+      await page.getByTestId("portal-login").click();
+      // Kod telefona biraz sonra gelir; telefon bildirimle alınır.
+      await expect(page.getByTestId("stage-phone-pick")).toContainText("Okul Portalı");
+      await page.getByTestId("stage-phone-pick").click();
+    },
+  },
+  { name: "Oda önizleme, yüz yüze konuşma", open: (page) => page.getByTestId("login-phone-drop").click() },
+  {
+    name: "Oda önizleme, arkadaşın cevabı",
+    open: async (page) => {
+      const talk = page.getByTestId("talk-scene");
+      await talk.getByTestId("talk-next").click();
+      await talk.getByTestId("talk-choice").first().click();
+      await expect(talk.getByTestId("talk-done")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, şifreyi kaydet sorusu",
+    open: async (page) => {
+      await page.getByTestId("talk-scene").getByTestId("talk-done").click();
+      await page.getByTestId("portal-code").first().click();
+      await expect(page.getByTestId("portal-save")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, ödev ve zil",
+    open: async (page) => {
+      await page.getByTestId("portal-save-no").click();
+      await page.getByTestId("portal-homework").click();
+      await page.getByTestId("portal-choose").click();
+      await page.getByTestId("portal-pick").click();
+      await page.getByTestId("portal-upload").click();
+      await expect(page.getByTestId("login-bell")).toBeVisible();
+    },
+  },
+  { name: "Oda önizleme, çıkış yapmadan kalkınca", open: (page) => page.getByTestId("login-leave").click() },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
   {
@@ -1035,7 +1085,7 @@ test.describe("telefon düzeni", () => {
     const labs = Object.fromEntries(
       (
         await query(
-          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor')`,
+          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor', 'okul-bilgisayarinda-giris')`,
         )
       ).map((r) => [r.slug, r.id]),
     );
@@ -1058,6 +1108,7 @@ test.describe("telefon düzeni", () => {
           mission: labs["kulaklik-icin-veli-karti"],
           sale: labs["eski-telefonunu-sat"],
           signup: labs["baglanti-nereye-gidiyor"],
+          login: labs["okul-bilgisayarinda-giris"],
         },
         article: (await query(`SELECT "id" FROM "NewsArticle" WHERE "slug" = $1`, [draft]))[0].id as string,
       });
