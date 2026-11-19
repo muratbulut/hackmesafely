@@ -150,6 +150,16 @@ export const cardSchema = z.discriminatedUnion("type", [
      * öğrenci dener. Gerçek bağlantı değildir, hiçbir yere gitmez. Yazılırsa `art` yerine çıkar.
      */
     link: z.object({ text: line(60), url: line(120) }).optional(),
+    /**
+     * Sorunun üstünde bir telefon bildirimi (Şehir Kapısı, Hesap ve giriş): sorunun anlattığı SMS,
+     * gönderen ve metin. Yalnızca gösterilir. Yazılırsa `art` yerine çıkar; `link` varsa o çıkar.
+     */
+    sms: z.object({ from: line(40), text: line(160) }).optional(),
+    /**
+     * Kuraldan önce gelen soru (Şehir Kapısı, 18 Kasım, Murat): etiketi "Mini test" yerine "Önce
+     * tahmin", geri bildirimi yumuşak ("Tahminin doğru!", "İyi tahmin, ama doğrusu B."). Puanlama aynı.
+     */
+    guess: z.boolean().optional(),
   }),
   z.object({
     id,

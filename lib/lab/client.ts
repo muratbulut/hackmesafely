@@ -118,7 +118,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
 export type ClientCard =
   | Extract<Card, { type: "info" }>
   | (Omit<Extract<Card, { type: "clickFind" }>, "spots"> & { spotCount: number })
-  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null }
+  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; guess: boolean }
   | {
       id: string;
       type: "video";
@@ -150,7 +150,7 @@ export function toClientCard(card: Card): ClientCard {
       return { ...rest, spotCount: spots.length };
     }
     case "quiz":
-      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null };
+      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null, sms: card.sms ?? null, guess: card.guess ?? false };
     case "video":
       return {
         id: card.id,

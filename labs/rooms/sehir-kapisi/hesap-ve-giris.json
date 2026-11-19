@@ -1,0 +1,365 @@
+{
+  "slug": "hesap-ve-giris",
+  "neighborhood": "sehir-kapisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 1,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Hesap ve giriş",
+      "title": "Kapıyı açtın, kapatmayı unutma",
+      "summary": "Hesap, şifre, oturum ve doğrulama kodu ne demek? Bir hesaba nasıl girilir, en önemlisi nasıl çıkılır?",
+      "story": "Oyunun, okulun, mailin: hepsi birer hesap. Her hesabın bir kapısı, her kapının bir anahtarı var. Giriş yapınca kapı sen çıkana kadar açık kalır; uygulamayı kapatmak kapıyı kapatmak değildir. Bu odada önce tahmin edecek, sonra kuralı göreceksin. Hesap Kalesi'ne bu bilgiyle gireceksin.",
+      "learn": [
+        {
+          "title": "Hesabın parçaları",
+          "text": "Kullanıcı adı, şifre, bağlı mail ya da telefon: hangisini herkes görür, hangisi yalnız sende kalır?"
+        },
+        {
+          "title": "Açık kalan kapı",
+          "text": "Uygulamayı kapatmak çıkış değildir. Ortak cihazda nasıl çıkılır?"
+        },
+        {
+          "title": "Doğrulama kodu",
+          "text": "Telefonuna gelen kod ne sorar, neden kimseye söylenmez?"
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 6
+    },
+    "cards": [
+      {
+        "id": "acik-kalan-kapi",
+        "type": "video",
+        "title": "Emir ve Ayşegül: açık kalan kapı",
+        "src": "/videolar/acik-kalan-kapi.mp4",
+        "duration": "0:56",
+        "question": {
+          "at": 14,
+          "question": "Ayşegül oyunu kapattı ama çıkış yapmadı. Emir oyunu açınca ne görür?",
+          "options": [
+            "Giriş ekranı açılır, şifre sorulur",
+            "Ayşegül'ün hesabı açık gelir, şifre sorulmaz",
+            "Oyun önce Ayşegül'ün telefonuna onay kodu gönderir",
+            "Kimsenin hesabı olmayan boş bir oyun açılır"
+          ],
+          "answer": 1,
+          "explain": "Giriş yaptığında uygulama seni hatırlar; buna oturum denir. Uygulamayı kapatmak oturumu kapatmaz. Emir, Ayşegül'ün hesabına şifresiz girer."
+        }
+      },
+      {
+        "id": "hesabin-parcalari",
+        "type": "info",
+        "layout": "explore",
+        "title": "Bir hesabın parçaları",
+        "paragraphs": [
+          "Oyun hesabın, okul hesabın, mail hesabın: hepsi aynı parçalardan oluşur. Her alana dokun.",
+          "Hepsi aynı derecede gizli değil. Sıradaki kartta sen ayıracaksın."
+        ],
+        "points": [
+          {
+            "title": "Kullanıcı adı",
+            "icon": "user",
+            "text": "Hesabının adı: aysegul_09 ya da bir mail adresi. Başkaları görebilir, seni bulmaya yarar."
+          },
+          {
+            "title": "Şifre",
+            "icon": "key",
+            "text": "Hesabının anahtarı. Yalnız sen bilirsin; en yakın arkadaşınla bile paylaşılmaz."
+          },
+          {
+            "title": "Bağlı mail ya da telefon",
+            "icon": "mail",
+            "text": "Şifreni unutursan hesabı geri almak ve doğrulama kodu almak için kullanılır."
+          },
+          {
+            "title": "Profil",
+            "icon": "camera",
+            "text": "Fotoğrafın, takma adın, seviyen. Başkalarının gördüğü yüzün."
+          }
+        ]
+      },
+      {
+        "id": "kim-bilebilir",
+        "type": "sort",
+        "title": "Kim bilebilir?",
+        "hint": "Her bilgiyi, kimin bilebileceğine göre kutusuna koy.",
+        "bins": [
+          {
+            "label": "Başkaları da görebilir",
+            "note": "Seni tanıtır",
+            "color": "green",
+            "icon": "globe"
+          },
+          {
+            "label": "Yalnız sen bilirsin",
+            "note": "Kimseye söylenmez",
+            "color": "red",
+            "icon": "lock"
+          }
+        ],
+        "items": [
+          {
+            "text": "Kullanıcı adın",
+            "icon": "user",
+            "bin": 0
+          },
+          {
+            "text": "Şifren",
+            "icon": "key",
+            "bin": 1
+          },
+          {
+            "text": "Oyundaki takma adın",
+            "icon": "gamepad",
+            "bin": 0
+          },
+          {
+            "text": "Telefonuna gelen giriş kodu",
+            "icon": "phone",
+            "bin": 1
+          },
+          {
+            "text": "Profil fotoğrafın",
+            "icon": "camera",
+            "bin": 0
+          },
+          {
+            "text": "Kurtarma sorusunun cevabı",
+            "icon": "ask",
+            "bin": 1
+          }
+        ],
+        "explain": "Kullanıcı adı, takma ad ve profil fotoğrafı seni başkalarına tanıtır; görünmeleri normaldir. Şifre, giriş kodu ve kurtarma sorusunun cevabı ise kapıyı açan anahtarlardır. Bunları bilen biri hesabına senmiş gibi girebilir."
+      },
+      {
+        "id": "sekmeyi-kapattin",
+        "type": "quiz",
+        "guess": true,
+        "question": "Okul bilgisayarında Postam'a girdin, ders bitince sekmeyi kapattın. Hesabın ne durumda?",
+        "options": [
+          "Kapandı, sekme kapanınca çıkış yapılır",
+          "Büyük ihtimalle hâlâ açık; çıkış yapmalıydım",
+          "Bilgisayar kapanınca kendiliğinden kapanır, sorun yok",
+          "Postam beni birkaç dakika sonra kesin çıkarır"
+        ],
+        "answer": 1,
+        "explain": "Sekmeyi kapatmak çıkış yapmak değildir. Sonraki kişi Postam'ı açtığında senin hesabını açık bulabilir. Ortak bilgisayarda işin bitince her zaman \"Çıkış yap\"a bas."
+      },
+      {
+        "id": "giris-cikis",
+        "type": "info",
+        "layout": "steps",
+        "title": "Kapı nasıl açılır, nasıl kapanır?",
+        "paragraphs": [
+          "Giriş yaptığında uygulama seni hatırlar; buna **oturum** denir. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Giriş yap",
+            "icon": "key",
+            "text": "Kullanıcı adın ve şifrenle kapıyı açarsın. O cihazda oturumun açılır."
+          },
+          {
+            "title": "Açık kalır",
+            "icon": "eye",
+            "text": "Uygulamayı ya da sekmeyi kapatmak **çıkış değildir**. Bir dahaki açışta yine içeridesin."
+          },
+          {
+            "title": "Çıkış yap",
+            "icon": "stop",
+            "text": "Profil ya da menüden **\"Çıkış yap\"**. Kapı ancak böyle kapanır."
+          },
+          {
+            "title": "Her yerden çık",
+            "icon": "shield",
+            "text": "Bir yerde açık unuttuysan, kendi cihazından **\"Tüm cihazlardan çıkış yap\"** ile hepsini kapatırsın."
+          }
+        ]
+      },
+      {
+        "id": "evet-mi-hayir-mi",
+        "type": "sort",
+        "title": "Evet mi, hayır mı?",
+        "hint": "Giriş yaparken \"Beni hatırla\" ve \"Şifreyi kaydet\" sorulur. Her durumu doğru kutuya koy.",
+        "bins": [
+          {
+            "label": "Evet diyebilirsin",
+            "note": "Kendi, kilitli cihazın",
+            "color": "green",
+            "icon": "house"
+          },
+          {
+            "label": "Hayır de",
+            "note": "Başkaları da kullanıyor",
+            "color": "red",
+            "icon": "users"
+          }
+        ],
+        "items": [
+          {
+            "text": "Kendi telefonunda \"Beni hatırla\"",
+            "icon": "phone",
+            "bin": 0
+          },
+          {
+            "text": "Okul bilgisayarında \"Şifreyi kaydet\"",
+            "icon": "school",
+            "bin": 1
+          },
+          {
+            "text": "Arkadaşının telefonunda \"Beni hatırla\"",
+            "icon": "users",
+            "bin": 1
+          },
+          {
+            "text": "Ekran kilitli kendi tabletinde \"Şifreyi kaydet\"",
+            "icon": "lock",
+            "bin": 0
+          },
+          {
+            "text": "Kütüphane bilgisayarında \"Beni hatırla\"",
+            "icon": "globe",
+            "bin": 1
+          },
+          {
+            "text": "Kuzeninin bilgisayarında \"Şifreyi kaydet\"",
+            "icon": "key",
+            "bin": 1
+          }
+        ],
+        "explain": "\"Beni hatırla\" oturumu günlerce açık tutar. \"Şifreyi kaydet\" ise o cihazı kullanan herkesin şifreni bilmeden girmesini sağlar. Ekran kilidi olan kendi cihazında bu rahatlıktır; okul, kütüphane ya da başkasının cihazında ikisine de hayır de."
+      },
+      {
+        "id": "istemedigin-kod",
+        "type": "quiz",
+        "guess": true,
+        "sms": {
+          "from": "Oyun Dünyası",
+          "text": "Giriş kodun: 482 913. Kod 5 dakika geçerlidir."
+        },
+        "question": "Hiç giriş yapmaya çalışmadın ama telefonuna bu mesaj geldi. Bu ne anlama gelebilir?",
+        "options": [
+          "Biri şifremle girmeye çalışıyor olabilir; kodu kimseye vermem, şifremi değiştiririm",
+          "Sistem hatasıdır, önemi yok",
+          "Bir arkadaşım yanlışlıkla bana göndermiştir, ona iletirim",
+          "Kodu bir arkadaşıma sorarım, o ne yapacağımı bilir"
+        ],
+        "answer": 0,
+        "explain": "İstemediğin bir kod, birinin şifreni bilip kapına geldiğini gösterebilir. Kod sende kaldıkça içeri giremez. Kodu kimseye verme, şifreni değiştir ve bir büyüğüne haber ver. \"Yanlışlıkla sana kod gitti, atar mısın?\" diyen mesaj tam da bu tuzaktır."
+      },
+      {
+        "id": "dogrulama-kodu",
+        "type": "info",
+        "layout": "steps",
+        "title": "Doğrulama kodu ne sorar?",
+        "paragraphs": [
+          "Yeni bir cihazdan girince hesap, bağlı telefonuna ya da mailine kısa bir kod gönderir. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Kod gelir",
+            "icon": "message",
+            "text": "Birkaç haneli bir sayı: \"Giriş kodun: 482 913\". Birkaç dakika geçerlidir."
+          },
+          {
+            "title": "Ne sorar?",
+            "icon": "ask",
+            "text": "**\"Giren gerçekten sen misin?\"** Kodu yazan kişi \"evet, benim\" demiş olur."
+          },
+          {
+            "title": "Son anahtar",
+            "icon": "key",
+            "text": "Şifren başkasının eline geçse bile kod olmadan giremez. **Kodu verirsen kapıyı ona sen açarsın.**"
+          },
+          {
+            "title": "Kimse istemez",
+            "icon": "ban",
+            "text": "Ne arkadaşın, ne öğretmenin, ne oyunun destek ekibi. Kod isteyen herkes kapını açmaya çalışıyordur."
+          }
+        ]
+      },
+      {
+        "id": "ne-ise-yarar",
+        "type": "match",
+        "title": "Hangisi ne işe yarar?",
+        "hint": "Soldaki her parçayı, ne işe yaradığıyla eşleştir.",
+        "pairs": [
+          {
+            "left": "Kullanıcı adı",
+            "icon": "user",
+            "right": "Herkes görebilir, seni bulmaya yarar"
+          },
+          {
+            "left": "Şifre",
+            "icon": "key",
+            "right": "Hesabın anahtarı, yalnız sende kalır"
+          },
+          {
+            "left": "Doğrulama kodu",
+            "icon": "phone",
+            "right": "\"Giren gerçekten sen misin?\" diye sorar"
+          },
+          {
+            "left": "Çıkış yap",
+            "icon": "stop",
+            "right": "Kapıyı arkandan kapatır"
+          },
+          {
+            "left": "Hesaba bağlı mail",
+            "icon": "mail",
+            "right": "Şifreni unutursan hesabı geri verir"
+          }
+        ],
+        "explain": "Kullanıcı adı seni tanıtır. Şifre ve doğrulama kodu kapıyı açar, bu yüzden yalnız sende kalır. Hesaba bağlı mail kaybolan anahtarın yedeğidir. Çıkış yapmak ise kapıyı kapatmanın tek yoludur."
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Kullanıcı adımı başkaları da görebilir, şifremi yalnız [ben] bilirim.",
+          "Uygulamayı kapatmak [çıkış] yapmak değildir.",
+          "Ortak bilgisayarda şifremi [kaydetmem].",
+          "Telefonuma gelen doğrulama kodunu [kimseye] söylemem.",
+          "Bir yerde açık unuttuysam [tüm cihazlardan] çıkış yaparım."
+        ],
+        "extra": [
+          "herkes",
+          "kaydederim",
+          "giriş",
+          "arkadaşıma"
+        ],
+        "explain": "Şifre ve kod kapının anahtarlarıdır, yalnız sende kalır. Kapıyı açtığın her yerde, özellikle ortak cihazlarda, işin bitince çıkış yaparsın. Unuttuysan kendi telefonundan bütün oturumları kapatırsın."
+      },
+      {
+        "id": "uc-aliskanlik",
+        "type": "info",
+        "layout": "steps",
+        "title": "Hesabın için üç alışkanlık",
+        "paragraphs": [
+          "Hesap Kalesi'nde güçlü şifreyi ve iki adımlı doğrulamayı öğreneceksin. Ondan önce bu üç alışkanlık yeter."
+        ],
+        "points": [
+          {
+            "title": "Anahtar sende kalır",
+            "icon": "key",
+            "text": "Şifreni ve doğrulama kodunu kimseye söyleme."
+          },
+          {
+            "title": "Kapıyı kapat",
+            "icon": "stop",
+            "text": "Ortak cihazda şifre kaydetme, işin bitince çıkış yap."
+          },
+          {
+            "title": "Tuhaf bir şey olursa",
+            "icon": "flag",
+            "text": "İstemediğin bir kod ya da giriş uyarısı gelirse şifreni değiştir, bir büyüğüne söyle."
+          }
+        ]
+      }
+    ]
+  }
+}

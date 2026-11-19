@@ -1283,6 +1283,11 @@
   from { transform: translateY(10px); opacity: 0; }
   to { transform: none; opacity: 1; }
 }
+/* Mini testteki SMS bildirimi yukarıdan düşer (SmsPeek). */
+@keyframes sms-drop {
+  from { transform: translateY(-24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
 
 /* Eğitim kartları (Tur 7): bilgi kartının açılan alanları, banka kartı, mini test çizimleri,
    adım adım kart. "Hareketi azalt" açıkken aşağıdaki genel kural hepsini durdurur. */
