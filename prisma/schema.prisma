@@ -386,9 +386,9 @@ model Neighborhood {
   name      String
   // Mahallenin konusu: "Oltalama", "Hesap güvenliği" gibi.
   topic     String @default("")
-  // Tema rengi adı (app/globals.css): success, accent, purple, warning, pink. Sabit renk kodu değil.
+  // Tema rengi adı (app/globals.css): success, accent, purple, warning, pink, blue. Sabit renk kodu değil.
   color     String
-  // İkon adı (components/roadmap/NeighborhoodIcon.tsx): castle, mail, download, card, heart.
+  // İkon adı (components/roadmap/NeighborhoodIcon.tsx): door, castle, mail, download, card, heart.
   icon      String @default("mail")
   sortOrder Int
 

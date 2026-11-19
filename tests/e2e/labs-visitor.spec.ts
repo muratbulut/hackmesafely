@@ -14,6 +14,15 @@ test("siber şehir: mahalleler görünür, mahalleye girilir", async ({ page }) 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Oltalama Limanı");
 });
 
+test("siber şehir: Şehir Kapısı en başta geniş \"Buradan başla\" kartı, kayıt ilk odaya döner", async ({ page }) => {
+  await page.goto("/yol-haritasi");
+  const districts = page.getByRole("region", { name: "Mahalleler" });
+  const start = districts.getByRole("link", { name: "Kayıt ol ve başla" }).filter({ visible: true });
+  await expect(start).toHaveCount(1);
+  await expect(start).toHaveAttribute("href", "/kayit?sonra=%2Foda%2Fmesaji-okumak%2Foyna");
+  await expect(districts.getByText("Buradan başla").filter({ visible: true })).toBeVisible();
+});
+
 test("mahalle: senaryo labı seçilince kayıt penceresi açılır, kayıt bu laba döner", async ({ page, isMobile }) => {
   await page.goto("/yol-haritasi/oltalama-limani");
   const route = page.getByRole("list", { name: "Oltalama Limanı rotası" });

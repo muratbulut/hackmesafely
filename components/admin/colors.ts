@@ -6,6 +6,7 @@ const colors = {
   purple: { dot: "bg-purple", chip: "bg-purple/12 text-purple-fg", border: "border-purple" },
   warning: { dot: "bg-warning", chip: "bg-warning/12 text-warning-fg", border: "border-warning" },
   pink: { dot: "bg-pink", chip: "bg-pink/12 text-pink-fg", border: "border-pink" },
+  blue: { dot: "bg-blue", chip: "bg-blue/12 text-blue-fg", border: "border-blue" },
 } as const;
 
 export function neighborhoodColor(name: string) {

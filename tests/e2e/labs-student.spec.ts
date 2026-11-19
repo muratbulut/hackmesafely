@@ -105,7 +105,7 @@ test.describe("öğrenci", () => {
     await page.goto("/profil?bolum=rozetler");
     // Adreste bölüm istendiği için telefonda da Rozetler sayfası kendiliğinden açılır.
     const section = page.getByRole("region", { name: "Rozetlerin" }).filter({ visible: true });
-    await expect(section).toContainText("1/13 rozet kazandın.");
+    await expect(section).toContainText("1/14 rozet kazandın.");
     await expect(visible(page, "Seviye 2: Dikkatli gezgin için 50 puan kaldı")).toBeVisible();
 
     // Yeni kazanılan rozet vitrinde boş yer varsa kendiliğinden vitrine girer.
@@ -136,7 +136,7 @@ test.describe("öğrenci", () => {
 
     await page.goto("/");
     if (isMobile) {
-      await expect(page.getByRole("link", { name: "Rozet vitrinin, 1/13 rozet" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Rozet vitrinin, 1/14 rozet" })).toBeVisible();
     } else {
       await expect(page.getByRole("region", { name: "Deneme Öğrenci" }).getByRole("link", { name: "Kart kurdu" })).toBeVisible();
     }

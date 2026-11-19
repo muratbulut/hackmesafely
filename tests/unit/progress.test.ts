@@ -37,8 +37,8 @@ const facts = (over: Partial<ProgressFacts> = {}): ProgressFacts => ({
 });
 
 describe("rozetler", () => {
-  it("13 rozet, her birinin ikonu ve sözlükte adı var", () => {
-    expect(badgeCodes).toHaveLength(13);
+  it("14 rozet, her birinin ikonu ve sözlükte adı var", () => {
+    expect(badgeCodes).toHaveLength(14);
     for (const code of badgeCodes) {
       expect(existsSync(`public${badgeIcon(code)}`), code).toBe(true);
       expect(getMessages().progress.badges[code].name, code).toBeTruthy();
@@ -61,6 +61,15 @@ describe("rozetler", () => {
       .filter((b) => b.earned)
       .map((b) => b.code);
     expect(earned).toEqual(["ilk-rapor", "kart-kurdu", "oltalama-avcisi", "kusursuz", "sehir-turu"]);
+  });
+
+  it("Şehir Kapısı'nın senaryoları bitince Kapı bekçisi kazanılır", () => {
+    const gate = (done: number) =>
+      evaluateBadges(facts({ neighborhoods: [{ slug: "sehir-kapisi", scenarioTotal: 1, scenarioDone: done, scenarios: 1, visited: done > 0 }] })).find(
+        (b) => b.code === "kapi-bekcisi",
+      )!;
+    expect(gate(1)).toMatchObject({ earned: true, progress: { kind: "labs", value: 1, total: 1 } });
+    expect(gate(0).earned).toBe(false);
   });
 
   it("senaryo labı olmayan mahallenin rozeti kazanılmaz", () => {
