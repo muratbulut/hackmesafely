@@ -1743,6 +1743,19 @@ export const tr = {
           app: "MESAJLAR",
           now: "şimdi",
         },
+        // Sorunun üstündeki mesaj eki (FilePeek): cevaptan sonra dosyanın soyadı (uzantısı) ayrılır.
+        file: {
+          now: "şimdi",
+          attachment: "Ek: {name}",
+          surname: "soyadı",
+          revealed: "Dosyanın soyadı: {ext}",
+        },
+        // Sorunun üstündeki izin penceresi (PermissionPeek): düğmeler yalnızca çizim.
+        permission: {
+          allow: "İzin ver",
+          deny: "Reddet",
+          once: "Yalnızca bu sefer",
+        },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.
       sort: {

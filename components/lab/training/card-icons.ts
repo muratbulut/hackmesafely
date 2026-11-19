@@ -1,5 +1,8 @@
 import {
   Ban,
+  Download,
+  FileText,
+  Settings,
   Flag,
   Gift,
   MessageCircleQuestionMark,
@@ -67,6 +70,9 @@ export const cardIconMap: Record<CardIcon, LucideIcon> = {
   gift: Gift,
   pen: PenLine,
   headphones: Headphones,
+  file: FileText,
+  cog: Settings,
+  download: Download,
 };
 
 /**
