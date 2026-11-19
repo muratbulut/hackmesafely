@@ -17,6 +17,8 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Açan eğitim (senaryoyu ya da ileri eğitimi açan eğitim), kilit | gate (`gateOf`; senaryoda `Lab.unlockedById`, ilişki `unlockedBy` / `unlocks`) |
 | Temel yol (temel eğitim ve onun senaryoları; mahalle rozeti bunu sayar) | basic path (`isBasicPath`) |
 | Ödevin odaları (seçilenler ve onları açan eğitimler) | `Assignment.labIds`, `homeworkLabs`, `homeworkSelection` (`lib/classroom/homework.ts`) |
+| Şehir Kapısı (dijital temeller mahallesi, şehrin kapısı), Kapı bekçisi rozeti | `sehir-kapisi`, rozet `kapi-bekcisi`; renk `blue`, ikon `door` |
+| Şehrin kapısı kartı ("Buradan başla"; yol haritasındaki ilk mahallenin geniş kartı) | `CityGateCard` (`components/roadmap/CityView.tsx`), `cityGateOf` (`lib/lab/route.ts`) |
 | Dostluk Parkı (güvenli iletişim mahallesi), Dost eli rozeti | `dostluk-parki`, rozet `dost-eli`; renk `pink`, ikon `heart` |
 | Maskot (logodaki gözlü a), ruh hâli | mascot (`Mascot`, `components/mascot/`), `MascotMood` |
 | Yükleniyor örtüsü (sayfa geçişinde tam ekran) | `PageOverlay` |
@@ -263,7 +265,7 @@ Sınıf adlarında kullanılır: `bg-surface`, `text-fg-3`, `border-line` gibi.
 | vurgu, vurgu-yazı, vurgu-açık, vurgu üzerine yazı, ışık | `accent`, `accent-fg`, `accent-light`, `on-accent`, `glow` |
 | başarı, başarı zemini | `success`, `success-fg`, `success-subtle`, `success-subtle-fg` |
 | uyarı, tehlike | `warning`, `warning-fg`, `danger`, `danger-fg`, `on-danger` |
-| mor, turuncu, lacivert | `purple`, `orange`, `indigo` |
+| mor, turuncu, lacivert, mavi (yön levhası mavisi) | `purple`, `orange`, `indigo`, `blue` |
 | sahne mavisi, sahne sarısı | `scene-blue`, `scene-yellow` |
 | Sahnelerdeki "başka bir site" çizimi: kâğıt, mürekkep, yeşil düğme | `scene-paper`, `scene-ink`, `scene-ink-muted`, `scene-ink-faint`, `scene-green`, `scene-white` |
 | tanıtım sahneleri: cihaz gövdesi, kamera, karartı, raf kitabı, profil kapağı, harita | `scene-bezel`, `scene-device*`, `scene-camera*`, `scene-person*` / `scene-stranger*` / `scene-beanie*`, `scene-deep-*`, `scene-cover*`, `scene-map*` |

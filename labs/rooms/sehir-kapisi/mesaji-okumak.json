@@ -26,9 +26,27 @@
         }
       ],
       "difficulty": "EASY",
-      "durationMin": 7
+      "durationMin": 8
     },
     "cards": [
+      {
+        "id": "bu-mail-kimden",
+        "type": "video",
+        "title": "Ayşegül ve Ayça: bu mail kimden?",
+        "src": "/videolar/bu-mail-kimden.mp4",
+        "duration": "1:07",
+        "question": {
+          "at": 22,
+          "question": "Gönderenin adı Oyun Dünyası. Bu, mailin gerçekten oyundan geldiğini gösterir mi?",
+          "options": [
+            "Evet, adı açıkça yazıyor",
+            "Hayır, bu adı herkes yazabilir",
+            "Logosu da varsa gösterir"
+          ],
+          "answer": 1,
+          "explain": "Mailin üstündeki adı gönderen kendisi yazar, istediği adı koyabilir. Logo da kopyalanabilir. Mailin nereden geldiğini adres söyler."
+        }
+      },
       {
         "id": "iki-ad",
         "type": "info",

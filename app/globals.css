@@ -106,6 +106,9 @@
   --orange-fg: #fdba74;
   --pink: #f472b6;
   --pink-fg: #f9a8d4;
+  /* Şehir Kapısı: yön levhası mavisi (19 Kasım, Murat) */
+  --blue: #5b9cf6;
+  --blue-fg: #8fbcfb;
   --indigo: #818cf8;
 
   /* Lab sahnelerindeki kurgusal uygulamaların kendi renkleri (temayla değişmez) */
@@ -458,6 +461,8 @@
   --orange-fg: #c2410c;
   --pink: #db2777;
   --pink-fg: #be185d;
+  --blue: #2563eb;
+  --blue-fg: #1d4ed8;
   --indigo: #818cf8;
 
   --scene-blue: #2563eb;
@@ -796,6 +801,8 @@
   --orange-fg: #fdba74;
   --pink: #f472b6;
   --pink-fg: #f9a8d4;
+  --blue: #5b9cf6;
+  --blue-fg: #8fbcfb;
   --toast-bg: #f1f2f3;
   --toast-fg: #141517;
   --knob: #f1f2f3;
@@ -872,6 +879,8 @@
   --color-orange-fg: var(--orange-fg);
   --color-pink: var(--pink);
   --color-pink-fg: var(--pink-fg);
+  --color-blue: var(--blue);
+  --color-blue-fg: var(--blue-fg);
   --color-indigo: var(--indigo);
   --color-scene-blue: var(--scene-blue);
   --color-scene-yellow: var(--scene-yellow);
