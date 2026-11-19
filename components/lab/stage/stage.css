@@ -245,22 +245,6 @@
   top: 12px;
   bottom: 12px;
   right: 196px;
-  display: flex;
-  border-radius: 12px;
-  padding: 6px 6px 16px;
-  background: linear-gradient(180deg, var(--stage-monitor), var(--stage-bezel));
-  box-shadow:
-    0 0 0 1px var(--stage-monitor-edge),
-    0 20px 40px var(--stage-shadow);
-}
-.st-monitor-screen {
-  position: relative;
-  display: flex;
-  min-height: 0;
-  flex: 1;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 6px;
 }
 
 /* --- Telefon genişliği (390 px): telefon eldeyken bütün sahneyi kaplar --- */
@@ -331,6 +315,8 @@
     right: 6px;
     top: 6px;
     bottom: 124px;
+  }
+  .st-monitor .dv-pc-body {
     padding: 4px 4px 12px;
   }
   .st-stage[data-stage="t2"] .st-prop-mug {

@@ -7,6 +7,7 @@ import type { PlacementResult } from "@/lib/lab/training";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { PostamLogo } from "../inbox/InboxScene";
+import { MailComputer } from "./MailComputer";
 import { RichLine, SenderAvatar } from "../scene/parts";
 import { QuizArtView } from "./art";
 import { LinkPeek } from "./LinkPeek";
@@ -238,50 +239,49 @@ export function ClickFindView({
         </p>
       ) : null}
 
-      <div
-        onClick={() => setMiss(true)}
-        className="overflow-hidden rounded-[14px] border border-scene-line-strong bg-scene-white font-sans text-scene-ink"
-      >
-        <div className="flex items-center border-b border-scene-line bg-scene-paper px-3 py-2">
-          <PostamLogo className="text-sm" />
-        </div>
-        <div className="flex flex-col gap-3 p-4 lg:p-[18px]">
-          {mail.subject ? (
-            <div className="text-[17px] font-bold lg:text-[19px]">
-              {part("subject", mail.subject)}
-            </div>
-          ) : null}
-          <div className="flex items-start gap-2.5">
-            <SenderAvatar name={mail.sender} index={0} className="size-[34px] text-sm" />
-            <div className="flex min-w-0 flex-col gap-0.5 text-[13px]">
-              <span className="break-words">
-                <b className="mr-1 text-sm">{part("sender", mail.sender)}</b>
-                <span className="text-scene-ink-3">{part("address", format(getMessages().lab.inbox.address, { address: mail.address }))}</span>
-              </span>
-              <span className="text-scene-ink-muted">{format(t.to, { time: mail.time })}</span>
-            </div>
+      <MailComputer>
+        <div onClick={() => setMiss(true)} className="flex flex-col">
+          <div className="flex items-center border-b border-scene-line bg-scene-paper px-3 py-2">
+            <PostamLogo className="text-sm" />
           </div>
-          {mail.paragraphs.map((p, i) => (
-            <div key={i} className="text-[15px] leading-relaxed text-scene-body">
-              {part(`p${i}`, <RichLine text={p} />, { block: true })}
+          <div className="flex flex-col gap-3 p-4 lg:p-[18px]">
+            {mail.subject ? (
+              <div className="text-[17px] font-bold lg:text-[19px]">
+                {part("subject", mail.subject)}
+              </div>
+            ) : null}
+            <div className="flex items-start gap-2.5">
+              <SenderAvatar name={mail.sender} index={0} className="size-[34px] text-sm" />
+              <div className="flex min-w-0 flex-col gap-0.5 text-[13px]">
+                <span className="break-words">
+                  <b className="mr-1 text-sm">{part("sender", mail.sender)}</b>
+                  <span className="text-scene-ink-3">{part("address", format(getMessages().lab.inbox.address, { address: mail.address }))}</span>
+                </span>
+                <span className="text-scene-ink-muted">{format(t.to, { time: mail.time })}</span>
+              </div>
             </div>
-          ))}
-          {mail.button ? (
-            <div>
-              {part(
-                "button",
-                <span className="inline-flex h-10 items-center rounded-lg bg-scene-blue px-[18px] text-[15px] font-bold text-scene-white">{mail.button}</span>,
-                { className: "inline-flex" },
-              )}
-            </div>
-          ) : null}
-          {mail.footer ? (
-            <div className="text-xs text-scene-ink-muted">
-              {part("footer", mail.footer)}
-            </div>
-          ) : null}
+            {mail.paragraphs.map((p, i) => (
+              <div key={i} className="text-[15px] leading-relaxed text-scene-body">
+                {part(`p${i}`, <RichLine text={p} />, { block: true })}
+              </div>
+            ))}
+            {mail.button ? (
+              <div>
+                {part(
+                  "button",
+                  <span className="inline-flex h-10 items-center rounded-lg bg-scene-blue px-[18px] text-[15px] font-bold text-scene-white">{mail.button}</span>,
+                  { className: "inline-flex" },
+                )}
+              </div>
+            ) : null}
+            {mail.footer ? (
+              <div className="text-xs text-scene-ink-muted">
+                {part("footer", mail.footer)}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </MailComputer>
 
       <div aria-live="polite" className="flex flex-col gap-2.5">
         {all ? (
