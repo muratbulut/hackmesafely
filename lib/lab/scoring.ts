@@ -5,8 +5,8 @@
 // Puan: sahte her öğe en fazla 4, gerçek her öğe 1, her soru seçtiği seçeneğin puanı. Rapor
 // yalnızca kodlar ve sayılar tutar; ekrandaki cümleler sözlükten ve içerikten gelir.
 
-import { loginPoints, maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type LoginChoice, type ScenarioContent } from "./content";
-import { codeDecided, folderOf, type SceneState } from "./events";
+import { installChecks, loginPoints, maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type LoginChoice, type ScenarioContent } from "./content";
+import { codeDecided, folderOf, permissionKey, type SceneState } from "./events";
 
 export type RowState = "ok" | "part" | "bad" | "skip";
 
@@ -22,9 +22,10 @@ export type RealOutcome = "reported" | "deleted" | "kept";
 /**
  * Sahte öğeye nasıl kandı: bağlantıyı açarak (ve sahte sayfaya yazarak), cevap yazarak (kodu
  * göndererek) ya da satış görevli odada bağlantıdaki ödeme isteğini açarak (ve onaylayarak).
- * Mesajlaşmada raporun cümlesini seçer; eski raporlarda yoktur.
+ * Mesajlaşmada raporun cümlesini seçer; eski raporlarda yoktur. file: kurulum görevinde mesajdaki
+ * dosyayı (.apk) indirerek (ve kurmaya çalışarak).
  */
-export type EngagedBy = "link" | "reply" | "request";
+export type EngagedBy = "link" | "reply" | "request" | "file";
 
 export type ReportRow =
   | { type: "fake"; item: string; outcome: FakeOutcome; by?: EngagedBy; state: RowState; points: number; max: number }
@@ -32,6 +33,8 @@ export type ReportRow =
   | { type: "question"; task: string; option: number | null; state: RowState; points: number; max: number }
   /** Görevli oda: işi doğru yerden yaptı mı (gerçek mağazadan aldı). */
   | { type: "mission"; task: string; done: boolean; state: RowState; points: number; max: number }
+  /** Kurulum görevi: kopya uygulamayı kurmadı mı, puanlanan izinde doğru seçti mi (installChecks). */
+  | { type: "check"; check: string; ok: boolean; state: RowState; points: number; max: number }
   /** Giriş görevi: kalkmadan önce çıkış, "Beni hatırla", şifreyi kaydetmek. */
   | { type: "login"; choice: LoginChoice; outcome: LoginOutcome; state: RowState; points: number; max: number };
 
@@ -87,7 +90,7 @@ export function fakeOutcome(state: SceneState, item: string, mission = false, al
     if (state.infoEntered.includes(item)) return "stopped";
   } else if (state.infoEntered.includes(item)) return almost ? "almost" : "hacked";
   if (state.secretSent.includes(item)) return "hacked";
-  const engaged = state.clicked.includes(item) || state.replied.includes(item);
+  const engaged = state.clicked.includes(item) || state.replied.includes(item) || (state.filesOpened ?? []).includes(item);
   const folder = folderOf(state, item);
   if (folder === "spam") return engaged ? "reportedAfterEngaging" : "reported";
   if (folder === "trash") return "deleted";
@@ -95,6 +98,7 @@ export function fakeOutcome(state: SceneState, item: string, mission = false, al
 }
 
 export function engagedBy(state: SceneState, item: string): EngagedBy | undefined {
+  if ((state.filesOpened ?? []).includes(item)) return "file";
   if (state.infoEntered.includes(item)) return "link";
   if (state.secretSent.includes(item)) return "reply";
   if (state.clicked.includes(item)) return "link";
@@ -115,6 +119,10 @@ export function missionDone(content: Pick<ScenarioContent, "items" | "mission">,
   if (content.mission?.signup) {
     const sent = state.formSent ?? [];
     return content.items.some((i) => i.kind === "real" && i.form && sent.includes(i.id));
+  }
+  if (content.mission?.install) {
+    const apps = content.mission.install.apps;
+    return (state.homework ?? []).some((id) => apps.some((a) => a.id === id && !a.copy));
   }
   if (content.mission?.sale) {
     const prepared = state.prepared ?? [];
@@ -183,6 +191,31 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
     rows.push({ type: "question", task: task.id, option, state: rowState, points, max });
   }
 
+  // Kurulum görevi: kopya uygulamayı kurmamak ve puanlanan izinde doğru seçmek, her biri 1 puan.
+  // Gerçek uygulama hiç kurulmadıysa izin sorusu çıkmamıştır: cevaplanmamış soru gibi yazılır.
+  const installed = state.installed ?? [];
+  const permissions = state.permissions ?? {};
+  let wrongApp = false;
+  let extraPermission = false;
+  const checkRows: ReportRow[] = [];
+  for (const check of installChecks(content)) {
+    if (check.kind === "copy") {
+      const ok = !installed.includes(check.app);
+      wrongApp ||= !ok;
+      checkRows.push({ type: "check", check: check.key, ok, state: ok ? "ok" : "bad", points: ok ? 1 : 0, max: 1 });
+      continue;
+    }
+    const app = content.mission?.install?.apps.find((a) => a.id === check.app);
+    const chosen = permissions[permissionKey(check.app, check.index)];
+    const ok = chosen !== undefined && chosen === app?.permissions[check.index]?.right;
+    if (chosen !== undefined && !ok) extraPermission = true;
+    checkRows.push({ type: "check", check: check.key, ok, state: chosen === undefined ? "skip" : ok ? "ok" : "bad", points: ok ? 1 : 0, max: 1 });
+  }
+  // Satırlar görevin hemen ardından gelir (yoksa soruların önüne).
+  const missionAt = rows.findIndex((r) => r.type === "mission");
+  const questionAt = rows.findIndex((r) => r.type === "question");
+  rows.splice(missionAt >= 0 ? missionAt + 1 : questionAt >= 0 ? questionAt : rows.length, 0, ...checkRows);
+
   const fakes = rows.filter((r) => r.type === "fake");
   const hacked = fakes.some((r) => r.outcome === "hacked");
   // Giriş görevinde kapıyı açık bırakıp kalkmak (Az kalsın) odayı riskli yapar.
@@ -197,7 +230,9 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
   const title: ReportTitle =
     status === "hacked" ? "hacked" : status === "risky" ? "missed" : score >= 90 ? "caught" : "safeButMissed";
 
-  const engaged = hacked || content.items.some((i) => i.kind === "fake" && (state.clicked.includes(i.id) || state.replied.includes(i.id)));
+  const engaged =
+    hacked ||
+    content.items.some((i) => i.kind === "fake" && (state.clicked.includes(i.id) || state.replied.includes(i.id) || (state.filesOpened ?? []).includes(i.id)));
   const conditions = {
     engaged,
     // "Az kalsın" odasında sahte sayfaya bilgi girmek de bu ipucunu açar (şifreni değiştir).
@@ -209,6 +244,8 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
     remembered: login.some((r) => r.choice === "remember" && r.outcome === "kept"),
     savedPassword: login.some((r) => r.choice === "save" && r.outcome === "saved"),
     wrongAnswer: rows.some((r) => r.type === "question" && r.state !== "ok"),
+    wrongApp,
+    extraPermission,
   };
   const missedQuestion = (task: string) => rows.some((r) => r.type === "question" && r.task === task && r.state !== "ok");
   const tips = content.tips

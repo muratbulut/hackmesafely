@@ -4,7 +4,7 @@
 
 import { getMessages } from "@/lib/i18n";
 import { siteTimeZone } from "@/lib/site";
-import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CallerLook, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate, type Task, type TalkPlace } from "./content";
+import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CallerLook, type CardIcon, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate, type StoreApp, type Task, type TalkPlace } from "./content";
 
 export type LinkPage =
   /**
@@ -43,6 +43,11 @@ export type AlmostStory = {
   owner: string;
   realLife: string;
   steps: string[];
+  /**
+   * Kurulum görevinde bağlantı yerine iki şey yan yana: "Kurmak üzere olduğun" .apk ile ödevin
+   * oyunu ya da kopya oyun ile gerçeği. Yazılmışsa düğme ve adres yerine bu gösterilir.
+   */
+  compare?: { left: CompareSide; right: CompareSide };
 };
 
 /**
@@ -90,6 +95,17 @@ export function endingTalk(content: Pick<ScenarioContent, "tasks">, answers: Rec
   }
   return null;
 }
+
+export type CompareSide = { label: string; value: string; note: string };
+
+/** Kurulum görevinde uygulama kurulunca çıkan izin pencereleri (doğru seçenek ve "Az kalsın" gitmez). */
+export type InstallPrompt = { text: string; note: string; icon: CardIcon; choices: string[] };
+
+/**
+ * Kurulum görevinde izinlerden sonra: gerçek oyun açılır (ödev ekranı), kopya oyunun ödev listesi
+ * yoktur (boş ekran ve "Kaldır").
+ */
+export type InstallAfter = { homework: true } | { homework: false; text: string };
 
 /** Görevli odada ödeyince veliden gelen SMS (sunucu ödeme anında söyler). */
 export type ShopSms = { shop: string; amount: string; code: string; note: string };
@@ -243,6 +259,41 @@ export function almostStory(content: ScenarioContent, item: Item): AlmostStory {
     realLife: content.trap.realLife,
     steps: content.trap.actions.filter((a) => a.trim()),
   };
+}
+
+/** Kurulum görevi: mesajdaki .apk kurulmak istenince "Az kalsın" (metin ve maddeler tuzaktan). */
+export function fileAlmostStory(content: ScenarioContent): AlmostStory {
+  const compare = content.mission?.install?.fileCompare;
+  return {
+    linkText: "",
+    url: "",
+    owner: "",
+    realLife: content.trap.realLife,
+    steps: content.trap.actions.filter((a) => a.trim()),
+    ...(compare ? { compare } : {}),
+  };
+}
+
+/** Kurulum görevi: kopya oyunun "Az kalsın" getiren iznine evet denince. */
+export function copyAlmostStory(app: StoreApp): AlmostStory {
+  return {
+    linkText: "",
+    url: "",
+    owner: "",
+    realLife: app.almost?.realLife ?? "",
+    steps: (app.almost?.steps ?? []).filter((a) => a.trim()),
+    ...(app.almost ? { compare: app.almost.compare } : {}),
+  };
+}
+
+/** Uygulama kurulunca sorulan izinler, tarayıcıya giden hâliyle. */
+export function installPrompts(app: StoreApp): InstallPrompt[] {
+  return app.permissions.map((p) => ({ text: p.text, note: p.note, icon: p.icon, choices: p.choices }));
+}
+
+/** Son izinden sonra ne açılır. */
+export function installAfter(app: StoreApp): InstallAfter {
+  return app.copy ? { homework: false, text: app.empty } : { homework: true };
 }
 
 /**

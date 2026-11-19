@@ -18,6 +18,7 @@ import { findInCity, getCity, getPublishedLab, type PublishedLab } from "./data"
 import { batchEventSchema, reduceEvents, rowToEvent, type ServerEvent } from "./events";
 import { missionDone, scoreScenario, type ScenarioReport } from "./scoring";
 import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply, type HackedVia } from "./story";
+import { afterInstall, canInstallFile, fileAlmost, installApp as installStep, openHomework as homeworkStep, opensFile, permissionStep } from "./install";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "./training";
 
 type Fail = { ok: false; reason: "auth" | "unverified" | "not_found" | "locked" | "ended" | "rate_limited" | "invalid" };
@@ -334,6 +335,78 @@ export async function leaveDesk(attemptId: string, seq: number, closed: boolean)
   if (!(await record(attempt.id, seq, { type: "desk_left", open, closed: open && closed === true }))) return fail("invalid");
   if (open) return { ok: true as const, almost: leaveStory(attempt.content, closed === true) };
   return { ok: true as const, almost: null };
+}
+
+// --- Kurulum görevi (Mesajlar ve Mağaza) ------------------------------------------------
+
+/** Denemenin durumu; aynı sıra numarasıyla yeniden gönderilen eylem kendi olayını görmesin. */
+const stateOf = (attempt: LoadedAttempt, seq: number) => reduceEvents(attempt.events.filter((e) => e.seq !== seq).map(rowToEvent));
+const validRef = (value: unknown): value is string => typeof value === "string" && /^[a-z0-9-]{1,32}$/.test(value);
+
+/**
+ * Kurulum görevi: mesajdaki eke dokunup telefonun ilk uyarısında "İndir". Dosya inmez, yalnızca
+ * "dosyayı açtı" olayı yazılır (sahte öğede sahteye dokunmak sayılır).
+ */
+export async function openFile(attemptId: string, seq: number, itemId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const item = attempt.content.items.find((i) => i.id === itemId);
+  if (!item || attempt.lab.template !== "MESSAGING" || !opensFile(attempt.content, item) || !validSeq(seq)) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "file_opened", item: item.id }))) return fail("invalid");
+  return { ok: true as const };
+}
+
+/** Kurulum görevi: indirilen dosyada "Yükle". Hiçbir şey kurulmaz; "bilgi girildi" yazılır ve "Az kalsın" döner. */
+export async function installFile(attemptId: string, seq: number, itemId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const item = attempt.content.items.find((i) => i.id === itemId);
+  if (!item || !canInstallFile(attempt.content, stateOf(attempt, seq), item) || !validSeq(seq)) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "info_entered", item: item.id }))) return fail("invalid");
+  return { ok: true as const, almost: fileAlmost(attempt.content) };
+}
+
+/** Kurulum görevi: mağazada "Yükle". Uygulamanın izin pencereleri burada söylenir (kopya mı olduğu söylenmez). */
+export async function installApp(attemptId: string, seq: number, appId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validRef(appId) || !validSeq(seq)) return fail("invalid");
+  const prompts = installStep(attempt.content, stateOf(attempt, seq), appId);
+  if (!prompts) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "app_installed", app: appId }))) return fail("invalid");
+  return { ok: true as const, prompts, after: afterInstall(attempt.content, appId) };
+}
+
+/** Kurulum görevi: izin penceresinde bir seçenek. Kopyanın tehlikeli izni "Az kalsın" getirir; son izinden sonra ne açılacağı döner. */
+export async function answerPermission(attemptId: string, seq: number, appId: string, index: number, choice: number) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validRef(appId) || !validSeq(seq)) return fail("invalid");
+  const step = permissionStep(attempt.content, stateOf(attempt, seq), appId, index, choice);
+  if (!step) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "permission_answered", app: appId, index, choice }))) return fail("invalid");
+  return { ok: true as const, ...step };
+}
+
+/** Kurulum görevi: oyunda "Ödevi aç". Görev biter; ödevin "açıldı" cümlesi döner. */
+export async function openHomework(attemptId: string, seq: number, appId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validRef(appId) || !validSeq(seq)) return fail("invalid");
+  const done = homeworkStep(attempt.content, stateOf(attempt, seq), appId);
+  if (done === null) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "homework_opened", app: appId }))) return fail("invalid");
+  return { ok: true as const, done };
 }
 
 /**

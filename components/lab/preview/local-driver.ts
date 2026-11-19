@@ -7,6 +7,7 @@ import { opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, type Scen
 import { applyEvent, emptyState, type LabEventData } from "@/lib/lab/events";
 import { missionDone, scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
 import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply } from "@/lib/lab/story";
+import { afterInstall, canInstallFile, fileAlmost, installApp, openHomework, opensFile, permissionStep } from "@/lib/lab/install";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "@/lib/lab/training";
 import type { Fail, FailReason, LabDriver, TrainingDriver } from "../driver";
 
@@ -129,6 +130,41 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       const open = state.verified && !state.loggedOut;
       apply({ type: "desk_left", open, closed: open && closed });
       return { ok: true, almost: open ? leaveStory(content, closed) : null };
+    },
+    async openFile(_attemptId, _seq, itemId) {
+      const item = itemOf(itemId);
+      if (ended) return fail("ended");
+      if (!item || template !== "MESSAGING" || !opensFile(content, item)) return fail("invalid");
+      apply({ type: "file_opened", item: item.id });
+      return { ok: true };
+    },
+    async installFile(_attemptId, _seq, itemId) {
+      const item = itemOf(itemId);
+      if (ended) return fail("ended");
+      if (!item || !canInstallFile(content, state, item)) return fail("invalid");
+      apply({ type: "info_entered", item: item.id });
+      return { ok: true, almost: fileAlmost(content) };
+    },
+    async installApp(_attemptId, _seq, appId) {
+      if (ended) return fail("ended");
+      const prompts = installApp(content, state, appId);
+      if (!prompts) return fail("invalid");
+      apply({ type: "app_installed", app: appId });
+      return { ok: true, prompts, after: afterInstall(content, appId) };
+    },
+    async answerPermission(_attemptId, _seq, appId, index, choice) {
+      if (ended) return fail("ended");
+      const step = permissionStep(content, state, appId, index, choice);
+      if (!step) return fail("invalid");
+      apply({ type: "permission_answered", app: appId, index, choice });
+      return { ok: true, ...step };
+    },
+    async openHomework(_attemptId, _seq, appId) {
+      if (ended) return fail("ended");
+      const done = openHomework(content, state, appId);
+      if (done === null) return fail("invalid");
+      apply({ type: "homework_opened", app: appId });
+      return { ok: true, done };
     },
     async finish() {
       const done = missionDone(content, state);

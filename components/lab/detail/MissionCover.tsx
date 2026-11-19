@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { AppIcon } from "./PhoneMockup";
 import type { LabDetailData, MissionCoverData } from "./types";
 import "./MissionCover.css";
+import { PhoneStatus } from "@/components/device/Phone";
+import "@/components/device/phone.css";
 
 /** Satıştaki hazırlık maddelerinin ikonları, sırayla: fotoğrafları yedekle, hesaplardan çık, sıfırla. */
 const stepIcons: LucideIcon[] = [ImageIcon, LogOut, RotateCcw];
@@ -39,7 +41,9 @@ export function MissionCover({ cover, template, className }: { cover: MissionCov
 
       <div aria-hidden="true" className="mc-stage">
         {/* Telefon: yalnızca gelen arama */}
-        <div className="mc-phone">
+        <div className="mc-phone dv-phone" style={{ ["--dv-h" as string]: "440px" }}>
+          <div className="dv-screen">
+          <PhoneStatus tone="dark" />
           <div className="mc-screen">
             <span className="mc-avatar">
               <span className="mc-wave" />
@@ -69,6 +73,7 @@ export function MissionCover({ cover, template, className }: { cover: MissionCov
               </span>
               {t.lab.call.accept}
             </span>
+          </div>
           </div>
         </div>
 

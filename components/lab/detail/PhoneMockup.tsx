@@ -1,4 +1,5 @@
-import { Camera, Flashlight, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
+import { Phone, PhoneLock } from "@/components/device/Phone";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { LabDetailData } from "./types";
@@ -47,53 +48,34 @@ export function PhoneMockup({ data, pill = true, className }: { data: LabDetailD
   const [first, second] = data.phone.notifications;
   return (
     <div className={cn("relative", className)}>
-      <div
-        role="img"
-        aria-label={format(t.phoneLabel, { app: t.phoneApp[data.template] })}
-        className="relative h-[430px] w-[230px] -rotate-2 overflow-hidden rounded-[36px] border-[7px] border-scene-phone-edge bg-scene-ink shadow-card anim-buzz"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(120%_70%_at_30%_0%,var(--scene-lock-1)_0%,var(--scene-lock-2)_55%,var(--scene-lock-3)_100%)]" />
-        <div className="absolute top-2.5 left-1/2 h-5 w-20 -translate-x-1/2 rounded-full bg-scene-ink" />
-        <div className="relative flex flex-col items-center gap-0.5 px-3 pt-[46px] text-scene-white">
-          <span className="text-[13px] opacity-85">{data.phone.date}</span>
-          <span className="text-[54px] leading-none font-bold tracking-[-1px]">{data.phone.time}</span>
-        </div>
-        <div className="absolute inset-x-2.5 top-[150px] flex flex-col gap-2">
-          {first ? (
-            <div className="rounded-2xl bg-scene-white/92 p-2.5 text-scene-ink shadow-floating anim-notification">
-              <div className="flex items-center gap-1.5 text-[11px] text-scene-ink-muted">
-                <AppIcon template={data.template} />
-                <b className="text-scene-ink">{t.phoneApp[data.template]}</b>
-                <span className="ml-auto">{t.now}</span>
-              </div>
-              <div className="mt-1 text-[13px] font-bold">{first.sender}</div>
-              <div className="line-clamp-2 text-xs leading-[1.35] text-scene-ink-2">{first.text}</div>
+      <div role="img" aria-label={format(t.phoneLabel, { app: t.phoneApp[data.template] })} className="-rotate-2 anim-buzz">
+        {/* Sitenin tek telefonu (components/device), masadaki telefonun kilit ekranıyla. */}
+        <Phone height="430px" status="dark">
+          <PhoneLock time={data.phone.time} date={data.phone.date}>
+            <div className="relative z-[1] mt-3 flex w-full flex-col gap-2">
+              {first ? (
+                <div className="flex gap-2 rounded-2xl border border-stage-os-line bg-stage-os-glass p-2.5 anim-notification">
+                  <AppIcon template={data.template} className="size-7" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 text-[11px] text-stage-os-fg-2">
+                      <b className="text-stage-os-fg">{t.phoneApp[data.template]}</b>
+                      <span className="ml-auto">{t.now}</span>
+                    </div>
+                    <div className="mt-0.5 truncate text-[12.5px] font-bold">{first.sender}</div>
+                    <div className="line-clamp-2 text-[11.5px] leading-[1.35] text-stage-os-fg-2">{first.text}</div>
+                  </div>
+                </div>
+              ) : null}
+              {second ? (
+                <div className="flex items-center gap-2 rounded-[14px] border border-stage-os-line bg-stage-os-glass/70 px-2.5 py-2 text-[11px] text-stage-os-fg-2">
+                  <AppIcon template={data.template} className="size-5" />
+                  <span className="min-w-0 flex-1 truncate">{format(t.notificationLine, { sender: second.sender, text: second.text })}</span>
+                  {second.time ? <span>{second.time}</span> : null}
+                </div>
+              ) : null}
             </div>
-          ) : null}
-          {second ? (
-            <div className="rounded-[14px] bg-scene-white/55 px-2.5 py-[9px] text-[11px] text-scene-ink-2">
-              <div className="flex items-center gap-1.5">
-                <AppIcon template={data.template} className="size-3.5" />
-                <b>{t.phoneApp[data.template]}</b>
-                {second.time ? <span className="ml-auto">{second.time}</span> : null}
-              </div>
-              <div className="mt-0.5 truncate">{format(t.notificationLine, { sender: second.sender, text: second.text })}</div>
-            </div>
-          ) : null}
-        </div>
-        {/* Kilit ekranının altı (28, 11 Kasım): fener, kamera ve "Açmak için kaydır". */}
-        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-5 pb-3 text-scene-white">
-          <div className="flex w-full items-center justify-between">
-            <span className="flex size-10 items-center justify-center rounded-full bg-scene-white/18 backdrop-blur-[4px]">
-              <Flashlight className="size-[18px]" strokeWidth={2} />
-            </span>
-            <span className="flex size-10 items-center justify-center rounded-full bg-scene-white/18 backdrop-blur-[4px]">
-              <Camera className="size-[18px]" strokeWidth={2} />
-            </span>
-          </div>
-          <span className="text-xs font-bold opacity-80">{t.swipeToOpen}</span>
-          <span className="h-1 w-24 rounded-full bg-scene-white/85" />
-        </div>
+          </PhoneLock>
+        </Phone>
       </div>
       {pill ? <AppPill template={data.template} className="absolute top-[26px] -right-[34px] rotate-3" /> : null}
     </div>

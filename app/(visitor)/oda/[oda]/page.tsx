@@ -157,7 +157,9 @@ function aheadOf(lab: PublishedLab): LabDetailData["ahead"] {
         ? { kind: "sale", name: mission.sale.platform, product: mission.sale.product }
         : mission?.login
           ? { kind: "login", name: `${mission.login.site} · ${mission.login.school}` }
-          : null,
+          : mission?.install
+            ? { kind: "install", name: `${mission.install.store} · ${mission.install.query}` }
+            : null,
     tasks: lab.scenario?.tasks.length ?? 0,
   };
 }

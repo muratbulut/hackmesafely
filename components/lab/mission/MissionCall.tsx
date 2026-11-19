@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneStatus } from "@/components/device/Phone";
 import { Mic, Phone, PhoneOff, Video, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { format, getMessages } from "@/lib/i18n";
@@ -251,17 +252,15 @@ export function MissionCall({
       <div className="relative z-[2] flex h-full items-center justify-center px-4 py-6">
         {/* Telefon */}
         <div
+          style={{ ["--dv-h" as string]: "min(620px, calc(100dvh - 48px))" }}
           className={cn(
-            "relative h-[min(620px,calc(100dvh-48px))] w-[min(300px,calc(100vw-32px))] rounded-[46px] bg-call-phone p-2.5 shadow-[0_0_0_2px_var(--call-phone-edge),0_40px_80px_rgb(0_0_0/0.7)] [animation:fade-up_.6s_cubic-bezier(.2,.9,.3,1.15)_.2s_both]",
+            "dv-phone [animation:fade-up_.6s_cubic-bezier(.2,.9,.3,1.15)_.2s_both]",
             !live && "[animation:call-buzz_.9s_infinite_.9s]",
             shake && live && "[animation:hk-shake_.4s_ease-out_.3s_2]",
           )}
         >
-          <div className="relative h-full overflow-hidden rounded-[37px] bg-call-screen text-call-text">
-            <span aria-hidden="true" className="absolute top-2 left-1/2 z-[5] h-7 w-24 -translate-x-1/2 rounded-full bg-call-ink" />
-            <span aria-hidden="true" className="absolute inset-x-0 top-0 z-[4] flex h-11 items-center justify-between px-6 text-[13px] font-medium">
-              <span>{t.time}</span>
-            </span>
+          <div className="dv-screen bg-call-screen text-call-text">
+            <PhoneStatus tone="dark" />
 
             {/* Gelen arama */}
             <div

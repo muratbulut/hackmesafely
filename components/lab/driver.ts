@@ -3,7 +3,7 @@
 // çalışan bir sürücüyle açar. Oynatıcı hiçbir zaman doğru cevabı bilmez: bağlantının ne
 // açacağını, hacklenip hacklenmediğini ve raporu hep sürücü söyler.
 
-import type { AlmostStory, EndingTalk, HackedStory, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
+import type { AlmostStory, EndingTalk, HackedStory, InstallAfter, InstallPrompt, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
 import type { BadgeCode } from "@/lib/progress/badges";
@@ -51,6 +51,22 @@ export type LabDriver = {
    * (oda sürer), çıkış yaptıysa null (görev biter).
    */
   leaveDesk(attemptId: string, seq: number, closed: boolean): Promise<{ ok: true; almost: LeaveStory | null } | Fail>;
+  /** Kurulum görevi: mesajdaki eki indirir (telefonun ilk uyarısında "İndir"). */
+  openFile(attemptId: string, seq: number, itemId: string): Promise<{ ok: true } | Fail>;
+  /** Kurulum görevi: indirilen dosyayı kurmak ister; hiçbir şey kurulmaz, "Az kalsın" döner. */
+  installFile(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; almost: AlmostStory } | Fail>;
+  /** Kurulum görevi: mağazadan kurar; izin pencereleri (ve izni yoksa hemen ne açılacağı) döner. */
+  installApp(attemptId: string, seq: number, appId: string): Promise<{ ok: true; prompts: InstallPrompt[]; after: InstallAfter | null } | Fail>;
+  /** Kurulum görevi: izin penceresinde seçim; "Az kalsın" ya da son izinden sonra ne açılacağı. */
+  answerPermission(
+    attemptId: string,
+    seq: number,
+    appId: string,
+    index: number,
+    choice: number,
+  ): Promise<{ ok: true; almost: AlmostStory | null; after: InstallAfter | null } | Fail>;
+  /** Kurulum görevi: oyunda "Ödevi aç"; görev biter, "açıldı" cümlesi döner. */
+  openHomework(attemptId: string, seq: number, appId: string): Promise<{ ok: true; done: string } | Fail>;
   /**
    * Labı bitirir; sonra rapor sayfasına gidilir (önizlemede rapor yerinde açılır). Görevli odada iş
    * doğru yerden yapıldıysa önce iyi bitiş araması, yüz yüze sorunun son sözleri yazılmışsa son konuşma.

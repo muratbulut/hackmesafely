@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneStatus } from "@/components/device/Phone";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -38,7 +39,6 @@ export function MissionSms({
   onClose: () => void;
 }) {
   const t = getMessages().lab.shop;
-  const call = getMessages().lab.call;
   const newSms = getMessages().lab.stage.phone.newSms;
   const [mounted, setMounted] = useState(false);
   const first = useRef<HTMLButtonElement>(null);
@@ -133,16 +133,14 @@ export function MissionSms({
     <div role="dialog" aria-modal="true" aria-label={format(t.phoneDialog, { caller })} className="fixed inset-0 z-[65] flex items-center justify-center px-4 py-6" data-testid="mission-sms">
       <div aria-hidden="true" className="absolute inset-0 bg-call-dark/85 [animation:fade-in_.3s_ease-out_both]" />
       <div
+        style={{ ["--dv-h" as string]: "min(560px, calc(100dvh - 48px))" }}
         className={cn(
-          "relative h-[min(560px,calc(100dvh-48px))] w-[min(300px,calc(100vw-32px))] rounded-[46px] bg-call-phone p-2.5 shadow-[0_0_0_2px_var(--call-phone-edge),0_40px_80px_rgb(0_0_0/0.7)]",
+          "dv-phone",
           "[animation:fade-up_.5s_cubic-bezier(.2,.9,.3,1.15)_both,call-buzz_.9s_.5s_1]",
         )}
       >
-        <div className="relative flex h-full flex-col overflow-hidden rounded-[37px] bg-scene-paper text-scene-ink">
-          <span aria-hidden="true" className="absolute top-2 left-1/2 z-[5] h-7 w-24 -translate-x-1/2 rounded-full bg-call-ink" />
-          <span aria-hidden="true" className="flex h-11 flex-none items-center px-6 text-[13px] font-medium">
-            {call.time}
-          </span>
+        <div className="dv-screen bg-scene-paper text-scene-ink">
+          <PhoneStatus />
           {screen}
         </div>
       </div>

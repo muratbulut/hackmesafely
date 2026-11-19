@@ -121,9 +121,33 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
     mission.lines.some(filled) &&
     mission.good.some(filled) &&
     // Kayıt görevinde kötü bitiş araması yok: yanlış yol "Az kalsın"a gider, oda sürer.
-    (!!mission.signup || mission.bad.some(filled));
+    (!!mission.signup || !!mission.install || mission.bad.some(filled));
   if (mission.login) return loginReady(content, template);
   if (!common) return false;
+  // Kurulum görevi (Mesajlar ve Mağaza): mağaza ve oyun dolu, en az bir gerçek uygulama; sahte
+  // mesajın eki (.apk) ve kurulursa "Az kalsın" karşılaştırması; kopyanın ve puanlanan iznin rapor satırı.
+  if (mission.install) {
+    const install = mission.install;
+    const fakes = content.items.filter((i) => i.kind === "fake");
+    const side = (s: { label: string; value: string }) => filled(s.label) && filled(s.value);
+    return (
+      template === "MESSAGING" &&
+      !mission.shop &&
+      !mission.card &&
+      !mission.sale &&
+      !mission.signup &&
+      content.trap.almost &&
+      [install.store, install.game.title, install.game.homework, install.game.open, install.game.done].every(filled) &&
+      side(install.fileCompare.left) &&
+      side(install.fileCompare.right) &&
+      install.apps.some((a) => !a.copy) &&
+      install.apps.every((a) => [a.name, a.publisher].every(filled)) &&
+      install.apps.filter((a) => a.copy).every((a) => !!a.report && filled(a.empty)) &&
+      install.apps.every((a) => a.permissions.every((p) => p.choices.every(filled) && (p.right === null || !!p.report))) &&
+      fakes.some((i) => i.attachment !== null) &&
+      content.items.every((i) => !i.payment && !i.request && !i.order && !i.form)
+    );
+  }
   if (mission.signup) {
     const forms = content.items.filter((i) => i.form);
     return (

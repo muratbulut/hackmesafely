@@ -1,4 +1,6 @@
 import { X } from "lucide-react";
+import { PhoneStatus } from "@/components/device/Phone";
+import "@/components/device/phone.css";
 import { getMessages, rich } from "@/lib/i18n";
 import { DoneToast, FlagsLabel, Scan, SceneFigure, flagTags } from "./parts";
 import "./QrPosterScene.css";
@@ -59,13 +61,11 @@ export function QrPosterScene() {
         <FakeQr className="hs-qr-poster-qr" />
         <div className="hs-qr-poster-place">{t.posterPlace}</div>
       </div>
+      {/* Sitenin tek telefonu (components/device). */}
       <div className="hs-qr-phone anim-float-1">
-        <div className="hs-qr-glass">
-          <div className="hs-qr-island" />
-          <div className="hs-qr-status">
-            <span>{t.clock}</span>
-            <i className="hs-qr-battery" />
-          </div>
+        <div className="dv-phone">
+        <div className="dv-screen hs-qr-glass">
+          <PhoneStatus tone="dark" time={t.clock} />
           <div className="hs-qr-camera">
             <FakeQr className="hs-qr-camera-qr" />
             <div className="hs-qr-frame">
@@ -93,6 +93,7 @@ export function QrPosterScene() {
               </span>
             </div>
           </div>
+        </div>
         </div>
       </div>
       <FlagsLabel />

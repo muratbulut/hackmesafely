@@ -442,9 +442,10 @@ export type Task = z.infer<typeof taskSchema>;
  * bildirmediyse, reportedReal: gerçek olanı bildirdiyse, always: her zaman. Giriş görevinde
  * (mission.login): leftOpen: çıkış yapmadan kalktıysa, remembered: "Beni hatırla"yı işaretli
  * bıraktıysa, savedPassword: şifreyi tarayıcıya kaydettirdiyse, wrongAnswer: bir soruda tam puan
- * almadıysa.
+ * almadıysa. Kurulum görevinde (mission.install): wrongApp: mağazadaki kopya uygulamayı kurduysa,
+ * extraPermission: puanlanan izinde yanlış seçtiyse.
  */
-export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always", "leftOpen", "remembered", "savedPassword", "wrongAnswer"] as const;
+export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always", "leftOpen", "remembered", "savedPassword", "wrongAnswer", "wrongApp", "extraPermission"] as const;
 export type TipCondition = (typeof tipConditions)[number];
 
 /** Görevli odanın görev puanı: doğru yerden alınca 1. */
@@ -464,6 +465,52 @@ export type LoginChoice = keyof typeof loginPoints;
  * gelen SMS'i (öğedeki `payment`) sunucu söyler, öğrenci kodu yazar ya da yazmaz. Bitiş aramaları
  * (`good`, `bad`) yalnızca bittiğinde sunucudan gelir. Kişi adları içerikte: "Annem", "Annenin".
  */
+/** Kurulum görevinde bir kararın rapor satırı: başlık, doğruysa ve yanlışsa "Ne yaptın", doğrusu ve nedeni. */
+const checkReportSchema = z.object({ title: line(120), ok: line(200), bad: line(200), right: line(300), why: line(400) });
+
+/** "Az kalsın" ekranındaki karşılaştırmanın bir yanı: "Kurmak üzere olduğun" · "KesirKulesi_hizli.apk" · "sınıf grubundan". */
+const compareSideSchema = z.object({ label: line(40), value: line(60), note: line(80).default("") });
+const compareSchema = z.object({ left: compareSideSchema, right: compareSideSchema });
+
+/**
+ * Kurulum görevinde uygulamanın izin penceresi: "konumuna erişmek istiyor", altında neden
+ * ("Yakındaki oyuncuları göster"), 2-3 seçenek. `right` puanlanan izinde doğru seçenektir (null:
+ * hepsi olur, puanı yok); `almost` kopya uygulamada "Az kalsın" getiren seçenektir. İkisi de
+ * tarayıcıya gitmez; pencere uygulama kurulunca sunucudan gelir.
+ */
+export const installPermissionSchema = z.object({
+  text: line(120),
+  note: line(120).default(""),
+  icon: z.enum(cardIcons).default("pin"),
+  choices: z.array(line(40)).min(2).max(3),
+  right: z.number().int().min(0).max(2).nullable().default(null),
+  almost: z.number().int().min(0).max(2).nullable().default(null),
+  report: checkReportSchema.optional(),
+});
+export type InstallPermission = z.infer<typeof installPermissionSchema>;
+
+/**
+ * Kurulum görevinde mağazadaki uygulama: adı, yayıncısı, puanı, indirme sayısı, kısa açıklaması.
+ * `copy` (kopya uygulama), izinler, kopyanın boş ekranı, rapor satırı ve "Az kalsın" ekranı
+ * tarayıcıya gitmez: arama sonucu iki uygulamayı da aynı biçimde gösterir.
+ */
+export const storeAppSchema = z.object({
+  id,
+  name: line(60),
+  publisher: line(40),
+  rating: line(10).default(""),
+  downloads: line(20).default(""),
+  category: line(30).default(""),
+  text: line(200).default(""),
+  icon: z.enum(cardIcons).default("gamepad"),
+  copy: z.boolean().default(false),
+  permissions: z.array(installPermissionSchema).max(3).default([]),
+  empty: line(160).default(""),
+  report: checkReportSchema.optional(),
+  almost: z.object({ realLife: line(500), steps: z.array(line(200)).max(3).default([]), compare: compareSchema }).optional(),
+});
+export type StoreApp = z.infer<typeof storeAppSchema>;
+
 export const missionSchema = z.object({
   /** Arayanın telefondaki adı: "Annem". */
   caller: line(40),
@@ -562,6 +609,22 @@ export const missionSchema = z.object({
       bell: z.object({ text: line(120), button: line(40), left: line(120) }),
       /** Az kalsın ekranında "Sıradaki" kutusu: sıradakinin ne yaptığı. */
       next: line(120),
+    })
+    .optional(),
+  /**
+   * Kurulum görevi (Mesajlar ve Mağaza, Şehir Kapısı "Bu uygulama nereden geliyor?"): telefonda
+   * Mesajlar'ın yanında Mağaza durur. Öğrenci ödevin oyununu mağazadan kurar, izin pencerelerine
+   * cevap verir, oyunu açıp ödevi açınca (`game.done`) görev biter. Sahte mesajdaki .apk eki
+   * telefonun uyarılarıyla açılır; kurulursa "Az kalsın" (metni trap'ten, karşılaştırması
+   * `fileCompare`'den). Mağazadaki kopya uygulama ve puanlanan izin raporda ayrı satırdır.
+   */
+  install: z
+    .object({
+      store: line(30),
+      query: line(40),
+      apps: z.array(storeAppSchema).max(3).default([]),
+      game: z.object({ title: line(60), homework: line(80), open: line(30), done: line(120) }),
+      fileCompare: compareSchema,
     })
     .optional(),
   /** SMS'teki onay kodu: "481 920". Giriş görevinde telefona gelen giriş kodu. */
@@ -682,13 +745,28 @@ export function opensForm(content: Pick<ScenarioContent, "mission">, item: Pick<
   return !!content.mission?.signup && !!item.link && item.form === true && item.kind === "real";
 }
 
-/** Görevli odanın türü: alış (mağaza), satış, kayıt ya da giriş; görevli değilse null. */
-export type MissionMode = "shop" | "sale" | "signup" | "login";
+/** Görevli odanın türü: alış (mağaza), satış, kayıt, giriş ya da kurulum; görevli değilse null. */
+export type MissionMode = "shop" | "sale" | "signup" | "login" | "install";
 
-export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown; login?: unknown } | null }): MissionMode | null {
+export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown; login?: unknown; install?: unknown } | null }): MissionMode | null {
   const mission = content.mission;
   if (!mission) return null;
-  return mission.sale ? "sale" : mission.signup ? "signup" : mission.login ? "login" : "shop";
+  return mission.sale ? "sale" : mission.signup ? "signup" : mission.login ? "login" : mission.install ? "install" : "shop";
+}
+
+/**
+ * Kurulum görevinin rapordaki ayrı kararları (her biri 1 puan): mağazadaki her kopya uygulama
+ * (kurmamak doğru) ve gerçek uygulamaların puanlanan izinleri (doğru seçenek).
+ */
+export type InstallCheck = { key: string; app: string; kind: "copy" | "permission"; index: number };
+
+export function installChecks(content: { mission?: Mission | null }): InstallCheck[] {
+  const apps = content.mission?.install?.apps ?? [];
+  return apps.flatMap((app): InstallCheck[] =>
+    app.copy
+      ? [{ key: `copy-${app.id}`, app: app.id, kind: "copy", index: -1 }]
+      : app.permissions.flatMap((p, index) => (p.right !== null ? [{ key: `perm-${app.id}-${index}`, app: app.id, kind: "permission" as const, index }] : [])),
+  );
 }
 
 /** Satış görevli odada bu öğenin bağlantısı bankanın ödeme isteğini açar mı? */
@@ -719,16 +797,16 @@ function displayMeta<T extends { name: string; title: string }>(meta: T): T {
 
 /**
  * Senaryo labının en yüksek puanı: her sahte 4, her gerçek 1, her soru en yüksek seçeneği, görev 1;
- * giriş görevinde kararlar (loginPoints, toplam 6).
+ * giriş görevinde kararlar (loginPoints, toplam 6), kurulum görevinde her denetim (installChecks) 1.
  */
-export function maxScore(content: Pick<ScenarioContent, "items" | "tasks"> & { mission?: { login?: unknown } }) {
+export function maxScore(content: Pick<ScenarioContent, "items" | "tasks"> & { mission?: Mission | null }) {
   const items = content.items.reduce((sum, item) => sum + (item.kind === "fake" ? 4 : 1), 0);
   const questions = content.tasks
     .filter((task) => task.type === "question")
     .reduce((sum, task) => sum + Math.max(0, ...task.options.map((o) => o.points)), 0);
   const missions = content.tasks.filter((task) => task.type === "mission").length * missionPoints;
   const login = content.mission?.login ? loginPoints.logout + loginPoints.remember + loginPoints.save : 0;
-  return items + questions + missions + login;
+  return items + questions + missions + login + installChecks(content).length;
 }
 
 /** Formdaki ham puanların toplamı: yayına hazırlık listesi her senaryo labında 10 ister. */

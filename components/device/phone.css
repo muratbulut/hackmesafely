@@ -1,0 +1,143 @@
+/*
+ * Sitenin tek telefonu (19 Kasım, Murat: "her yerde aynı telefon"). Ölçü masadaki telefondan
+ * (oda sahne şablonu, T1): 9:19 oran, 600 px boyda 46 px köşe, 9 px degrade kenar, 44 px durum
+ * çubuğu (13 px kalın saat, sinyal, kablosuz, pil). Her yerde yalnızca boy değişir (--dv-h);
+ * köşe, kenar, saat ve simgeler boyla birlikte ölçeklenir. Sınıflar dv- ile başlar.
+ */
+/* Boy --dv-h ile gelir (telefonun kendisinden ya da kapsayıcısından); yoksa 600 px. */
+.dv-phone {
+  --dv-u: calc(var(--dv-h, 600px) / 600);
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  height: var(--dv-h, 600px);
+  width: calc(var(--dv-h, 600px) * 9 / 19);
+  border-radius: calc(var(--dv-u) * 46);
+  padding: calc(var(--dv-u) * 9);
+  background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel-lo) 30%, var(--stage-bezel) 70%, var(--stage-bezel-hi));
+  box-shadow:
+    0 0 0 1.5px var(--stage-bezel-edge),
+    0 30px 60px var(--stage-shadow);
+}
+.dv-screen {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: calc(var(--dv-u) * 38);
+  background: var(--stage-sleep);
+}
+.dv-status {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex: none;
+  height: max(22px, calc(var(--dv-u) * 44));
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(10px, calc(var(--dv-u) * 20));
+  background: var(--scene-paper);
+  color: var(--scene-ink);
+  font-size: max(9px, calc(var(--dv-u) * 13));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+/* Koyu ekranın (arama, kilit ekranı) üstünde: zemin yok, yazı açık, ekranın üstüne biner. */
+.dv-status-dark {
+  position: absolute;
+  inset: 0 0 auto;
+  background: transparent;
+  color: var(--stage-os-fg);
+}
+/* Koyu bir uygulamanın üstünde (öğretmen turu): zemin yok, yazı uygulamanın renginde, akışta kalır. */
+.dv-status-clear {
+  background: transparent;
+  color: inherit;
+}
+.dv-status-icons {
+  display: flex;
+  align-items: center;
+  gap: max(2px, calc(var(--dv-u) * 4));
+}
+.dv-status-icons svg {
+  width: max(8px, calc(var(--dv-u) * 14));
+  height: max(8px, calc(var(--dv-u) * 14));
+}
+.dv-status-icons svg:last-child {
+  width: max(9px, calc(var(--dv-u) * 16));
+  height: max(9px, calc(var(--dv-u) * 16));
+}
+/* Kilit ekranı (masadaki telefonun uyku ekranı gibi): büyük saat, tarih, bildirim kartları. */
+.dv-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--dv-u) * 8);
+  padding: calc(var(--dv-u) * 96) calc(var(--dv-u) * 20) calc(var(--dv-u) * 20);
+  background: var(--stage-sleep);
+  color: var(--stage-os-fg);
+}
+.dv-lock::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(118deg, var(--stage-sleep-shine) 0 26%, transparent 44%);
+}
+.dv-lock-time {
+  font-family: var(--font-heading);
+  font-size: calc(var(--dv-u) * 64);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dv-lock-date {
+  font-size: calc(var(--dv-u) * 15);
+  color: var(--stage-os-fg-2);
+}
+.dv-lock-date::first-letter {
+  text-transform: uppercase;
+}
+
+/* Satış görevinde masaüstündeki telefon çerçevesi: geniş ekranda aynı telefon, oynatıcı boyunda. */
+@media (width >= 64rem) {
+  .dv-frame {
+    --dv-h: var(--lab-height);
+    --dv-u: calc(var(--dv-h) / 600);
+    height: var(--dv-h);
+    width: calc(var(--dv-h) * 9 / 19);
+    flex: none;
+    border-radius: calc(var(--dv-u) * 46);
+    padding: calc(var(--dv-u) * 9);
+    background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel-lo) 30%, var(--stage-bezel) 70%, var(--stage-bezel-hi));
+    box-shadow:
+      0 0 0 1.5px var(--stage-bezel-edge),
+      0 30px 60px var(--stage-shadow);
+  }
+  .dv-frame > .dv-frame-screen {
+    border-radius: calc(var(--dv-u) * 38);
+  }
+}
+/*
+ * Telefonun içinde kaydırma çubuğu görünmez ve yana kaydırma yoktur (19 Kasım, Murat). İçerik yine
+ * parmakla, tekerlekle ve fareyle sürükleyerek (drag-scroll.ts) aşağı kayar.
+ */
+.dv-screen *,
+[data-device="phone"] * {
+  scrollbar-width: none;
+}
+.dv-screen *::-webkit-scrollbar,
+[data-device="phone"] *::-webkit-scrollbar {
+  display: none;
+}
+.dv-screen,
+[data-device="phone"] {
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}

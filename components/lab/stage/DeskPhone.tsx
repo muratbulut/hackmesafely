@@ -1,7 +1,11 @@
 "use client";
 
-import { BatteryFull, Signal, Wifi } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { createPortal } from "react-dom";
+import { PhoneStatus } from "@/components/device/Phone";
+import { useDragScroll } from "@/components/device/drag-scroll";
+import "@/components/device/phone.css";
 import { getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { AppIcon, useClock, type StageApp } from "./common";
@@ -16,7 +20,9 @@ export type PhoneNotice = {
 /**
  * Masadaki telefon (T1, T2, oda sahne şablonu): telefon hiçbir zaman doğrudan ekranı kaplamaz.
  * Masada yatarken ekranı kararmıştır, saat ve gelen bildirim görünür; dokununca öğrenci telefonu
- * alır (ortaya gelir, büyür), işi bitince "Masaya bırak" der. Uygulama hep çizili kalır (açık
+ * alır (ortaya gelir, büyür), işi bitince "Telefonu masaya bırak" der. Bu düğme telefonun içinde
+ * değildir (şablon kararı, bütün odalarda): masaüstünde telefonun altında, telefon genişliğinde
+ * oynatıcının şeridinde "Bırak" olarak durur. Uygulama hep çizili kalır (açık
  * konuşma kaybolmasın); masadayken dokunulamaz. Bildirim gelince telefon titrer ve parlar
  * ("Hareketi azalt" açıksa titremez). Yerini ve boyunu sahne verir (stage.css, data-place).
  */
@@ -29,6 +35,7 @@ export function DeskPhone({
   children,
   screenRef,
   hideDrop = false,
+  barSlot = null,
 }: {
   place: "t1" | "t2";
   inHand: boolean;
@@ -38,11 +45,14 @@ export function DeskPhone({
   children: ReactNode;
   /** Ekranın kendisi (T2'de velinin SMS'i buraya çizilir). */
   screenRef?: Ref<HTMLDivElement>;
-  /** "Masaya bırak" telefonun dışında (sahnenin altında) duruyorsa ekrandaki düğme çizilmez. */
+  /** Sahne kendi "Masaya bırak" düğmesini çiziyorsa (giriş görevi) telefonun altındaki düğme çizilmez. */
   hideDrop?: boolean;
+  /** Telefon genişliğinde "Bırak" düğmesinin yeri (oynatıcının şeridi). */
+  barSlot?: HTMLElement | null;
 }) {
   const t = getMessages().lab.stage.phone;
   const clock = useClock();
+  useDragScroll();
   const body = useRef<HTMLDivElement>(null);
   const [buzzing, setBuzzing] = useState(false);
 
@@ -74,27 +84,9 @@ export function DeskPhone({
         role={inHand ? "group" : undefined}
         aria-label={inHand ? undefined : t.label}
       >
-        <div ref={body} className={cn("st-phone-body", buzzing && "st-buzz", notice && !inHand && "st-glow")}>
-          <div className="st-phone-screen">
-            <div className="flex h-11 flex-none items-center justify-between bg-scene-paper px-5 text-[13px] font-bold text-scene-ink">
-              <span aria-hidden="true">{clock.time}</span>
-              {inHand && !hideDrop ? (
-                <button
-                  type="button"
-                  onClick={onDrop}
-                  className="-mr-2 flex min-h-10 cursor-pointer items-center rounded-full border border-scene-line-strong bg-scene-white px-3 text-xs font-bold text-scene-ink"
-                  data-testid="stage-phone-drop"
-                >
-                  {t.drop}
-                </button>
-              ) : (
-                <span className="flex items-center gap-1" aria-hidden="true">
-                  <Signal className="size-3.5" strokeWidth={2.6} />
-                  <Wifi className="size-3.5" strokeWidth={2.6} />
-                  <BatteryFull className="size-4" strokeWidth={2.2} />
-                </span>
-              )}
-            </div>
+        <div ref={body} className={cn("dv-phone st-phone-body", buzzing && "st-buzz", notice && !inHand && "st-glow")}>
+          <div className="dv-screen st-phone-screen">
+            <PhoneStatus time={clock.time} />
             <div ref={screenRef} inert={!inHand} data-device="phone" className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-scene-white">
               {children}
             </div>
@@ -106,8 +98,8 @@ export function DeskPhone({
                 aria-label={notice ? `${t.pick}: ${notice.title}` : t.pick}
                 data-testid="stage-phone-pick"
               >
-                <span className="font-heading text-[64px] leading-none font-medium tabular-nums">{clock.time}</span>
-                <span className="text-[15px] text-stage-os-fg-2 first-letter:uppercase">{clock.dateLong}</span>
+                <span className="dv-lock-time">{clock.time}</span>
+                <span className="dv-lock-date">{clock.dateLong}</span>
                 {notice ? (
                   <span key={notice.key} className="st-sleep-card">
                     <AppIcon app={notice.app} className="size-9" />
@@ -123,6 +115,29 @@ export function DeskPhone({
           </div>
         </div>
       </div>
+      {inHand && !hideDrop ? (
+        <div className="st-handrow">
+          <button type="button" onClick={onDrop} data-testid="stage-phone-drop">
+            <ArrowDown className="size-4" strokeWidth={2.2} aria-hidden="true" />
+            {t.drop}
+          </button>
+        </div>
+      ) : null}
+      {inHand && !hideDrop && barSlot
+        ? createPortal(
+            <button
+              type="button"
+              onClick={onDrop}
+              aria-label={t.drop}
+              className="flex min-h-10 flex-none cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface px-3 text-sm font-bold text-fg lg:hidden"
+              data-testid="stage-phone-drop"
+            >
+              <ArrowDown className="size-4" strokeWidth={2.2} aria-hidden="true" />
+              {t.dropShort}
+            </button>,
+            barSlot,
+          )
+        : null}
     </>
   );
 }

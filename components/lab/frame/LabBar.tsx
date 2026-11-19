@@ -32,6 +32,7 @@ export function LabBar({
   onExit,
   onRestart,
   mood = "idle",
+  slotRef,
 }: {
   kicker: string;
   title: string;
@@ -44,6 +45,8 @@ export function LabBar({
   /** Masaüstünde Çık'ın yanında "Baştan başla" (onay penceresini açar). */
   onRestart?: () => void;
   mood?: MascotMood;
+  /** Telefon genişliğinde başlığın yanındaki yer (sahne kendi düğmesini buraya koyar). */
+  slotRef?: (element: HTMLDivElement | null) => void;
 }) {
   const t = getMessages().lab.frame;
   const current = done.indexOf(false);
@@ -106,6 +109,7 @@ export function LabBar({
           <X className="size-5" strokeWidth={2.2} aria-hidden="true" />
         </button>
         <h1 className="min-w-0 flex-1 truncate text-base font-bold">{title}</h1>
+        {slotRef ? <div ref={slotRef} className="contents" /> : null}
         <SimulationBadge short />
         <RoomMascot mood={mood} className="w-[34px]" />
       </div>

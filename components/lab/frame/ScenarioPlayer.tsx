@@ -20,6 +20,7 @@ import { BrowserPage } from "../inbox/BrowserPage";
 import { InboxScene } from "../inbox/InboxScene";
 import { LoginStage } from "../login/LoginStage";
 import { MessagingScene } from "../messaging/MessagingScene";
+import { InstallPhone, type InstallHandlers } from "../install/InstallPhone";
 import { MissionCall } from "../mission/MissionCall";
 import { StageView } from "../stage/StageView";
 import { TalkScene } from "../stage/TalkScene";
@@ -85,6 +86,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [story, setStory] = useState<HackedStory | null>(null);
   // "Az kalsın" odasında sahte sayfaya bilgi girince: oda sürer, bu pencere açılır.
   const [almost, setAlmost] = useState<AlmostStory | null>(null);
+  // Telefon genişliğinde şeritteki boş yer: eldeki telefonun "Bırak" düğmesi buraya gelir (DeskPhone).
+  const [barSlot, setBarSlot] = useState<HTMLDivElement | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [failure, setFailure] = useState<SessionProblem | null>(null);
   const [exitOpen, setExitOpen] = useState(false);
@@ -371,6 +374,63 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     setRestartError(t.frame.toasts.error);
   }
 
+  /** Kurulum görevi: dosya, mağaza, izin ve ödev eylemleri (InstallPhone); karar sürücüde. */
+  const installHandlers: InstallHandlers = {
+    async openFile(id) {
+      const result = await session.immediate((attemptId, seq) => driver.openFile(attemptId, seq, id));
+      if (!result) return false;
+      if (!result.ok) {
+        fail(result.reason);
+        return false;
+      }
+      session.applyLocal({ type: "file_opened", item: id });
+      return true;
+    },
+    async installFile(id) {
+      const result = await session.immediate((attemptId, seq) => driver.installFile(attemptId, seq, id));
+      if (!result) return;
+      if (!result.ok) return fail(result.reason);
+      session.applyLocal({ type: "info_entered", item: id });
+      flashMood("surprised", 2400);
+      setAlmost(result.almost);
+    },
+    async installApp(app) {
+      const result = await session.immediate((attemptId, seq) => driver.installApp(attemptId, seq, app));
+      if (!result) return null;
+      if (!result.ok) {
+        fail(result.reason);
+        return null;
+      }
+      session.applyLocal({ type: "app_installed", app });
+      return { prompts: result.prompts, after: result.after };
+    },
+    async answerPermission(app, index, choice) {
+      const result = await session.immediate((attemptId, seq) => driver.answerPermission(attemptId, seq, app, index, choice));
+      if (!result) return null;
+      if (!result.ok) {
+        fail(result.reason);
+        return null;
+      }
+      session.applyLocal({ type: "permission_answered", app, index, choice });
+      if (result.almost) {
+        flashMood("surprised", 2400);
+        setAlmost(result.almost);
+      }
+      return { after: result.after };
+    },
+    async openHomework(app) {
+      const result = await session.immediate((attemptId, seq) => driver.openHomework(attemptId, seq, app));
+      if (!result) return null;
+      if (!result.ok) {
+        fail(result.reason);
+        return null;
+      }
+      session.applyLocal({ type: "homework_opened", app });
+      setNotice(t.mission.homework);
+      return result.done;
+    },
+  };
+
   async function leave() {
     setLeaving(true);
     await session.flush();
@@ -414,7 +474,32 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const stage = scenario.stage && stageFits(scenario.stage.type, template) ? scenario.stage : null;
   // Satış görevli odada (sahnesi yazılmamışsa) sahne masaüstünde bir telefonun içinde açılır (PhoneFrame).
   const phone = template === "MESSAGING" && (!!mission?.sale || stage?.type === "PHONE");
-  const appScene = template === "INBOX" ? <InboxScene {...sceneProps} /> : <MessagingScene {...sceneProps} onReply={reply} phone={phone} />;
+  const install = template === "MESSAGING" ? mission?.install : null;
+  const appScene =
+    template === "INBOX" ? (
+      <InboxScene {...sceneProps} />
+    ) : install ? (
+      <InstallPhone
+        install={install}
+        state={state}
+        files={Object.fromEntries(items.flatMap((i) => (i.attachment ? [[i.id, i.attachment]] : [])))}
+        handlers={installHandlers}
+        messages={(onFile) => (
+          <MessagingScene
+            {...sceneProps}
+            onAttachment={(id) => {
+              attachment(id);
+              onFile(id);
+            }}
+            onReply={reply}
+            phone={phone}
+            files
+          />
+        )}
+      />
+    ) : (
+      <MessagingScene {...sceneProps} onReply={reply} phone={phone} />
+    );
   const browserPage = browser ? (
           <BrowserPage
             app={template}
@@ -501,6 +586,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
         onExit={() => setExitOpen(true)}
         onRestart={() => setRestartOpen(true)}
         mood={mood}
+        slotRef={stage ? setBarSlot : undefined}
       />
 
       <main className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 gap-5 lg:items-start lg:px-6 lg:pt-5 lg:pb-8">
@@ -540,6 +626,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                 onCloseBrowser={() => setBrowser(null)}
                 firstNotice={first ? { title: first.sender, text: (first.body.split("\n")[0] ?? "").replace(/\*\*/g, "") } : null}
                 resumed={!!resume}
+                barSlot={barSlot}
               />
             )}
             {talk}
@@ -613,7 +700,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
           }}
         />
       ) : null}
-      {almost ? <AlmostDialog story={almost} onBack={() => setAlmost(null)} /> : null}
+      {almost ? <AlmostDialog story={almost} onBack={() => setAlmost(null)} backLabel={install ? t.almost.backPhone : undefined} /> : null}
       {leaveAlmost ? <LeaveAlmostDialog story={leaveAlmost} onBack={() => setLeaveAlmost(null)} /> : null}
       {phase === "intro" ? <StartDialog name={title} template={template} starting={starting} onStart={start} /> : null}
       <ExitDialog
