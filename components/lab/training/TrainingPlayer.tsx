@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CircleCheck, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CircleCheck, RotateCcw, X } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState, type ReactNode, type TouchEvent } from "react";
+import { RestartDialog } from "@/components/lab/frame/RestartDialog";
 import { BadgeToast } from "@/components/status/BadgeToast";
 import { LevelUpCelebration } from "@/components/profile/frame/LevelUpCelebration";
 import { Toast } from "@/components/status/Toast";
@@ -58,6 +59,22 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
   const [seen, setSeen] = useState<Record<string, number[]>>({});
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [restartOpen, setRestartOpen] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const [restartError, setRestartError] = useState<string | null>(null);
+
+  /** "Baştan başla": sunucu ilk karta döndürür, oynatıcı yeniden açılır. */
+  async function restart() {
+    setRestarting(true);
+    setRestartError(null);
+    const result = await driver.restart().catch(() => null);
+    if (result?.ok) {
+      window.location.assign(playHref);
+      return;
+    }
+    setRestarting(false);
+    setRestartError(getMessages().lab.frame.toasts.error);
+  }
   const [toast, setToast] = useState<string | null>(null);
   const [badges, setBadges] = useState<BadgeCode[]>([]);
   const [levelUp, setLevelUp] = useState<LevelUp | null>(null);
@@ -225,6 +242,15 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
             <ArrowLeft className="size-4" strokeWidth={2.2} aria-hidden="true" />
             {t.back}
           </Link>
+          <button
+            type="button"
+            onClick={() => setRestartOpen(true)}
+            data-testid="training-restart"
+            className="inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 text-sm font-bold text-fg-3 hover:text-fg"
+          >
+            <RotateCcw className="size-4" strokeWidth={2.2} aria-hidden="true" />
+            {t.restart.button}
+          </button>
           <span aria-hidden="true" className="h-7 w-px bg-line" />
           <div className="flex min-w-0 flex-none flex-col gap-px">
             <span className="text-[11px] font-bold tracking-[0.8px] text-accent-fg">{t.kicker}</span>
@@ -244,6 +270,14 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
           <X className="size-5" strokeWidth={2.2} aria-hidden="true" />
         </Link>
         {progress}
+        <button
+          type="button"
+          onClick={() => setRestartOpen(true)}
+          aria-label={t.restart.button}
+          className="flex size-11 flex-none cursor-pointer items-center justify-center rounded-xl border border-line bg-surface text-fg-2"
+        >
+          <RotateCcw className="size-5" strokeWidth={2.2} aria-hidden="true" />
+        </button>
       </div>
 
       <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} className="flex flex-1 flex-col gap-[22px] px-4 pt-2 pb-[110px] lg:px-6 lg:pt-7 lg:pb-8">
@@ -274,6 +308,20 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
         {blocked ? <p className="sr-only" aria-live="polite">{t.answerFirst}</p> : null}
       </div>
 
+      <RestartDialog
+        open={restartOpen}
+        title={t.restart.title}
+        text={t.restart.text}
+        cancel={t.restart.cancel}
+        confirm={t.restart.confirm}
+        busy={restarting}
+        error={restartError}
+        onCancel={() => {
+          setRestartOpen(false);
+          setRestartError(null);
+        }}
+        onConfirm={() => void restart()}
+      />
       <Toast message={toast} onClose={() => setToast(null)} className="max-lg:bottom-[96px]" />
       {/* Seviye atladıysa önce kutlama; rozet bildirimi kutlama kapanınca gelir. */}
       <BadgeToast codes={levelUp ? [] : badges} onClose={() => setBadges([])} />

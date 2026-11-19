@@ -390,7 +390,18 @@ const studentScreens: Screen<StudentData>[] = [
   { name: "Katılma sayfası", path: (d) => `/katil/${d.code}` },
   // Eğitim labı kart kart (ilerleme sunucuda; her kart bir öncekinin devamı).
   { name: "Eğitim, bilgi kartı", path: trainingPath },
-  { name: "Eğitim, tıkla-bul kartı", open: next },
+  // Baştan başla (19 Kasım): telefonda şeridin sağında; onay alttan açılır.
+  {
+    name: "Eğitim, baştan başla penceresi",
+    open: (page) => page.getByTestId("training-player").getByRole("button", { name: "Baştan başla" }).click(),
+  },
+  {
+    name: "Eğitim, tıkla-bul kartı",
+    open: async (page) => {
+      await page.getByTestId("restart-dialog").getByRole("button", { name: "Vazgeç" }).click();
+      await next(page);
+    },
+  },
   {
     name: "Eğitim, tıkla-bul bulundu",
     open: async (page) => {
@@ -433,10 +444,12 @@ const studentScreens: Screen<StudentData>[] = [
       await page.getByRole("button", { name: "Odadan çık", exact: true }).click();
     },
   },
+  // Baştan başla (19 Kasım): telefonda Çık penceresinin altında.
+  { name: "Odayı baştan başlatma penceresi", open: (page) => page.getByTestId("exit-restart").click() },
   {
     name: "Sahte sayfa",
     open: async (page) => {
-      await page.getByRole("alertdialog").getByRole("button", { name: "Odada kal" }).click();
+      await page.getByTestId("restart-dialog").getByRole("button", { name: "Vazgeç" }).click();
       await page.getByRole("button", { name: "Adresi güncelle" }).click();
       await expect(page.getByLabel(/Postam şifresi/)).toBeVisible();
     },

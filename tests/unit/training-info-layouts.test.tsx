@@ -79,6 +79,7 @@ function setup(cards: Card[]) {
       result: checkPlacement(cards.find((c) => c.id === cardId) as PlacementCard, picks),
     })),
     save: vi.fn(async () => ({ ok: true as const })),
+    restart: vi.fn(async () => ({ ok: true as const })),
   };
   render(
     <TrainingPlayer driver={driver} title="Kişisel veri" cards={cards.map(toClientCard)} startIndex={0} exitHref="/" playHref="/" scenarios={[]} roadmapHref="/" />,

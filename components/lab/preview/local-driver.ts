@@ -39,6 +39,10 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
     async start() {
       return { ok: true, attemptId: previewAttemptId, version: previewVersion };
     },
+    // Önizleme hiçbir şey kaydetmez; oynatıcı yeniden açılınca sürücü de baştan kurulur.
+    async restart() {
+      return { ok: true };
+    },
     async send(_attemptId, batch) {
       if (ended) return fail("ended");
       for (const { event } of batch) apply(event);
@@ -151,6 +155,11 @@ export function localTrainingDriver(content: TrainingContent): TrainingDriver {
       if (!card || !isPlacement(card) || !validPicks(card, picks)) return fail("invalid");
       if (!answered.includes(card.id)) answered.push(card.id);
       return { ok: true, result: checkPlacement(card, picks) };
+    },
+    // Önizleme hiçbir şey kaydetmez; oynatıcı yeniden açılınca sürücü de baştan kurulur.
+    async restart() {
+      answered.length = 0;
+      return { ok: true };
     },
     async save(cardIndex) {
       const card = cardIndex >= content.cards.length ? firstUnanswered(content.cards, answered) : null;

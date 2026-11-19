@@ -28,7 +28,7 @@ const sort: Card = {
 
 function setup() {
   const place = vi.fn(async (_cardId: string, picks: number[]) => ({ ok: true as const, result: checkPlacement(sort as PlacementCard, picks) }));
-  const driver: TrainingDriver = { spot: vi.fn(), hint: vi.fn(), answer: vi.fn(), place, save: vi.fn(async () => ({ ok: true as const })) };
+  const driver: TrainingDriver = { spot: vi.fn(), hint: vi.fn(), answer: vi.fn(), place, save: vi.fn(async () => ({ ok: true as const })), restart: vi.fn(async () => ({ ok: true as const })) };
   render(
     <TrainingPlayer driver={driver} title="Kişisel veri" cards={[toClientCard(sort)]} startIndex={0} exitHref="/" playHref="/" scenarios={[]} roadmapHref="/" />,
   );

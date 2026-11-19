@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ClipboardList, X } from "lucide-react";
+import { ArrowLeft, ClipboardList, RotateCcw, X } from "lucide-react";
 import type { MascotMood } from "@/components/mascot/Mascot";
 import { RoomMascot } from "@/components/mascot/RoomMascot";
 import { format, getMessages } from "@/lib/i18n";
@@ -30,6 +30,7 @@ export function LabBar({
   total,
   done,
   onExit,
+  onRestart,
   mood = "idle",
 }: {
   kicker: string;
@@ -40,6 +41,8 @@ export function LabBar({
   /** Görev parçaları: bitti, şu an, sırada. */
   done: boolean[];
   onExit: () => void;
+  /** Masaüstünde Çık'ın yanında "Baştan başla" (onay penceresini açar). */
+  onRestart?: () => void;
   mood?: MascotMood;
 }) {
   const t = getMessages().lab.frame;
@@ -53,6 +56,17 @@ export function LabBar({
             <ArrowLeft className="size-4" strokeWidth={2.2} aria-hidden="true" />
             {t.exit}
           </button>
+          {onRestart ? (
+            <button
+              type="button"
+              onClick={onRestart}
+              data-testid="bar-restart"
+              className="inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 text-sm font-bold text-fg-3 hover:text-fg"
+            >
+              <RotateCcw className="size-4" strokeWidth={2.2} aria-hidden="true" />
+              {getMessages().lab.frame.restart.button}
+            </button>
+          ) : null}
           <span aria-hidden="true" className="h-7 w-px bg-line" />
           <div className="flex min-w-0 flex-col gap-px">
             <span className="text-[11px] font-bold tracking-[0.8px] text-accent-fg">{kicker}</span>
