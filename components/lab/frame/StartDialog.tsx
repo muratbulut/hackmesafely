@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronRight, ClipboardList, Clock, Flag, Link2, Mail, MessageCircle, ShieldCheck, type LucideIcon } from "lucide-react";
+import { Check, ChevronRight, ClipboardList, Clock, Flag, Link2, Mail, MessageCircle, RotateCcw, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Fragment, useEffect, useEffectEvent, useRef, useState } from "react";
 import type { ScenarioTemplate } from "@/lib/lab/content";
 import { getMessages } from "@/lib/i18n";
@@ -161,7 +161,20 @@ export function StartDialog({
 }
 
 /** Çıkış onayı (Lab-Cerceve): "Odada kal" öne çıkar, "Çık" ilerlemeyi kaydedip lab sayfasına döner. */
-export function ExitDialog({ open, leaving, onStay, onLeave }: { open: boolean; leaving: boolean; onStay: () => void; onLeave: () => void }) {
+export function ExitDialog({
+  open,
+  leaving,
+  onStay,
+  onLeave,
+  onRestart,
+}: {
+  open: boolean;
+  leaving: boolean;
+  onStay: () => void;
+  onLeave: () => void;
+  /** Telefonda şeritte yer yok: "Baştan başla" çıkış penceresinin altında durur. */
+  onRestart?: () => void;
+}) {
   const t = getMessages().lab.frame.exitDialog;
   const stay = useRef<HTMLButtonElement>(null);
   const cancel = useEffectEvent(onStay);
@@ -211,6 +224,17 @@ export function ExitDialog({ open, leaving, onStay, onLeave }: { open: boolean; 
             {t.leave}
           </button>
         </div>
+        {onRestart ? (
+          <button
+            type="button"
+            onClick={onRestart}
+            data-testid="exit-restart"
+            className="mx-auto inline-flex min-h-10 cursor-pointer items-center gap-1.5 text-sm font-bold text-fg-3 hover:text-fg"
+          >
+            <RotateCcw className="size-4" strokeWidth={2.2} aria-hidden="true" />
+            {t.restart}
+          </button>
+        ) : null}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { routes } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { AheadBox, AvatarStack, LearnDisclosure, LearnList, LockedLearn, PreviousAttempt, StepsRoad, StepsRow, detailSteps } from "./DetailParts";
 import { MissionCover } from "./MissionCover";
+import { RestartButton } from "./RestartButton";
 import { AppPill, PhoneMockup } from "./PhoneMockup";
 import type { LabDetailData } from "./types";
 
@@ -59,6 +60,7 @@ export function LabDetail({ data }: { data: LabDetailData }) {
             {/* 28 (11 Kasım): raporun bağlantısı yalnızca "Önceki denemen" kutusunda; telefonla aynı. */}
             <div className="hidden flex-wrap items-center gap-3 lg:flex">
               <MainAction kind={action.kind} href={action.href} training={data.training?.name ?? null} />
+              {action.kind === "continue" ? <RestartButton slug={data.slug} /> : null}
             </div>
             <SoundNote data={data} />
             <Completions data={data} />
@@ -101,6 +103,11 @@ export function LabDetail({ data }: { data: LabDetailData }) {
         {/* Telefonda ana düğme alt menünün üstünde durur; sayfanın sonuna gelince yerine oturur. */}
         <div className="sticky bottom-[92px] z-10 -mx-4 mt-6 bg-linear-to-b from-transparent to-canvas to-40% px-4 pt-6 pb-2.5 lg:hidden">
           <MainAction kind={action.kind} href={action.href} training={data.training?.name ?? null} block />
+          {action.kind === "continue" ? (
+            <div className="mt-2">
+              <RestartButton slug={data.slug} block />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -64,6 +64,23 @@ export async function startAttempt(slug: string) {
   return { ok: true as const, attemptId: attempt.id, version: attempt.labVersion };
 }
 
+/**
+ * "Baştan başla" (19 Kasım, Murat): yarım deneme silinmez, ABANDONED olur (raporu, puanı ve bitirdi
+ * bilgisi yoktur; isFinished saymaz). Yeni deneme oynatıcı açılınca "Hazırım, başla" ile gelir.
+ * Yarım deneme yoksa bir şey yapmaz.
+ */
+export async function restartAttempt(slug: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const lab = await getPublishedLab(slug);
+  if (!lab || lab.type !== "SCENARIO" || !lab.scenario) return fail("not_found");
+  await db.labAttempt.updateMany({
+    where: { userId: who.user.id, labId: lab.id, status: "IN_PROGRESS" },
+    data: { status: "ABANDONED", endedAt: new Date() },
+  });
+  return { ok: true as const };
+}
+
 type LoadedAttempt = {
   id: string;
   userId: string;
@@ -435,4 +452,20 @@ export async function saveTrainingProgress(slug: string, cardIndex: number) {
   // Bu bitişle seviye atladıysa oynatıcı kutlamayı gösterir (görüldü bilgisini kutlama yazar).
   const levelUp = finished && !existing?.completedAt ? await getPendingLevelUp(who.user.id, (await getProgressSummary(who.user.id)).level.level) : null;
   return { ok: true as const, badges, levelUp };
+}
+
+/**
+ * Eğitimde "Baştan başla": ilk karta döner. Bitmiş eğitim bitmiş kalır (puan ve rozet değişmez);
+ * bitmemiş eğitimde kalınan kart ve cevaplanan kartlar sıfırlanır, bitirmek için sorular yeniden
+ * cevaplanır.
+ */
+export async function restartTraining(slug: string) {
+  const who = await actor(false);
+  if (!who.ok) return who;
+  const lab = await getPublishedLab(slug);
+  if (!lab || lab.type !== "TRAINING" || !lab.training) return fail("not_found");
+  if (!(await trainingOpen(who.user.id, lab))) return fail("locked");
+  // Bitmiş eğitim zaten ilk karttan açılır; satırına dokunulmaz ("okunan kart" sayısı düşmesin).
+  await db.trainingProgress.updateMany({ where: { userId: who.user.id, labId: lab.id, completedAt: null }, data: { cardIndex: 0, answeredCards: [] } });
+  return { ok: true as const };
 }

@@ -25,6 +25,7 @@ import { TalkScene } from "../stage/TalkScene";
 import { useLabSession, type SessionProblem } from "../useLabSession";
 import { LabBar } from "./LabBar";
 import { PhoneFrame } from "./PhoneFrame";
+import { RestartDialog } from "./RestartDialog";
 import { ExitDialog, StartDialog } from "./StartDialog";
 import { TaskAside, TaskSheet } from "./TaskPanel";
 import { prefersReducedMotion } from "@/lib/motion";
@@ -86,6 +87,9 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [notice, setNotice] = useState<string | null>(null);
   const [failure, setFailure] = useState<SessionProblem | null>(null);
   const [exitOpen, setExitOpen] = useState(false);
+  const [restartOpen, setRestartOpen] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const [restartError, setRestartError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [finishing, setFinishing] = useState(false);
   // Şeritteki maskot: bildirilen mesajda bir an şüphelenir, hacklenince kırmızıya döner.
@@ -308,6 +312,19 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     return { reply: result.reply, done: result.done };
   }
 
+  /** "Baştan başla": yarım deneme yarım bırakılır, oynatıcı ilk sahneden yeniden açılır. */
+  async function restart() {
+    setRestarting(true);
+    setRestartError(null);
+    const result = await driver.restart().catch(() => null);
+    if (result?.ok) {
+      window.location.assign(playHref);
+      return;
+    }
+    setRestarting(false);
+    setRestartError(t.frame.toasts.error);
+  }
+
   async function leave() {
     setLeaving(true);
     await session.flush();
@@ -410,6 +427,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
         total={tasks.length}
         done={progress.done}
         onExit={() => setExitOpen(true)}
+        onRestart={() => setRestartOpen(true)}
         mood={mood}
       />
 
@@ -501,7 +519,30 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
       ) : null}
       {almost ? <AlmostDialog story={almost} onBack={() => setAlmost(null)} /> : null}
       {phase === "intro" ? <StartDialog name={title} template={template} starting={starting} onStart={start} /> : null}
-      <ExitDialog open={exitOpen} leaving={leaving} onStay={() => setExitOpen(false)} onLeave={leave} />
+      <ExitDialog
+        open={exitOpen}
+        leaving={leaving}
+        onStay={() => setExitOpen(false)}
+        onLeave={leave}
+        onRestart={() => {
+          setExitOpen(false);
+          setRestartOpen(true);
+        }}
+      />
+      <RestartDialog
+        open={restartOpen}
+        title={t.frame.restart.title}
+        text={t.frame.restart.text}
+        cancel={t.frame.restart.cancel}
+        confirm={t.frame.restart.confirm}
+        busy={restarting}
+        error={restartError}
+        onCancel={() => {
+          setRestartOpen(false);
+          setRestartError(null);
+        }}
+        onConfirm={() => void restart()}
+      />
       {phase === "hacked" && story ? <HackedAlarm kind={story.kind} account={story.account} avatar={avatar} contact={story.contact} alarm={story.alarm} onDone={showScene} /> : null}
       <Toast message={problemText ?? notice} onClose={clearToast} className="max-lg:bottom-[84px]" />
     </div>

@@ -7,6 +7,8 @@ import {
   finishAttempt,
   openLink,
   payShop,
+  restartAttempt,
+  restartTraining,
   saveTrainingProgress,
   sendEvents,
   sendForm,
@@ -21,6 +23,7 @@ import type { LabDriver, TrainingDriver } from "./driver";
 export function serverDriver(slug: string): LabDriver {
   return {
     start: () => startAttempt(slug),
+    restart: () => restartAttempt(slug),
     send: (attemptId, batch) => sendEvents(attemptId, batch),
     openLink,
     submitTrap,
@@ -41,5 +44,6 @@ export function serverTrainingDriver(slug: string): TrainingDriver {
     answer: (cardId, option) => checkTrainingAnswer(slug, cardId, option),
     place: (cardId, picks) => checkTrainingPlacement(slug, cardId, picks),
     save: (cardIndex) => saveTrainingProgress(slug, cardIndex),
+    restart: () => restartTraining(slug),
   };
 }

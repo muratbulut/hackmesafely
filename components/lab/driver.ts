@@ -17,6 +17,8 @@ export type QueuedEvent = { seq: number; event: BatchEvent };
 export type LabDriver = {
   /** "Hazırım, başla": deneme açar (ya da yarım denemeyi verir). */
   start(): Promise<{ ok: true; attemptId: string; version: number } | Fail>;
+  /** "Baştan başla": yarım deneme yarım bırakılır (silinmez); oynatıcı sonra yeniden açılır. */
+  restart(): Promise<{ ok: true } | Fail>;
   send(attemptId: string, batch: QueuedEvent[]): Promise<{ ok: true } | Fail>;
   openLink(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; page: LinkPage } | Fail>;
   /** Sahte sayfaya bilgi girildi: hacklendi, ya da "Az kalsın" odasında Az kalsın ekranı (oda sürer). */
@@ -67,6 +69,8 @@ export type TrainingDriver = {
    */
   /** Bitişte kazanılan rozetler ve gösterilmemiş seviye atlama (önizlemede ikisi de yok). */
   save(cardIndex: number): Promise<{ ok: true; badges?: BadgeCode[]; levelUp?: LevelUp | null } | Fail | Unanswered>;
+  /** "Baştan başla": ilk karta döner; bitmemiş eğitimde cevaplar da sıfırlanır. */
+  restart(): Promise<{ ok: true } | Fail>;
 };
 
 /** Eğitim bitirilmek istendi ama bu sıradaki soru kartı cevaplanmadı. */

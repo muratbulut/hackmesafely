@@ -43,6 +43,7 @@ function setup(cards: Card[]) {
     answer: vi.fn(),
     place,
     save: vi.fn(async () => ({ ok: true as const })),
+    restart: vi.fn(async () => ({ ok: true as const })),
   };
   render(
     <TrainingPlayer

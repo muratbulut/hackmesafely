@@ -64,6 +64,7 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Gelen kutusu (Postam), mesajlaşma | `SceneTemplate.INBOX`, `SceneTemplate.MESSAGING` |
 | Deneme | `LabAttempt` |
 | Hacklendin (ele geçirildi) | `AttemptStatus.HACKED` |
+| Baştan başla (odayı yeniden başlatma; yarım deneme yarıda kalır, silinmez) | `restartAttempt`, `restartTraining` (`lib/lab/actions.ts`), `RestartDialog`, `AttemptStatus.ABANDONED` |
 | Ele geçirilen hesap ("Hangi hesap?", boşsa Postam) | `trap.account`, `compromisedAccount` (`lib/lab/story.ts`) |
 | Rapor puanı | `reportScore` |
 | Rozet, vitrin | badge (`EarnedBadge`), `showcaseOrder` |

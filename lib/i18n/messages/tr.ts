@@ -848,7 +848,7 @@ export const tr = {
     preview: {
       label: "Seçili oda",
       finished: "{n} kişi bitirdi",
-      go: { review: "Kartlara tekrar bak", report: "Raporu gör", next: "Odaya gir", training: "Eğitime başla", open: "Başla" },
+      go: { review: "Eğitimi baştan yap", report: "Raporu gör", next: "Odaya gir", training: "Eğitime başla", open: "Başla" },
       locked: "{name} bitince açılır.",
       lockedNoName: "Mahallenin eğitim odasını bitirince açılır.",
       visitorGo: "Kayıt ol ve başla",
@@ -1156,6 +1156,16 @@ export const tr = {
         text: "İlerlemen kaydedilir. Oda sayfasından kaldığın yerden devam edebilirsin.",
         stay: "Odada kal",
         leave: "Çık",
+        restart: "Odayı baştan başlat",
+      },
+      // Baştan başla (19 Kasım, Murat): eski deneme silinmez, yarım kalır; puan en iyi denemeden gelir.
+      restart: {
+        button: "Baştan başla",
+        title: "Odayı baştan başlatmak istiyor musun?",
+        text: "Bu denemedeki kararların yarım kalmış deneme olarak saklanır, puanına sayılmaz. Oda ilk sahneden yeniden başlar.",
+        cancel: "Vazgeç",
+        confirm: "Baştan başla",
+        starting: "Başlıyor…",
       },
       toasts: {
         decision: "Kararın rapora yazıldı",
@@ -1523,6 +1533,13 @@ export const tr = {
       },
       prev: "Geri",
       prevLabel: "Önceki kart",
+      restart: {
+        button: "Baştan başla",
+        title: "Eğitimi baştan başlatmak istiyor musun?",
+        text: "İlk karttan yeniden başlarsın. Bitirdiysen eğitim bitmiş sayılmaya devam eder, puanın değişmez.",
+        cancel: "Vazgeç",
+        confirm: "Baştan başla",
+      },
       next: "Devam",
       finishCards: "Bitir",
       answers: "Cevaplar",
@@ -1692,7 +1709,7 @@ export const tr = {
         first: "İlk senaryo odasına geç",
         trainingText: "Sıradaki eğitim odası artık açık. Öğrendiklerinin üstüne yenisini koy, senaryo odaları da orada seni bekliyor.",
         nextTraining: "Sıradaki eğitime geç",
-        again: "Kartlara baştan bak",
+        again: "Eğitimi baştan yap",
         none: "Bu eğitimin henüz senaryo odası yok. Yakında eklenecek.",
         roadmap: "Yol haritasına dön",
         summary: { clickFind: "Tıkla-bul", quiz: "Mini test", video: "Video sorusu", match: "Eşleştirme", sort: "Kutulara ayırma", fill: "Boşluk doldurma" },
@@ -1860,7 +1877,8 @@ export const tr = {
     detail: {
       start: "Odaya gir",
       continue: "Kaldığın yerden devam et",
-      again: "Tekrar dene",
+      again: "Odayı baştan oyna",
+      restart: "Baştan başla",
       lockedButton: "Önce eğitim odasını bitir",
       // 28 (11 Kasım): kilitli senaryoda ana düğme eğitime götürür ve adını söyler.
       lockedTo: "Önce eğitim: {name}",
