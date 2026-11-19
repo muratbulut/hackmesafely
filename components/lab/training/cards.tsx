@@ -11,6 +11,8 @@ import { RichLine, SenderAvatar } from "../scene/parts";
 import { QuizArtView } from "./art";
 import { LinkPeek } from "./LinkPeek";
 import { SmsPeek } from "./SmsPeek";
+import { FilePeek } from "./FilePeek";
+import { PermissionPeek } from "./PermissionPeek";
 import { cardIconMap } from "./card-icons";
 import { CardTag, CardTitle, Mark } from "./common";
 import { BankCardInfo, ExploreInfo, StepsInfo } from "./InfoLayouts";
@@ -417,7 +419,17 @@ export function QuizView({ card, answer, busy, onAnswer }: { card: QuizCard; ans
         <CardTag>{card.guess ? t.tags.guess : t.tags.quiz}</CardTag>
         {!answer ? <span className="text-[13px] font-bold text-fg-3">{card.guess ? t.quiz.guess.pick : t.quiz.pick}</span> : null}
       </div>
-      {card.link ? <LinkPeek link={card.link} /> : card.sms ? <SmsPeek sms={card.sms} /> : card.art ? <QuizArtView art={card.art} /> : null}
+      {card.link ? (
+        <LinkPeek link={card.link} />
+      ) : card.sms ? (
+        <SmsPeek sms={card.sms} />
+      ) : card.file ? (
+        <FilePeek file={card.file} revealed={answer !== null} />
+      ) : card.permission ? (
+        <PermissionPeek permission={card.permission} />
+      ) : card.art ? (
+        <QuizArtView art={card.art} />
+      ) : null}
       <CardTitle>{card.question}</CardTitle>
       <Options options={card.options} answer={answer} busy={busy} onAnswer={onAnswer} />
       {answer ? <Feedback answer={answer} guess={card.guess} /> : null}

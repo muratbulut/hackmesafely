@@ -87,7 +87,7 @@ export const cardIcons = [
   "globe", "users", "lock", "eye", "shield", "ban",
   "gamepad", "school", "camera", "house", "key", "phone", "card", "mail", "user", "id", "pin", "calendar", "message", "image", "heart", "tag",
   "call", "flip", "stop", "ask", "search", "flag", "gift", "pen",
-  "headphones",
+  "headphones", "file", "cog", "download",
 ] as const;
 export type CardIcon = (typeof cardIcons)[number];
 
@@ -155,6 +155,17 @@ export const cardSchema = z.discriminatedUnion("type", [
      * gönderen ve metin. Yalnızca gösterilir. Yazılırsa `art` yerine çıkar; `link` varsa o çıkar.
      */
     sms: z.object({ from: line(40), text: line(160) }).optional(),
+    /**
+     * Sorunun üstünde bir mesaj eki (Şehir Kapısı, Dosya ve uygulama): grupta ya da sohbette gelen
+     * dosya; gönderen, mesaj, dosya adı ve boyutu. Cevaptan sonra adın son noktadan sonrası (uzantı,
+     * "soyadı") sarıyla ayrılır. Yalnızca gösterilir, indirilmez. `link` ve `sms` yoksa çıkar.
+     */
+    file: z.object({ from: line(40), text: line(160).default(""), name: line(60), size: line(20).default("") }).optional(),
+    /**
+     * Sorunun üstünde bir izin penceresi (Şehir Kapısı, Dosya ve uygulama): uygulamanın adı, ne
+     * istediği ve ikonu. "İzin ver" ve "Reddet" yalnızca çizimdir, basılmaz. `link`, `sms`, `file` yoksa çıkar.
+     */
+    permission: z.object({ app: line(40), text: line(120), icon: z.enum(cardIcons).default("camera") }).optional(),
     /**
      * Kuraldan önce gelen soru (Şehir Kapısı, 18 Kasım, Murat): etiketi "Mini test" yerine "Önce
      * tahmin", geri bildirimi yumuşak ("Tahminin doğru!", "İyi tahmin, ama doğrusu B."). Puanlama aynı.

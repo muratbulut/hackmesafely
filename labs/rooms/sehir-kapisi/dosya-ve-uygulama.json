@@ -1,0 +1,413 @@
+{
+  "slug": "dosya-ve-uygulama",
+  "neighborhood": "sehir-kapisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 2,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Dosya ve uygulama",
+      "title": "Her dosyanın bir soyadı var",
+      "summary": "Bir dosyanın ne olduğunu adının sonundan nasıl anlarsın? APK nedir, bir uygulama nereden ve nasıl kurulur?",
+      "story": "Ödev PDF'i, tatil fotoğrafı, sevdiğin şarkı, yeni bir oyun: hepsi birer dosya. Bazı dosyalar yalnızca açılıp bakılır, bazıları ise açılınca çalışır ve cihazında bir şeyler yapar. Hangisinin hangisi olduğunu dosyanın soyadı, yani uzantısı söyler. Bu odada önce tahmin edecek, sonra kuralı göreceksin. Yazılım Ormanı'na bu bilgiyle gireceksin.",
+      "learn": [
+        {
+          "title": "Dosyanın soyadı",
+          "text": "Uzantıyı okumak: hangi dosyaya yalnızca bakılır, hangisi açılınca çalışır?"
+        },
+        {
+          "title": "APK nedir?",
+          "text": "Android uygulamasının kurulum dosyası; mağazadan gelenle mesajla gelen arasındaki fark."
+        },
+        {
+          "title": "Kurmadan önce",
+          "text": "Uygulamayı nereden kurarsın, izin penceresi ne sorar, kime danışırsın?"
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 7
+    },
+    "cards": [
+      {
+        "id": "kaan-yayinda",
+        "type": "video",
+        "title": "Kaan Oyunda: dosyanın soyadı",
+        "src": "/videolar/dosyanin-soyadi.mp4",
+        "duration": "1:26",
+        "question": {
+          "at": 48,
+          "question": "Sınıf grubuna odev.pdf.exe geldi. Adında pdf yazıyor. Sence bu dosya ne?",
+          "options": [
+            "Bir PDF belgesi, adında pdf yazıyor",
+            "Bir program, açınca çalışır",
+            "Hem PDF hem program, ikisi birden",
+            "Bozuk bir dosya, açılmaz"
+          ],
+          "answer": 1,
+          "explain": "Dosyanın türünü adının en sonundaki parça söyler: son noktadan sonrası. Bunun sonu .exe, yani açılınca çalışan bir program. Adındaki pdf, onu belge sanman için orada."
+        }
+      },
+      {
+        "id": "dosyanin-soyadi",
+        "type": "info",
+        "title": "Dosyanın soyadı ne söyler?",
+        "paragraphs": [
+          "Cihazındaki her şey bir dosyadır. Dosyanın adını herkes istediği gibi koyar ama son noktadan sonraki kısa parça, yani **uzantısı**, onun ne olduğunu söyler. Uzantıya dosyanın soyadı diyebilirsin."
+        ],
+        "points": [
+          {
+            "title": "Belge",
+            "icon": "file",
+            "text": ".pdf, .docx, .txt. Açınca okursun."
+          },
+          {
+            "title": "Resim",
+            "icon": "image",
+            "text": ".jpg, .png. Açınca bakarsın."
+          },
+          {
+            "title": "Ses ve video",
+            "icon": "headphones",
+            "text": ".mp3, .mp4. Açınca dinler ya da izlersin."
+          },
+          {
+            "title": "Program ve uygulama",
+            "icon": "cog",
+            "text": ".exe bilgisayarda, .apk Android telefonda. **Açınca çalışır** ve cihazında bir şeyler yapar."
+          }
+        ]
+      },
+      {
+        "id": "soyadi-nasil-okunur",
+        "type": "info",
+        "layout": "steps",
+        "title": "Soyadı nasıl okunur?",
+        "paragraphs": [
+          "Bir dosyaya bakarken nereye bakacağını bilmen yeter. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Son noktayı bul",
+            "icon": "search",
+            "text": "Uzantı, adın içindeki **son** noktadan sonraki parçadır."
+          },
+          {
+            "title": "Çift soyada dikkat",
+            "icon": "eye",
+            "text": "odev.pdf.exe bir PDF değildir. Son noktadan sonrası .exe, yani bir **program**."
+          },
+          {
+            "title": "Simge kandırabilir",
+            "icon": "image",
+            "text": "Bir programın simgesi PDF ya da fotoğraf simgesine benzetilebilir. **Simgeye değil soyadına bak.**"
+          },
+          {
+            "title": "Soyadı gizliyse",
+            "icon": "ask",
+            "text": "Bazı bilgisayarlar uzantıyı gizler. Görünür yapmak için bir büyüğünden yardım iste."
+          }
+        ]
+      },
+      {
+        "id": "acinca-ne-olur",
+        "type": "sort",
+        "title": "Açınca ne olur?",
+        "hint": "Her dosyanın soyadına bak: yalnızca bakılır mı, yoksa açınca çalışır mı?",
+        "bins": [
+          {
+            "label": "Bakılır ya da dinlenir",
+            "note": "Belge, resim, ses, video",
+            "color": "green",
+            "icon": "eye"
+          },
+          {
+            "label": "Açınca çalışır",
+            "note": "Program ya da uygulama",
+            "color": "red",
+            "icon": "cog"
+          }
+        ],
+        "items": [
+          {
+            "text": "tatil_fotografi.jpg",
+            "icon": "image",
+            "bin": 0
+          },
+          {
+            "text": "sinav_notlari.pdf",
+            "icon": "file",
+            "bin": 0
+          },
+          {
+            "text": "sevdigim_sarki.mp3",
+            "icon": "headphones",
+            "bin": 0
+          },
+          {
+            "text": "Kurulum.exe",
+            "icon": "cog",
+            "bin": 1
+          },
+          {
+            "text": "ElmasHack.apk",
+            "icon": "gamepad",
+            "bin": 1
+          },
+          {
+            "text": "ders_videosu.mp4",
+            "icon": "camera",
+            "bin": 0
+          },
+          {
+            "text": "kantin_menu.pdf.exe",
+            "icon": "file",
+            "bin": 1
+          },
+          {
+            "text": "Guncelleme.apk",
+            "icon": "phone",
+            "bin": 1
+          }
+        ],
+        "explain": ".jpg, .pdf, .mp3 ve .mp4 açılınca yalnızca gösterilir. .exe ve .apk ise programdır, açılınca çalışır. kantin_menu.pdf.exe'nin son soyadı .exe: adındaki pdf seni kandırmak için orada. Bir programı yalnızca nereden geldiğinden eminsen açarsın."
+      },
+      {
+        "id": "elmashack-apk",
+        "type": "quiz",
+        "guess": true,
+        "file": {
+          "from": "Oyun Dünyası Sohbeti",
+          "text": "Mağazada yok, hileli sürüm! Sınırsız elmas için bunu kurun.",
+          "name": "ElmasHack.apk",
+          "size": "48 MB"
+        },
+        "question": "Oyun sohbetine bu dosya atıldı. Kurarsan ne olur?",
+        "options": [
+          "Telefonuma bir uygulama kurulur; içinde ne olduğunu kimse kontrol etmedi",
+          "Oyunuma elmas eklenir, başka hiçbir şey olmaz",
+          "Hiçbir şey olmaz, .apk sadece bir resim",
+          "Oyunun kendisi güncellenir, mağazadaki gibi"
+        ],
+        "answer": 0,
+        "explain": ".apk bir Android uygulamasıdır. Kurarsan telefonunda çalışır ve verdiğin izinlerle mesajlarına, kişilerine, hesaplarına ulaşabilir. Mağazada olmayan ve sohbete atılan bir uygulamanın kimin yaptığı ve içinde ne olduğu belli değildir."
+      },
+      {
+        "id": "apk-nedir",
+        "type": "info",
+        "title": "APK nedir?",
+        "paragraphs": [
+          "APK, Android telefona uygulama kurmak için kullanılan dosyadır. Bir uygulamanın kurulum paketi gibi düşünebilirsin: içinde uygulamanın kendisi vardır."
+        ],
+        "points": [
+          {
+            "title": "Kurulum paketi",
+            "icon": "phone",
+            "text": "Telefona yeni bir uygulama kurar. Kurulan uygulama telefonunda çalışır ve izin verdiğin şeylere ulaşır."
+          },
+          {
+            "title": "Mağazadan gelen",
+            "icon": "shield",
+            "text": "Uygulama mağazası uygulamaları kontrolden geçirir, şikâyet edilenleri kaldırır. Her şeyi yakalayamaz ama ilk ve en güvenli yer orasıdır."
+          },
+          {
+            "title": "Mesajla gelen",
+            "icon": "ban",
+            "text": "Bir mesajdan, siteden ya da QR'dan gelen APK'yı kimse kontrol etmemiştir. İçinde ne olduğu bilinmez."
+          },
+          {
+            "title": "Bilinmeyen kaynak",
+            "icon": "lock",
+            "text": "Mağaza dışından kurarken telefon **\"bilinmeyen kaynaklara izin ver\"** diye sorar. Bu, kontrolsüz bir kapıyı açmak demektir."
+          }
+        ]
+      },
+      {
+        "id": "uygulama-nasil-kurulur",
+        "type": "info",
+        "layout": "steps",
+        "title": "Uygulama nasıl kurulur?",
+        "paragraphs": [
+          "Yeni bir uygulama istediğinde güvenli yol hep aynıdır ve birkaç dakika sürer. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Mağazayı aç",
+            "icon": "phone",
+            "text": "Telefonunun kendi uygulama mağazasını **kendin** aç. Mesajdaki ya da sitedeki bağlantıdan değil."
+          },
+          {
+            "title": "Yayıncıya bak",
+            "icon": "search",
+            "text": "Kimin yaptığına, indirme sayısına ve yorumlara bak. Adı aynı, yayıncısı farklı **kopyalar** olabilir."
+          },
+          {
+            "title": "İzinleri oku",
+            "icon": "key",
+            "text": "Uygulama kurulurken ya da ilk açılışta izin ister. Neden istediğini düşün."
+          },
+          {
+            "title": "Ailene sor",
+            "icon": "house",
+            "text": "Ücretli bir şey varsa ya da emin değilsen kurmadan önce ailene danış."
+          }
+        ]
+      },
+      {
+        "id": "boyama-kamera",
+        "type": "quiz",
+        "guess": true,
+        "permission": {
+          "app": "Renkli Boyama",
+          "text": "kameraya erişmek istiyor.",
+          "icon": "camera"
+        },
+        "question": "Mağazadan bir boyama oyunu kurdun, açınca bu pencere çıktı. Ne yaparsın?",
+        "options": [
+          "İzin veririm, mağazadan kurdum, sorun olmaz",
+          "Reddederim; boyamak için kamera gerekmez",
+          "Oyunu hemen silerim, izin isteyen her uygulama tehlikelidir",
+          "İzin veririm, yoksa oyun hiç açılmaz"
+        ],
+        "answer": 1,
+        "explain": "Her izin, uygulamaya verdiğin bir anahtardır. Kendine sor: Bu uygulamanın işini yapması için buna gerçekten ihtiyacı var mı? Boyamak için kamera gerekmez, reddedersin; oyun büyük ihtimalle yine açılır. İzin istemek tek başına kötü değildir, gereksiz izin ise şüphelidir."
+      },
+      {
+        "id": "izin-ver-mi",
+        "type": "sort",
+        "title": "İzin ver mi, reddet mi?",
+        "hint": "Her pencerede uygulamanın işine bak: bu izne gerçekten ihtiyacı var mı?",
+        "bins": [
+          {
+            "label": "İşine yarıyor",
+            "note": "Verebilirsin",
+            "color": "green",
+            "icon": "key"
+          },
+          {
+            "label": "İşine yaramıyor",
+            "note": "Reddet",
+            "color": "red",
+            "icon": "ban"
+          }
+        ],
+        "items": [
+          {
+            "text": "Harita uygulaması konum istiyor",
+            "icon": "pin",
+            "bin": 0
+          },
+          {
+            "text": "El feneri uygulaması konum istiyor",
+            "icon": "pin",
+            "bin": 1
+          },
+          {
+            "text": "Fotoğraf uygulaması kamera istiyor",
+            "icon": "camera",
+            "bin": 0
+          },
+          {
+            "text": "Hesap makinesi kişilerini istiyor",
+            "icon": "users",
+            "bin": 1
+          },
+          {
+            "text": "Mesajlaşma uygulaması mikrofon istiyor",
+            "icon": "message",
+            "bin": 0
+          },
+          {
+            "text": "Bulmaca oyunu SMS'lerini okumak istiyor",
+            "icon": "gamepad",
+            "bin": 1
+          }
+        ],
+        "explain": "Harita yolu bulmak için konumu, fotoğraf uygulaması çekmek için kamerayı, mesajlaşma sesli mesaj için mikrofonu kullanır. El feneri, hesap makinesi ve bulmacanın ise bu izinlerle bir işi yoktur. SMS izni gelen kodları okuyabilir; mesajlaşma uygulaması dışında verme."
+      },
+      {
+        "id": "kantin-menusu",
+        "type": "clickFind",
+        "title": "Bu menü mailindeki 3 işareti bul",
+        "hint": "Mailde 3 şüpheli yer var. Adrese ve ekteki dosyanın soyadına bak.",
+        "mail": {
+          "sender": "Okul Kantini",
+          "address": "kantin@cinarortaokulu-menu.xyz",
+          "subject": "Yeni haftanın menüsü",
+          "time": "07:58",
+          "paragraphs": [
+            "Merhaba,",
+            "Yeni haftanın kantin menüsü ve fiyatları ekte.",
+            "Dosya açılırken bir uyarı çıkarsa \"Yine de çalıştır\"a basman yeterli.",
+            "Afiyet olsun!"
+          ],
+          "button": "",
+          "footer": "Ek: kantin_menu.pdf.exe · 2,3 MB"
+        },
+        "spots": [
+          {
+            "part": "address",
+            "text": "Okulun adresi cinarortaokulu.k12.tr. Bu mail cinarortaokulu-menu.xyz'den gelmiş.",
+            "hint": "@ işaretinden sonrası okulun adresi mi?"
+          },
+          {
+            "part": "footer",
+            "text": "Ekteki dosyanın soyadı .exe: menü değil, açılınca çalışan bir program. Adındaki pdf seni kandırmak için.",
+            "hint": "Ekteki dosyanın son noktasından sonra ne yazıyor?"
+          },
+          {
+            "part": "p2",
+            "text": "Bir menüyü açmak için uyarıyı geçmen gerekmez. Bilgisayarın seni uyarıyorsa uyarıyı dinle.",
+            "hint": "Sana neyi görmezden gelmeni söylüyor?"
+          }
+        ]
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Dosyanın türünü son noktadan sonraki [uzantı] söyler.",
+          ".exe ve .apk dosyaları açılınca [çalışır].",
+          "Uygulamaları telefonumun kendi [mağazasından] kurarım.",
+          "Mesajla gelen bir uygulamayı kurmadan önce [aileme] gösteririm.",
+          "Uygulamanın işine yaramayan bir izni [reddederim]."
+        ],
+        "extra": [
+          "simgesi",
+          "kapanır",
+          "mesajdan",
+          "veririm"
+        ],
+        "explain": "Dosyanın ne olduğunu adı ya da simgesi değil, uzantısı söyler. Program dosyaları çalışır, bu yüzden nereden geldiği önemlidir. Uygulamayı mağazadan kurarsın, gereksiz izni reddedersin, emin değilsen ailene sorarsın."
+      },
+      {
+        "id": "uc-soru",
+        "type": "info",
+        "layout": "steps",
+        "title": "Bir dosya gelince üç soru",
+        "paragraphs": [
+          "Yazılım Ormanı'nda bu üç soruyu çok soracaksın."
+        ],
+        "points": [
+          {
+            "title": "Soyadı ne?",
+            "icon": "search",
+            "text": "Son noktadan sonrası: bakılan bir dosya mı, çalışan bir program mı?"
+          },
+          {
+            "title": "Nereden geldi?",
+            "icon": "download",
+            "text": "Mağazadan mı, yoksa bir mesajdan, siteden, QR'dan mı?"
+          },
+          {
+            "title": "Gerçekten gerekli mi?",
+            "icon": "ask",
+            "text": "Emin değilsen açma, kurma; bir büyüğüne göster."
+          }
+        ]
+      }
+    ]
+  }
+}
