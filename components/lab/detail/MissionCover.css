@@ -107,20 +107,17 @@
 }
 
 /* Telefon: gelen arama */
+/* Gövde sitenin tek telefonundan (components/device/phone.css, 440 px boy). */
 .mc-phone {
   position: absolute;
   top: 20px;
-  left: 108px;
-  width: 224px;
-  height: 440px;
-  overflow: hidden;
-  border: 7px solid var(--scene-phone-edge);
-  border-radius: 38px;
-  background: radial-gradient(120% 70% at 50% 0%, var(--call-screen-3), var(--call-screen-2) 45%, var(--call-screen));
-  box-shadow: var(--shadow-card);
-  color: var(--call-text);
+  left: 116px;
   transform: rotate(-2deg);
   animation: mc-buzz 3.5s infinite;
+}
+.mc-phone .dv-screen {
+  background: radial-gradient(120% 70% at 50% 0%, var(--call-screen-3), var(--call-screen-2) 45%, var(--call-screen));
+  color: var(--call-text);
 }
 .mc-screen {
   display: flex;

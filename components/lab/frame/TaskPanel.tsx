@@ -180,7 +180,9 @@ function TaskList(props: TaskPanelProps) {
                     ? format(m.saleNote, { platform: props.mission.sale.platform })
                     : props.mission.signup
                       ? m.signupNote
-                      : format(m.taskNote, { owner: props.mission.owner })}
+                      : props.mission.install
+                        ? m.installNote
+                        : format(m.taskNote, { owner: props.mission.owner })}
                 </p>
               ) : null}
 

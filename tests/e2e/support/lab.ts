@@ -104,5 +104,6 @@ export async function signInDesktop(page: Page) {
 /** T1 ve T2 sahnesi: masadaki telefonu alır (telefon ortaya gelir, ekranı açılır). */
 export async function pickUpPhone(page: Page) {
   await page.getByTestId("stage-phone-pick").click();
-  await expect(page.getByTestId("stage-phone-drop")).toBeVisible();
+  // "Bırak" masaüstünde telefonun altında, telefon genişliğinde oynatıcının şeridinde; görünen biri.
+  await expect(page.locator('[data-testid="stage-phone-drop"]:visible')).toBeVisible();
 }

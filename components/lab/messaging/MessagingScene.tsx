@@ -21,6 +21,8 @@ type Props = {
   onReply: (id: string, text: string) => Promise<boolean>;
   /** Sahne masaüstünde telefon çerçevesinin içinde (satış görevli oda): her ekranda telefon düzeni. */
   phone?: boolean;
+  /** Kurulum görevi: ek telefonun dosya uyarılarını açar ("Ek açılmadı" bildirimi çıkmaz). */
+  files?: boolean;
 };
 
 const folderIcons: Record<Folder, LucideIcon> = { inbox: MessageCircle, spam: Ban, trash: Trash2 };
@@ -42,7 +44,7 @@ export function MessagesLogo() {
  * Lab-Duzenle-Son-SMS önizlemesinden). Öğrenci her konuşmaya cevap yazabilir; hangi konuşmanın
  * sahte olduğu tarayıcıda bilinmez. Yazdığı metin bu ekranda kalır, hiçbir yere gönderilmez.
  */
-export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachment, onLink, onReply, phone = false }: Props) {
+export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachment, onLink, onReply, phone = false, files = false }: Props) {
   const t = getMessages().lab.messaging;
   const [box, setBox] = useState<Folder>("inbox");
   const [selected, setSelected] = useState<string | null>(null);
@@ -101,7 +103,7 @@ export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachm
           <Search className="size-4" strokeWidth={2} aria-hidden="true" />
           {t.search}
         </div>
-        <span className="ml-auto flex items-center gap-2">
+        <span className="ml-auto flex items-center gap-5">
           <Search className="size-5 text-scene-ink-2 desk:hidden" strokeWidth={2} aria-hidden="true" />
           <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-scene-line text-lg">
             {avatar}
@@ -136,7 +138,7 @@ export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachm
         <div className={cn("min-w-0 flex-1 overflow-y-auto border-scene-line desk:w-[290px] desk:flex-none desk:border-r", view === "item" && "max-desk:hidden")}>
           <div className="px-4 pt-4 pb-3 desk:hidden">
             <h2 className="text-[22px] font-bold">{t.folders[box]}</h2>
-            <div className="mt-3 flex gap-2" role="group" aria-label={t.folderNav}>
+            <div className="mt-3 flex gap-1.5 max-wide:gap-1" role="group" aria-label={t.folderNav}>
               {folderList.map(({ folder, count }) => (
                 <button
                   key={folder}
@@ -144,7 +146,7 @@ export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachm
                   aria-pressed={box === folder}
                   onClick={() => goFolder(folder)}
                   className={cn(
-                    "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-sm font-bold",
+                    "inline-flex h-9 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-full border px-2.5 text-[13px] font-bold max-wide:flex-auto max-wide:px-2",
                     box === folder ? "border-scene-green bg-scene-paper text-scene-green" : "border-scene-line bg-scene-white text-scene-ink-2",
                   )}
                 >
@@ -207,7 +209,7 @@ export function MessagingScene({ items, state, avatar, onOpen, onMove, onAttachm
               onRestore={() => move("inbox")}
               onAttachment={() => {
                 onAttachment(current.id);
-                setToast(getMessages().lab.inbox.toasts.attachment);
+                if (!files) setToast(getMessages().lab.inbox.toasts.attachment);
               }}
               onLink={() => onLink(current.id)}
               onPeek={(show) => setPeek(show && current.link ? current.link.url : null)}

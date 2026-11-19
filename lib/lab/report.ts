@@ -5,12 +5,12 @@
 // Rapor yalnızca biten denemede gösterilir: doğrusu ve "Neden?" burada açılır.
 
 import { getMessages, format } from "@/lib/i18n";
-import { maxScore, paragraphs, reportScale, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type SignPlace } from "./content";
+import { installChecks, maxScore, paragraphs, reportScale, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type SignPlace } from "./content";
 import type { ReportStatus, RowState, ScenarioReport } from "./scoring";
 
 export type ReportRowView = {
   key: string;
-  kind: "fake" | "real" | "question" | "mission" | "login";
+  kind: "fake" | "real" | "question" | "mission" | "login" | "check";
   title: string;
   tag: string;
   state: RowState;
@@ -57,7 +57,11 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
   const linkOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesLink };
   // Satış görevli odada sahte mesajdaki bağlantı bankanın ödeme isteğini açar.
   const requestOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesRequest };
-  const fakeRight = content.mission?.sale
+  // Kurulum görevinde sahte mesajın eki .apk'dır: satırı dosyadan söz eder.
+  const fileOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesFile };
+  const fakeRight = content.mission?.install
+    ? t.defaultsFile.fakeRight
+    : content.mission?.sale
     ? t.defaultsRequest.fakeRight
     : template === "MESSAGING" && usesTrapPage(content, template)
       ? t.defaultsPage.fakeRight
@@ -102,6 +106,26 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
         },
       ];
     }
+    if (row.type === "check") {
+      const check = installChecks(content).find((c) => c.key === row.check);
+      const app = check ? content.mission?.install?.apps.find((a) => a.id === check.app) : undefined;
+      const text = check?.kind === "copy" ? app?.report : app?.permissions[check?.index ?? -1]?.report;
+      if (!text) return [];
+      return [
+        {
+          key: `c-${row.check}`,
+          kind: "check",
+          title: text.title,
+          tag: t.tags.check,
+          state: row.state,
+          points: scaled(row.points),
+          max: scaled(row.max),
+          did: row.state === "skip" ? t.skipped : row.ok ? text.ok : text.bad,
+          right: text.right,
+          why: text.why,
+        },
+      ];
+    }
     if (row.type === "question") {
       const task = tasks.get(row.task);
       if (!task) return [];
@@ -134,7 +158,9 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
         max: scaled(row.max),
         did:
           row.type === "fake"
-            ? (template === "MESSAGING" && row.by === "request"
+            ? (template === "MESSAGING" && row.by === "file"
+                ? fileOutcomes
+                : template === "MESSAGING" && row.by === "request"
                 ? requestOutcomes
                 : template === "MESSAGING" && row.by === "link"
                   ? linkOutcomes

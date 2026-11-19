@@ -20,6 +20,8 @@ export type StageViewProps = {
   firstNotice: { title: string; text: string } | null;
   /** Yarım kalan denemeye dönülünce bilgisayar açık, telefon elde başlar. */
   resumed: boolean;
+  /** Telefon genişliğinde oynatıcının şeridindeki yer: eldeki telefonun "Bırak" düğmesi. */
+  barSlot?: HTMLElement | null;
 };
 
 /**
@@ -27,10 +29,10 @@ export type StageViewProps = {
  * T1 masadaki telefon, T2 masaüstü ve yanında masadaki telefon. T3 konuşma soru görevinde açılır
  * (TalkScene). Sahne yalnızca görünüştür: her eylem yine oynatıcıdan sürücüye gider.
  */
-export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNotice, resumed }: StageViewProps) {
+export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNotice, resumed, barSlot = null }: StageViewProps) {
   if (stage.type === "PHONE")
     return (
-      <PhoneDesk firstNotice={firstNotice} resumed={resumed}>
+      <PhoneDesk firstNotice={firstNotice} resumed={resumed} barSlot={barSlot}>
         {appNode}
       </PhoneDesk>
     );
@@ -51,7 +53,7 @@ export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNo
         {desktop}
       </div>
     );
-  return <DesktopPhone>{desktop}</DesktopPhone>;
+  return <DesktopPhone barSlot={barSlot}>{desktop}</DesktopPhone>;
 }
 
 /** Masanın üstündeki eşyalar (3B çizim, gerçek ışık ve gölge): defter sol üst, kupa sağ üst, kalem sol alt, kulaklık sağ alt. */
@@ -68,7 +70,17 @@ function DeskProps({ only }: { only?: "mug" }) {
 }
 
 /** T1: üstten görülen ahşap masa, ortada telefon. Öğrenci telefonu alır, Mesajlar telefonda açılır. */
-function PhoneDesk({ children, firstNotice, resumed }: { children: ReactNode; firstNotice: StageViewProps["firstNotice"]; resumed: boolean }) {
+function PhoneDesk({
+  children,
+  firstNotice,
+  resumed,
+  barSlot,
+}: {
+  children: ReactNode;
+  firstNotice: StageViewProps["firstNotice"];
+  resumed: boolean;
+  barSlot: HTMLElement | null;
+}) {
   const t = getMessages().lab;
   const [inHand, setInHand] = useState(resumed);
   const notice: PhoneNotice | null = useMemo(
@@ -97,6 +109,7 @@ function PhoneDesk({ children, firstNotice, resumed }: { children: ReactNode; fi
         }}
         onDrop={() => setInHand(false)}
         notice={seen ? null : notice}
+        barSlot={barSlot}
       >
         {children}
       </DeskPhone>
@@ -109,7 +122,7 @@ function PhoneDesk({ children, firstNotice, resumed }: { children: ReactNode; fi
  * (velinin onay SMS'i) telefon titrer; öğrenci alır, bakar, bırakır. Ekranın içeriği
  * StagePhoneContext ile gelir (components/lab/mission/MissionSms.tsx).
  */
-function DesktopPhone({ children }: { children: ReactNode }) {
+function DesktopPhone({ children, barSlot }: { children: ReactNode; barSlot: HTMLElement | null }) {
   const t = getMessages().lab.stage.phone;
   const [inHand, setInHand] = useState(false);
   const [notice, setNotice] = useState<PhoneNotice | null>(null);
@@ -136,7 +149,7 @@ function DesktopPhone({ children }: { children: ReactNode }) {
         <div className="st-monitor" inert={inHand}>
           <div className="st-monitor-screen">{children}</div>
         </div>
-        <DeskPhone place="t2" inHand={inHand} onPick={() => setInHand(true)} onDrop={() => setInHand(false)} notice={inHand ? null : notice}>
+        <DeskPhone place="t2" inHand={inHand} onPick={() => setInHand(true)} onDrop={() => setInHand(false)} notice={inHand ? null : notice} barSlot={barSlot}>
           <div ref={setScreen} className="flex min-h-0 flex-1 flex-col" />
           {busy ? null : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-scene-paper p-6 text-center text-scene-ink-muted">

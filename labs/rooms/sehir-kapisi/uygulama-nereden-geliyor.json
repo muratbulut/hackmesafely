@@ -1,0 +1,302 @@
+{
+  "slug": "uygulama-nereden-geliyor",
+  "neighborhood": "sehir-kapisi",
+  "type": "SCENARIO",
+  "template": "MESSAGING",
+  "sortOrder": 2,
+  "status": "PUBLISHED",
+  "unlockedBy": "dosya-ve-uygulama",
+  "content": {
+    "meta": {
+      "name": "Bu uygulama nereden geliyor?",
+      "title": "Aynı oyun, iki kapı",
+      "summary": "Matematik öğretmenin ödev için bir oyun verdi. Oyunu doğru yerden kur, izinlerine bak, ödevi aç.",
+      "story": "Sınıf arkadaşın Deniz arıyor: matematik öğretmeni hafta sonu için Kesir Kulesi oyununu ödev vermiş, 3. bölümü bitirmeniz gerekiyor. Öğretmen oyunu mağazadan kurun demiş. Telefonuna bakınca sınıf grubunda birinin \"daha hızlı\" diye bir dosya attığını görüyorsun. Mağazada da adı Kesir Kulesi olan iki oyun var. Oyunu doğru yerden kur, kurarken izin pencerelerini oku ve ödevi aç.",
+      "learn": [
+        {
+          "title": "Mağazadan kur",
+          "text": "Uygulama mağazadan kurulur. Mesajla gelen .apk dosyasının içini kimse kontrol etmez."
+        },
+        {
+          "title": "Yayıncıya bak",
+          "text": "Mağazada aynı adda başka uygulama da olabilir. Öğretmenin söylediği yayıncının adını ara."
+        },
+        {
+          "title": "İzni oku",
+          "text": "Uygulamanın işine yaramayan izne \"İzin verme\" de. Uygulama yine çalışır."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 5
+    },
+    "reminders": [
+      "Nereden geliyor?: Uygulama mağazadan kurulur, mesajla gelen .apk'dan değil.",
+      "Yayıncı kim?: Mağazada aynı adda başka oyun da olabilir.",
+      "Ne istiyor?: İzin penceresini oku; oyunun işine yaramayana \"İzin verme\" de."
+    ],
+    "items": [
+      {
+        "id": "kerem",
+        "kind": "fake",
+        "sender": "Kerem",
+        "address": "7-B Sınıfı grubu",
+        "subject": "",
+        "time": "18:42",
+        "body": "Kesir Kulesi mağazadan çok yavaş iniyor 😩\n\nBunu kurun, **daha hızlı**, hem bütün bölümler açık 👇",
+        "footer": "",
+        "link": null,
+        "attachment": {
+          "name": "KesirKulesi_hizli.apk",
+          "size": "48 MB"
+        },
+        "signs": [
+          {
+            "at": "text",
+            "text": "Dosyanın soyadı .apk: açılınca telefona kurulan bir program. Belge ya da fotoğraf değil.",
+            "quote": "Bunu kurun"
+          },
+          {
+            "at": "sender",
+            "text": "Mağazadan değil, gruba atılmış bir dosya. Kerem bile nereden bulduğunu bilmiyor olabilir; içini kimse kontrol etmedi.",
+            "quote": "mağazadan çok yavaş iniyor"
+          },
+          {
+            "at": "ask",
+            "text": "\"Bütün bölümler açık\" diyor: oyunun kendisinde olmayan bir şey vaat eden dosya değiştirilmiştir.",
+            "quote": "bütün bölümler açık"
+          }
+        ],
+        "why": "Bu dosya mağazadan gelmedi, gruba atılmıştı. Soyadı .apk, yani açılınca telefona kurulan bir program. İçini kimse kontrol etmediği için ne yapacağı bilinmez. Telefon da \"bilinmeyen kaynak\" diye uyarıyordu."
+      },
+      {
+        "id": "elif",
+        "kind": "real",
+        "sender": "Elif",
+        "address": "7-B Sınıfı grubu",
+        "subject": "",
+        "time": "18:35",
+        "body": "Kesir Kulesi'nin 3. bölümü zor mu, bakan var mı? Ben daha ikideyim 🙈",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Sınıf arkadaşın ödevi soruyor. Dosya ya da bağlantı yok, senden bir şey istemiyor."
+      }
+    ],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "Mesajla gelen .apk dosyasını kurmak",
+      "secret": "",
+      "kind": "ransom",
+      "account": "",
+      "scene": "",
+      "realLife": "Bu dosya mağazadan gelmedi, içini kimse kontrol etmedi. Adı Kesir Kulesi olsa da gerçek hayatta telefonuna gizlice reklam basabilir, mesajlarını okuyabilir, hesaplarını ele geçirebilirdi.",
+      "actions": [
+        "Uygulamayı yalnızca mağazadan kur; mesajla gelen .apk'yı açma.",
+        "Telefon \"bilinmeyen kaynak\" diyorsa orada dur.",
+        "Gerçek hayatta kurduysan sil ve bir büyüğüne söyle."
+      ],
+      "almost": true
+    },
+    "tasks": [
+      {
+        "id": "ac",
+        "type": "action",
+        "text": "Telefonunu al, mesajlarına göz at",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "kur",
+        "type": "mission",
+        "text": "Kesir Kulesi'ni kur, ödevi aç",
+        "options": [],
+        "right": "Kesir Kulesi'ni mağazadan, öğretmenin söylediği yayıncının (Bilge Oyun Atölyesi) sayfasından kurmak ve ödevi açmak.",
+        "why": "Mağazadaki uygulamalar kontrol edilir. Gruba atılan dosyanın ve yayıncısı farklı kopyanın içinde ne olduğunu bilemezsin."
+      },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Mesajlarını incele, şüpheli bulduklarını bildir",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "apk",
+        "type": "question",
+        "text": "Arkadaşın gruba \"mağazadakinden hızlı\" diye bir .apk attı. Ne yaparsın?",
+        "options": [
+          { "text": "Açmam, oyunu mağazadan kurarım", "points": 1 },
+          { "text": "Arkadaşım attıysa güvenlidir, kurarım", "points": 0 },
+          { "text": "Kurarım, izin pencerelerinde hayır derim", "points": 0 }
+        ],
+        "right": "Dosyayı açmamak, oyunu mağazadan kurmak.",
+        "why": "Arkadaşın da dosyayı bir yerden bulmuştur; içini o da bilmez. Kurulan program izin istemeden de bir şeyler yapabilir. Mağazadaki uygulamalar ise kontrol edilir."
+      },
+      {
+        "id": "izin",
+        "type": "question",
+        "text": "Oyun konumunu istedi, sen \"İzin verme\" dedin. Ne olur?",
+        "options": [
+          { "text": "Oyun yine açılır, yalnızca konumunu bilmez", "points": 1 },
+          { "text": "Oyun açılmaz", "points": 0 },
+          { "text": "Oyun telefondan silinir", "points": 0 }
+        ],
+        "right": "Oyun yine açılır, yalnızca konumunu bilmez.",
+        "why": "İzin bir anahtardır: vermezsen uygulama yalnızca o kapıyı açamaz. Kesirleri öğrenmek için konum gerekmez; reddetmek oyunu bozmaz."
+      }
+    ],
+    "tips": [
+      {
+        "text": "Mağazadan gelmeyen dosyaya hiç dokunmana gerek yok; doğrudan mağazaya git.",
+        "when": "engaged"
+      },
+      {
+        "text": "Gerçek hayatta mesajla gelen bir uygulamayı kurduysan hemen sil ve bir büyüğüne söyle.",
+        "when": "hacked"
+      },
+      {
+        "text": "Mağazada da yayıncıya bak: öğretmenin söylediği ad mı?",
+        "when": "wrongApp"
+      },
+      {
+        "text": "Oyunun işine yaramayan izni reddet, oyun yine çalışır.",
+        "when": "extraPermission"
+      },
+      {
+        "text": "Gruba atılan .apk'yı bildir, başkası kurmasın.",
+        "when": "missedFake"
+      },
+      {
+        "text": "Mağazadan kur, yayıncıya bak, izni oku.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Deniz",
+      "look": "friend",
+      "owner": "Deniz'in",
+      "lines": [
+        "Selam! Matematik hocası hafta sonu için Kesir Kulesi'ni ödev verdi. Üçüncü bölümü bitirmemiz lazım.",
+        "Hoca mağazadan kurun dedi. Yayıncısı Bilge Oyun Atölyesi.",
+        "Kurunca bana yaz, akşam birlikte oynarız!"
+      ],
+      "title": "Kesir Kulesi'ni kur, ödevi aç",
+      "points": [
+        "Oyunu **mağazadan** kur",
+        "Yayıncısı **Bilge Oyun Atölyesi**",
+        "Kurunca **Deniz'e** haber ver"
+      ],
+      "pointIcons": ["download", "search", "message"],
+      "accept": "Tamam, hemen kuruyorum",
+      "install": {
+        "store": "Mağaza",
+        "query": "Kesir Kulesi",
+        "apps": [
+          {
+            "id": "kesir-kulesi",
+            "name": "Kesir Kulesi",
+            "publisher": "Bilge Oyun Atölyesi",
+            "rating": "4,6",
+            "downloads": "500 B+",
+            "category": "Eğitim · Matematik",
+            "text": "Kesirleri kuleyi tırmanarak öğren. Öğretmeninin verdiği bölümler ödev listende. Reklam yok.",
+            "icon": "gamepad",
+            "permissions": [
+              {
+                "text": "sana bildirim göndermek istiyor.",
+                "note": "Ödev hatırlatmaları için",
+                "icon": "message",
+                "choices": ["İzin ver", "İzin verme"]
+              },
+              {
+                "text": "konumuna erişmek istiyor.",
+                "note": "Yakındaki oyuncuları göstermek için",
+                "icon": "pin",
+                "choices": ["Uygulamayı kullanırken", "Yalnızca bu sefer", "İzin verme"],
+                "right": 2,
+                "report": {
+                  "title": "Kesir Kulesi'nin konum izni",
+                  "ok": "\"İzin verme\" dedin; oyun yine açıldı.",
+                  "bad": "Konumuna izin verdin. Tehlikeli değildi ama oyunun buna ihtiyacı yoktu.",
+                  "right": "\"İzin verme\" demek.",
+                  "why": "Kesirleri öğrenmek için oyunun nerede olduğunu bilmesi gerekmez. İşine yaramayan izni reddedince uygulama yine çalışır."
+                }
+              }
+            ]
+          },
+          {
+            "id": "sinirsiz-elmas",
+            "name": "Kesir Kulesi: Sınırsız Elmas",
+            "publisher": "FunFreeGamez",
+            "rating": "3,1",
+            "downloads": "1 B+",
+            "category": "Oyun",
+            "text": "Tüm bölümler açık! Elmas sınırsız! Hemen indir!",
+            "icon": "gamepad",
+            "copy": true,
+            "permissions": [
+              {
+                "text": "SMS mesajlarını okumak ve kişilerine erişmek istiyor.",
+                "note": "",
+                "icon": "message",
+                "choices": ["İzin ver", "İzin verme"],
+                "almost": 0
+              }
+            ],
+            "empty": "Bu oyunda öğretmenin ödev listesi yok. Ödevin bu oyunda değil.",
+            "report": {
+              "title": "Mağazadaki kopya oyun (FunFreeGamez)",
+              "ok": "Kopyayı kurmadın, öğretmenin söylediği yayıncının oyununu seçtin.",
+              "bad": "Adı benzeyen kopya oyunu kurdun.",
+              "right": "Yayıncıya bakıp Bilge Oyun Atölyesi'nin Kesir Kulesi'ni seçmek.",
+              "why": "Mağazada da adı benzeyen uygulamalar olur. Yayıncı farklıydı, \"sınırsız elmas\" vaat ediyordu ve bir matematik oyunu için SMS'lerini istiyordu."
+            },
+            "almost": {
+              "realLife": "Bu oyun öğretmeninin söylediği oyun değildi. Bir matematik oyununun SMS'lerine ihtiyacı yok; gerçek hayatta mesajlarındaki kodları okuyup hesaplarını ele geçirebilirdi.",
+              "steps": [
+                "Mağazada da yayıncıya bak: öğretmenin söylediği ad mı?",
+                "Oyunun işine yaramayan izne \"İzin verme\" de.",
+                "Gerçek hayatta izin verdiysen uygulamayı sil ve bir büyüğüne söyle."
+              ],
+              "compare": {
+                "left": { "label": "Kurduğun", "value": "Kesir Kulesi: Sınırsız Elmas", "note": "FunFreeGamez · SMS ve kişilerini istiyor" },
+                "right": { "label": "Ödevin", "value": "Kesir Kulesi", "note": "Bilge Oyun Atölyesi · SMS istemiyor" }
+              }
+            }
+          }
+        ],
+        "game": {
+          "title": "Kesir Kulesi",
+          "homework": "Öğretmeninin ödevi: 3. bölüm, kulenin üçüncü katı",
+          "open": "Ödevi aç",
+          "done": "3. bölüm açıldı!"
+        },
+        "fileCompare": {
+          "left": { "label": "Kurmak üzere olduğun", "value": "KesirKulesi_hizli.apk", "note": "sınıf grubundan · kontrol eden yok" },
+          "right": { "label": "Ödevin", "value": "Kesir Kulesi", "note": "Mağaza · Bilge Oyun Atölyesi" }
+        }
+      },
+      "good": [
+        "Süper! Akşam kim kuleyi daha hızlı çıkacak, görürüz."
+      ],
+      "goodReported": "Kerem'in dosyasını bildirmişsin, iyi ki. Ona da mağazadan kurmasını söyleyelim.",
+      "goodTitle": "Kesir Kulesi kuruldu, ödev açıldı",
+      "done": "Kesir Kulesi'ni mağazadan kurup ödevi açtın.",
+      "voice": {
+        "lines": [
+          "/sesler/uygulama-nereden-geliyor/acilis-1.mp3",
+          "/sesler/uygulama-nereden-geliyor/acilis-2.mp3",
+          "/sesler/uygulama-nereden-geliyor/acilis-3.mp3"
+        ],
+        "good": ["/sesler/uygulama-nereden-geliyor/iyi-1.mp3"],
+        "goodReported": "/sesler/uygulama-nereden-geliyor/iyi-bildirdi.mp3"
+      }
+    },
+    "stage": { "type": "PHONE" }
+  }
+}

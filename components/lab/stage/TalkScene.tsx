@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight, Smartphone, Volume2, VolumeX } from "lucide-react";
+import "@/components/device/phone.css";
 import { useEffect, useRef, useState } from "react";
 import type { CallerLook, TalkPlace } from "@/lib/lab/content";
 import type { TalkLine } from "@/lib/lab/story";
@@ -163,7 +164,12 @@ export function TalkScene({ speaker, look, place = "home", lines = [], question,
       ) : (
         <>
           <TalkTable cup={t.cup} />
-          <span className="st-talk-phone" aria-hidden="true" />
+          {/* Sehpadaki telefon: sitenin tek telefonu, yatay yatıyor (components/device). */}
+          <div className="st-talk-phone" aria-hidden="true">
+            <div className="dv-phone">
+              <div className="dv-screen" />
+            </div>
+          </div>
         </>
       )}
       <div className="st-talk-grain" aria-hidden="true" />

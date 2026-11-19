@@ -2,7 +2,7 @@
 // (CLAUDE.md, "Lab güvenliği"): öğenin sahte mi gerçek mi olduğu, işaretler, sahte sayfa, soru
 // puanları, doğru cevaplar, açıklamalar, rapor metinleri ve ipuçları gitmez.
 
-import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Stage, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
+import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Stage, type StoreApp, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
 import { placementBank } from "./training";
 
 export type ClientItem = {
@@ -73,6 +73,19 @@ export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" 
    * zaten görünür (telefonda); "Az kalsın" metinleri gitmez, kalkınca sunucudan gelir.
    */
   login: (Omit<NonNullable<Mission["login"]>, "next"> & { code: string }) | null;
+  /**
+   * Kurulum görevi: mağaza, arama önerisi, uygulamalar (kopya olduğu, izinleri ve rapor satırları
+   * gitmez) ve oyunun ödev ekranı ("açıldı" cümlesi ödevi açınca gelir).
+   */
+  install: ClientInstall | null;
+};
+
+export type ClientStoreApp = Pick<StoreApp, "id" | "name" | "publisher" | "rating" | "downloads" | "category" | "text" | "icon">;
+export type ClientInstall = {
+  store: string;
+  query: string;
+  apps: ClientStoreApp[];
+  game: { title: string; homework: string; open: string };
 };
 
 export function toClientScenario(content: ScenarioContent, template: ScenarioTemplate): ClientScenario {
@@ -131,6 +144,23 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
             : null,
           signup: !!content.mission.signup,
           login: content.mission.login ? { ...withoutNext(content.mission.login), code: content.mission.code } : null,
+          install: content.mission.install
+            ? {
+                store: content.mission.install.store,
+                query: content.mission.install.query,
+                apps: content.mission.install.apps.map((a) => ({
+                  id: a.id,
+                  name: a.name,
+                  publisher: a.publisher,
+                  rating: a.rating,
+                  downloads: a.downloads,
+                  category: a.category,
+                  text: a.text,
+                  icon: a.icon,
+                })),
+                game: { title: content.mission.install.game.title, homework: content.mission.install.game.homework, open: content.mission.install.game.open },
+              }
+            : null,
         }
       : null,
     stage: content.stage ?? null,

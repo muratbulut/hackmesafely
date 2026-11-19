@@ -32,8 +32,9 @@
 .st-wood {
   background: var(--stage-wood) url("/stage/wood.webp") center / cover;
   container-type: size;
-  /* --cm: telefonun masadaki boyundan bir santim (telefon 15 cm); eşyalar buna göre (%90). */
-  --st-phone-h: min(740px, 100cqh - 24px);
+  /* --cm: telefonun masadaki boyundan bir santim (telefon 15 cm); eşyalar buna göre (%90).
+     Telefonun boyu şablondaki gibi: altta "Telefonu masaya bırak" düğmesine yer kalır. */
+  --st-phone-h: min(600px, 100cqh - 130px);
   --cm: calc(var(--st-phone-h) * var(--st-desk-scale) / 15 * 0.9);
 }
 .st-lamp {
@@ -77,10 +78,11 @@
 .st-stage[data-stage="t2"] {
   --st-desk-scale: 0.4;
 }
+/* Kupa monitörün sağındaki boşlukta, monitöre değmeden (19 Kasım, Murat). */
 .st-stage[data-stage="t2"] .st-prop-mug {
-  right: 14px;
+  right: 18px;
   top: 3%;
-  width: calc(15 * var(--cm));
+  width: calc(11 * var(--cm));
 }
 
 /* --- Masadaki telefon --- */
@@ -89,8 +91,10 @@
   z-index: 10;
   left: var(--hx);
   top: var(--hy);
-  width: 360px;
-  height: var(--st-phone-h, min(740px, calc(100% - 24px)));
+  /* Şablondaki gibi 9:19 telefon: boy değişince en de onunla değişir. */
+  width: calc(var(--st-phone-h, 600px) * 9 / 19);
+  height: var(--st-phone-h, min(600px, calc(100% - 130px)));
+  --dv-h: var(--st-phone-h, 600px);
   transform: translate(-50%, -50%) rotate(var(--hr)) scale(var(--hs));
   transition:
     left 0.6s cubic-bezier(0.5, 0, 0.25, 1),
@@ -113,21 +117,40 @@
 }
 .st-handset[data-hand="true"] {
   --hx: 50%;
-  --hy: 50%;
+  --hy: 47%;
   --hr: 0deg;
   --hs: 1;
 }
-.st-phone-body {
-  position: relative;
+/* Eldeki telefonun altında "Telefonu masaya bırak" (şablon: düğme telefonun içinde değil, altında).
+   Telefon genişliğinde aynı düğme oynatıcının şeridinde "Bırak" olur (DeskPhone, LabBar). */
+.st-handrow {
+  position: absolute;
+  z-index: 11;
+  left: 50%;
+  bottom: 16px;
   display: flex;
+  transform: translateX(-50%);
+  animation: fade-up 0.4s ease-out both;
+}
+.st-handrow button {
+  display: inline-flex;
+  min-height: 42px;
+  cursor: pointer;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  border: 1px solid var(--stage-os-line);
+  border-radius: 999px;
+  background: var(--stage-os-glass);
+  padding: 0 16px;
+  color: var(--stage-os-fg);
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+}
+.st-handset .st-phone-body {
+  /* Gövde ortak telefondan (components/device/phone.css); burada yalnız masadaki hâli. */
   height: 100%;
-  flex-direction: column;
-  border-radius: 46px;
-  padding: 9px;
-  background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel-lo) 30%, var(--stage-bezel) 70%, var(--stage-bezel-hi));
-  box-shadow:
-    0 0 0 1.5px var(--stage-bezel-edge),
-    0 30px 60px var(--stage-shadow);
+  width: 100%;
   transition: box-shadow 0.6s, filter 0.2s;
 }
 .st-handset[data-hand="false"] .st-phone-body {
@@ -139,14 +162,7 @@
 .st-handset[data-hand="false"]:hover .st-phone-body {
   filter: brightness(1.12);
 }
-.st-phone-screen {
-  position: relative;
-  display: flex;
-  min-height: 0;
-  flex: 1;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 38px;
+.st-handset .st-phone-screen {
   background: var(--stage-sleep);
 }
 .st-sleep {
@@ -252,8 +268,32 @@
   .st-wood {
     --st-phone-h: min(560px, 100cqh - 24px);
   }
+  /* Şablon tuvalindeki telefon hâli: masadaki telefon küçük, eşyalar kenarlara taşar. */
   .st-stage[data-stage="t1"] {
-    --st-desk-scale: 0.42;
+    --st-desk-scale: 0.295;
+  }
+  .st-handset[data-place="t1"][data-hand="false"],
+  .st-deskhint[data-place="t1"] {
+    --hx: 52%;
+    --hy: 58%;
+    --hr: -10deg;
+    --hs: 0.295;
+  }
+  .st-stage[data-stage="t1"] .st-prop-notebook {
+    left: -24%;
+    top: 1%;
+  }
+  .st-stage[data-stage="t1"] .st-prop-mug {
+    right: -6%;
+    top: 1%;
+  }
+  .st-stage[data-stage="t1"] .st-prop-pencil {
+    left: -6%;
+    bottom: 2%;
+  }
+  .st-stage[data-stage="t1"] .st-prop-earbuds {
+    right: 3%;
+    bottom: 3%;
   }
   .st-stage[data-stage="t2"] {
     --st-desk-scale: 0.2;
@@ -267,6 +307,9 @@
     --hy: calc(100% - 62px);
     --hr: 86deg;
     --hs: 0.2;
+  }
+  .st-handrow {
+    display: none;
   }
   .st-handset[data-hand="true"] {
     left: 0;
@@ -468,23 +511,22 @@
   z-index: 3;
   left: 77%;
   bottom: 22%;
-  width: 74px;
-  height: 152px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--stage-bezel-hi), var(--stage-bezel) 40%);
+  --dv-h: 152px;
+  transform: translate(-50%, 0) perspective(600px) rotateX(58deg) rotate(-84deg);
+}
+/* Ortak telefonun yatay hâli; altında kalınlığı ve masaya düşen gölgesi. */
+.st-talk-phone .dv-phone {
   box-shadow:
     0 0 0 1.5px var(--stage-bezel-edge),
-    0 4px 0 -1px var(--stage-bezel-hi),
-    0 7px 0 -1px var(--stage-bezel-lo),
-    14px 22px 26px var(--stage-shadow);
-  transform: translate(-50%, 0) perspective(600px) rotateX(58deg) rotate(10deg);
+    -4px 0 0 -1px var(--stage-bezel-hi),
+    -7px 0 0 -1px var(--stage-bezel-lo),
+    -22px 14px 26px var(--stage-shadow);
 }
-.st-talk-phone::after {
+.st-talk-phone .dv-screen::after {
   content: "";
   position: absolute;
-  inset: 5px;
-  border-radius: 10px;
-  background: linear-gradient(118deg, var(--stage-sleep-shine) 0 30%, var(--stage-sleep) 30%);
+  inset: 0;
+  background: linear-gradient(118deg, var(--stage-sleep-shine) 0 30%, transparent 30%);
 }
 
 /* Okulda (Şehir Kapısı, okul bilgisayarı): oda soğuk tonda (sınıf), önde sıra; üstünde klavye ve telefon (3B çizim). */
@@ -706,8 +748,7 @@
   .st-talk-phone {
     left: 62%;
     bottom: calc(64px + 4%);
-    width: 52px;
-    height: 106px;
+    --dv-h: 106px;
   }
 }
 

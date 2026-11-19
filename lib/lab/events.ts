@@ -52,7 +52,16 @@ export type ServerEvent =
    */
   | { type: "desk_left"; open: boolean; closed: boolean }
   /** T3 konuşma: soru yüz yüze cevaplandı; sunucu yazar, çünkü karşıdakinin cevabını o söyler. */
-  | { type: "talk_answered"; task: string; option: number };
+  | { type: "talk_answered"; task: string; option: number }
+  /**
+   * Kurulum görevi: mesajdaki dosyayı indirdi (telefonun ilk uyarısında "İndir"); kurmak istediyse
+   * ayrıca info_entered yazılır. Mağazadan uygulama kurdu, izin penceresinde seçti (seçeneğin
+   * sırası), oyunu açıp ödevi açtı.
+   */
+  | { type: "file_opened"; item: string }
+  | { type: "app_installed"; app: string }
+  | { type: "permission_answered"; app: string; index: number; choice: number }
+  | { type: "homework_opened"; app: string };
 
 export type LabEventData = BatchEvent | ServerEvent;
 
@@ -74,6 +83,11 @@ export type SceneState = {
   prepared: string[];
   /** Kayıt görevi: formunu gönderdiği öğeler. */
   formSent: string[];
+  /** Kurulum görevi: dosyasını indirdiği öğeler, kurduğu uygulamalar, izin cevapları ("uygulama:sıra" -> seçenek), ödevi açtığı uygulamalar. */
+  filesOpened: string[];
+  installed: string[];
+  permissions: Record<string, number>;
+  homework: string[];
   answers: Record<string, number>;
   reviewDone: boolean;
   /**
@@ -106,6 +120,10 @@ export const emptyState = (): SceneState => ({
   shipped: [],
   prepared: [],
   formSent: [],
+  filesOpened: [],
+  installed: [],
+  permissions: {},
+  homework: [],
   answers: {},
   reviewDone: false,
   remember: null,
@@ -169,6 +187,14 @@ export function applyEvent(state: SceneState, event: LabEventData): SceneState {
         : { ...state, left: true, decisions: state.decisions + 1 };
     case "talk_answered":
       return { ...state, answers: { ...state.answers, [event.task]: event.option }, decisions: state.decisions + 1 };
+    case "file_opened":
+      return { ...state, filesOpened: add(state.filesOpened ?? [], event.item) };
+    case "app_installed":
+      return { ...state, installed: add(state.installed ?? [], event.app), decisions: state.decisions + 1 };
+    case "permission_answered":
+      return { ...state, permissions: { ...(state.permissions ?? {}), [permissionKey(event.app, event.index)]: event.choice }, decisions: state.decisions + 1 };
+    case "homework_opened":
+      return { ...state, homework: add(state.homework ?? [], event.app) };
     case "reply_sent":
       return {
         ...state,
@@ -214,6 +240,8 @@ export function taskProgress(
       if (mode === "signup") return (state.formSent ?? []).length > 0;
       // Giriş görevi: ödevi yükleyince biter.
       if (mode === "login") return !!state.uploaded;
+      // Kurulum görevi: oyunu açıp ödevi açınca biter (ödevi yalnızca gerçek oyun açar).
+      if (mode === "install") return (state.homework ?? []).length > 0;
       return codeDecided(state).length > 0;
     }
     return task.id in state.answers;
@@ -221,6 +249,9 @@ export function taskProgress(
   const current = done.indexOf(false);
   return { done, current: current < 0 ? tasks.length : current, finished: current < 0 };
 }
+
+/** Kurulum görevinde izin cevabının anahtarı. */
+export const permissionKey = (app: string, index: number) => `${app}:${index}`;
 
 /** Kod gönderildi mi? Rakamlı kodda rakamlar, diğerinde metin aranır (yazılan metin saklanmaz). */
 export function containsSecret(text: string, secret: string) {

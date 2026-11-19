@@ -39,6 +39,11 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Giriş görevi (ortak bilgisayarda okul portalı), öğretmenin notu, okul portalı | login (`mission.login`; `MissionMode` `login`; `components/lab/login/`: `LoginStage`, `LoginDesktop`, `SchoolPortal`) |
 | Beni hatırla, şifreyi kaydet, çıkış yap, ödev yükle | olaylar `login_submitted` (`remember`), `login_verified`, `password_saved`, `logged_out`, `homework_uploaded`; puanları `loginPoints` |
 | Zil, kalkış (bilgisayarı sıradakine bırakmak), kalkış Az kalsın'ı | görev türü `leave`, sunucu eylemi `leaveDesk`, olay `desk_left` (`open`, `closed`), `LeaveStory` / `LeaveAlmostDialog` |
+| Kurulum görevi (Mesajlar ve Mağaza), mağaza, arama önerisi, kopya uygulama | install (`mission.install`: `store`, `query`, `apps` (`storeAppSchema`, `copy`); `MissionMode` `install`; `components/lab/install/InstallPhone.tsx`, kurallar `lib/lab/install.ts`) |
+| İzin penceresi, puanlanan izin, rapordaki kurulum satırı | `installPermissionSchema` (`choices`, `right`, `almost`), olay `permission_answered` (`permissionKey`), `installChecks`, rapor satırı türü `check` |
+| Mesajdaki dosya (.apk), indirme uyarısı, bilinmeyen kaynak | `item.attachment`, `opensFile`, olaylar `file_opened`, `info_entered`; sunucu eylemleri `openFile`, `installFile`; Az kalsın karşılaştırması `install.fileCompare` |
+| Oyunun ödev ekranı, ödevi aç | `install.game`, olay `homework_opened`, sunucu eylemi `openHomework` |
+| Sitenin tek telefonu, durum çubuğu, kilit ekranı | `Phone`, `PhoneStatus`, `PhoneLock` (`components/device/Phone.tsx`, `phone.css`, `--dv-h`); sürükleyerek kaydırma `useDragScroll` |
 | Ödeme isteği (bankanın ekranı) | request (mesajda `request`; `opensRequest`, `RequestSite`; hacklenme yolu `request`) |
 | Sipariş, kargoya verme | order, ship (mesajda `order`; `opensOrder`, `OrderSite`, `shipOrder`; olay `item_shipped`) |
 | Mağaza sayfası, ödeme, onay kodu SMS'i | shop, payment (`item.payment`, `ShopSite`, `payShop`), `answerCode`; olaylar `code_entered`, `code_refused` |

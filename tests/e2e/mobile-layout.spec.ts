@@ -639,7 +639,7 @@ type AdminData = {
   teacher: string;
   member: string;
   school: string;
-  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup" | "login", string>;
+  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup" | "login" | "install", string>;
   article: string;
 };
 
@@ -923,6 +923,84 @@ const adminScreens: Screen<AdminData>[] = [
     },
   },
   { name: "Oda önizleme, çıkış yapmadan kalkınca", open: (page) => page.getByTestId("login-leave").click() },
+  // Kurulum görevli oda: Deniz'in araması, telefonun ana ekranı, Mesajlar'daki .apk ve telefonun uyarıları, Az kalsın, Mağaza, izin penceresi, oyunun ödev ekranı (Şehir Kapısı "Bu uygulama nereden geliyor?").
+  { name: "Oda önizleme, Deniz'in ödev araması", path: (d) => `/yonetim/odalar/${d.labs.install}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  {
+    name: "Oda önizleme, telefonun ana ekranı",
+    open: async (page) => {
+      const call = page.getByTestId("mission-call");
+      await call.getByRole("button", { name: "Aç", exact: true }).click();
+      await call.getByRole("button", { name: "Geç ›" }).click();
+      await call.getByRole("button", { name: "Tamam, hemen kuruyorum" }).click();
+      await pickUpPhone(page);
+      await expect(page.getByTestId("install-home-screen")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, gruptaki .apk",
+    open: async (page) => {
+      await page.getByTestId("install-app-messages").click();
+      await page.getByTestId("scenario-player").getByRole("button", { name: /^Kerem/ }).first().click();
+    },
+  },
+  {
+    name: "Oda önizleme, indirme uyarısı",
+    open: async (page) => {
+      await page.getByTestId("scenario-player").getByRole("button", { name: /KesirKulesi_hizli\.apk/ }).click();
+      await expect(page.getByTestId("file-download")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, bilinmeyen kaynak ayarı",
+    open: async (page) => {
+      await page.getByTestId("file-ok").click();
+      await page.getByTestId("file-ok").click();
+      await expect(page.getByTestId("file-settings")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, .apk'yı kurunca Az kalsın",
+    open: async (page) => {
+      await page.getByTestId("file-allow").check({ force: true });
+      await page.getByTestId("file-continue").click();
+      await page.getByTestId("file-ok").click();
+      await expect(page.getByTestId("almost-dialog")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, mağaza",
+    open: async (page) => {
+      await page.getByTestId("almost-dialog").getByRole("button", { name: "Telefona dön" }).click();
+      const back = page.getByRole("button", { name: "Sohbetlere dön" });
+      if (await back.isVisible()) await back.click();
+      await page.getByTestId("install-home").click();
+      await page.getByTestId("install-app-store").click();
+      await expect(page.getByTestId("store-suggestion")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, uygulamanın sayfası",
+    open: async (page) => {
+      await page.getByTestId("store-suggestion").click();
+      await page.getByTestId("store-result").filter({ hasText: "Bilge Oyun Atölyesi" }).click();
+      await expect(page.getByTestId("store-app-page")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, izin penceresi",
+    open: async (page) => {
+      await page.getByTestId("store-get").click();
+      await expect(page.getByTestId("permission-prompt")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, oyunun ödev ekranı",
+    open: async (page) => {
+      await page.getByTestId("permission-prompt").getByTestId("permission-choice").first().click();
+      await page.getByTestId("permission-prompt").getByTestId("permission-choice").last().click();
+      await expect(page.getByTestId("install-game")).toBeVisible();
+    },
+  },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
   {
@@ -1085,7 +1163,7 @@ test.describe("telefon düzeni", () => {
     const labs = Object.fromEntries(
       (
         await query(
-          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor', 'okul-bilgisayarinda-giris')`,
+          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor', 'okul-bilgisayarinda-giris', 'uygulama-nereden-geliyor')`,
         )
       ).map((r) => [r.slug, r.id]),
     );
@@ -1109,6 +1187,7 @@ test.describe("telefon düzeni", () => {
           sale: labs["eski-telefonunu-sat"],
           signup: labs["baglanti-nereye-gidiyor"],
           login: labs["okul-bilgisayarinda-giris"],
+          install: labs["uygulama-nereden-geliyor"],
         },
         article: (await query(`SELECT "id" FROM "NewsArticle" WHERE "slug" = $1`, [draft]))[0].id as string,
       });

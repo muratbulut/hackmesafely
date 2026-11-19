@@ -1,4 +1,5 @@
 import { Check, EyeOff, Lock } from "lucide-react";
+import { Phone } from "@/components/device/Phone";
 import { brand } from "@/lib/brand";
 import { getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -188,8 +189,8 @@ export function TeacherScreen({ step }: { step: number }) {
 export function StudentPhone({ step }: { step: number }) {
   const p = t.phone;
   return (
-    <div className="h-[380px] w-[200px] flex-none rounded-[34px] border border-line bg-scene-phone-edge p-2.5 shadow-card lg:h-[430px] lg:w-[230px]">
-      <div className="flex h-full flex-col overflow-hidden rounded-[26px] bg-canvas text-fg">
+    <Phone status="clear" className="[--dv-h:380px] lg:[--dv-h:430px]" screenClassName="bg-canvas text-fg">
+      <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex flex-none items-center justify-between px-3.5 pt-3 pb-2 text-[11px] text-fg-3">
           <b className="text-fg">{brand.name}</b>
           <span>{p.user}</span>
@@ -240,6 +241,6 @@ export function StudentPhone({ step }: { step: number }) {
           ) : null}
         </div>
       </div>
-    </div>
+    </Phone>
   );
 }

@@ -19,7 +19,7 @@ Her senaryonun şablonu `docs/labs/room-plan.md`'de "Şablon:" alanında yazıl�
 
 ## Bütün sahnelerde ortak kurallar
 
-- Telefon hiçbir zaman doğrudan ekranı kaplamaz: öğrenci telefonu masadan alır, işi bitince masaya bırakır. Bildirim gelince masadaki telefon titrer ve parlar.
+- Telefon hiçbir zaman doğrudan ekranı kaplamaz: öğrenci telefonu masadan alır, işi bitince masaya bırakır. Bildirim gelince masadaki telefon titrer ve parlar. "Telefonu masaya bırak" düğmesi telefonun içinde değil, eldeki telefonun altında durur; telefon genişliğinde oynatıcının şeridinde "Bırak" olur (19 Kasım, Murat). Telefon her yerde aynıdır (19 Kasım): masadaki telefonun gövdesi ve durum çubuğu `components/device/Phone.tsx`'ten gelir; gelen arama, SMS, kapaklar, hacklendin ekranı, T3 sehpası (yatay), tanıtım ve öğretmenler sayfası bu telefonu kullanır. T2'de kupa monitöre değmez. Masadaki eşyaların boyu ve aralıkları şablon tuvalindeki gibidir: telefon en çok 600 px, eşyalar telefondan ölçülür (--cm).
 - **Temel eğitimin** odalarında bilgisayar şifresizdir: kilit ekranında yalnızca "Oturum aç" düğmesi var. Şifre yalnızca **ileri eğitimlerin** odalarında sorulur ve odadan odaya değişmez (deterministik; tuvaldeki örnek `gunes2009`), yazılan şifre kaydedilmez.
 - Başlat düğmesi maskot gözlü a'dır; menüde "Oturumu kapat" küçük bir sürprizdir (easter egg). Görev çubuğundaki saat gerçek saattir.
 - Duvar gri, üstünde sitedeki sarı ağ (iplikler) yarı saydam (%50).

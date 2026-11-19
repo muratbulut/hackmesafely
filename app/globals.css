@@ -1334,6 +1334,16 @@
   to { transform: none; opacity: 1; }
 }
 /* Mini testteki izin penceresi hafifçe büyüyerek açılır (PermissionPeek). */
+/* Mağazada yükleme çubuğu (kurulum görevi); motion-safe ile çalışır. */
+@keyframes install-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes perm-pop {
   from { transform: scale(.92); opacity: 0; }
   to { transform: none; opacity: 1; }

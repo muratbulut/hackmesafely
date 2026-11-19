@@ -13,8 +13,10 @@ import { RichLine } from "../scene/parts";
  * düğmede yazanla gerçek adresi yan yana gösterir (sahibi kalın), "Bir dahaki sefere" maddelerini
  * verir. "Gelen kutusuna dön" ile oda sürer. Sarsıntı ve flaş yok; yalnızca yumuşak bir açılış.
  * Masaüstünde ortada, telefonda alttan açılır.
+ * Kurulum görevinde (story.compare) düğme ve adres yerine iki şey yan yana durur: kurulmak
+ * istenen dosya ya da kopya oyun ve ödevin gerçek oyunu; düğme "Telefona dön" der.
  */
-export function AlmostDialog({ story, onBack }: { story: AlmostStory; onBack: () => void }) {
+export function AlmostDialog({ story, onBack, backLabel }: { story: AlmostStory; onBack: () => void; backLabel?: string }) {
   const t = getMessages().lab.almost;
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => button.current?.focus(), []);
@@ -44,6 +46,20 @@ export function AlmostDialog({ story, onBack }: { story: AlmostStory; onBack: ()
         </h2>
         {story.realLife ? <p className="-mt-1 leading-relaxed text-fg-2">{story.realLife}</p> : null}
 
+        {story.compare ? (
+          <div className="grid gap-2 sm:grid-cols-2" data-testid="almost-compare">
+            <div className="flex min-w-0 flex-col gap-1 rounded-xl border border-warning/50 bg-warning/10 px-3.5 py-3">
+              <span className="text-[11px] font-bold tracking-[0.6px] text-warning-fg">{story.compare.left.label.toLocaleUpperCase("tr")}</span>
+              <b className="font-mono text-[13.5px] text-fg [overflow-wrap:anywhere]">{story.compare.left.value}</b>
+              {story.compare.left.note ? <span className="text-xs text-fg-3">{story.compare.left.note}</span> : null}
+            </div>
+            <div className="flex min-w-0 flex-col gap-1 rounded-xl border border-line bg-surface-deep px-3.5 py-3">
+              <span className="text-[11px] font-bold tracking-[0.6px] text-fg-3">{story.compare.right.label.toLocaleUpperCase("tr")}</span>
+              <b className="text-[14px] text-fg [overflow-wrap:anywhere]">{story.compare.right.value}</b>
+              {story.compare.right.note ? <span className="text-xs text-fg-3">{story.compare.right.note}</span> : null}
+            </div>
+          </div>
+        ) : (
         <div className="grid gap-2 sm:grid-cols-2">
           <div className="flex min-w-0 flex-col gap-1 rounded-xl border border-line bg-surface-deep px-3.5 py-3">
             <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-[0.6px] text-fg-3">
@@ -68,6 +84,7 @@ export function AlmostDialog({ story, onBack }: { story: AlmostStory; onBack: ()
             <span className="text-xs text-fg-3">{rich(format(t.owner, { owner: story.owner }), { b: (chunk) => <b className="text-fg">{chunk}</b> })}</span>
           </div>
         </div>
+        )}
 
         {story.steps.length > 0 ? (
           <div className="flex flex-col gap-2.5">
@@ -97,7 +114,7 @@ export function AlmostDialog({ story, onBack }: { story: AlmostStory; onBack: ()
           data-testid="almost-back"
         >
           <ArrowLeft className="size-5" strokeWidth={2.4} aria-hidden="true" />
-          {t.back}
+          {backLabel ?? t.back}
         </button>
       </div>
     </div>

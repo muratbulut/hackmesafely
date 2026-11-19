@@ -1,5 +1,6 @@
 "use client";
 
+import { Phone } from "@/components/device/Phone";
 import { ArrowRight, House, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { amountValue, type HackedStory } from "@/lib/lab/story";
@@ -210,11 +211,12 @@ export function HackedScene({ story, avatar, onContinue }: { story: HackedStory;
           <p className="m-0 text-[15px] leading-normal text-alarm-muted lg:text-base">{caption}</p>
         </div>
 
-        <div
-          className="h-[400px] w-[220px] flex-none overflow-hidden rounded-[32px] border-[7px] border-scene-phone-edge bg-scene-body shadow-[0_24px_60px_var(--shadow-color)] lg:h-[480px] lg:w-[260px]"
-        >
-          {story.scene === "money" ? <MoneyScreen story={story} /> : story.scene === "card" ? <CardScreen /> : story.scene === "account" ? <AccountScreen story={story} avatar={avatar} /> : <HomeScreen />}
-        </div>
+        {/* Sitenin tek telefonu (components/device). */}
+        <Phone className="[--dv-h:400px] lg:[--dv-h:480px]" screenClassName="bg-scene-body">
+          <div className="flex min-h-0 flex-1 flex-col">
+            {story.scene === "money" ? <MoneyScreen story={story} /> : story.scene === "card" ? <CardScreen /> : story.scene === "account" ? <AccountScreen story={story} avatar={avatar} /> : <HomeScreen />}
+          </div>
+        </Phone>
 
         <div className="flex w-full max-w-[420px] flex-col items-center gap-2">
           <button

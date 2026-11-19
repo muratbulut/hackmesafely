@@ -65,10 +65,16 @@ export function mergeTryPath(content: ScenarioContent, previous: TryPath): TryPa
   return base;
 }
 
-function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | "signup" | null): LabEventData[] {
+function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | "signup" | "install" | null): LabEventData[] {
   const opened: LabEventData = { type: "item_opened", item };
-  // Satış görevinde sahte mesaja kanmak bağlantıdaki ödeme isteğini açmaktır.
-  const engage: LabEventData = template === "INBOX" || mission === "sale" ? { type: "link_clicked", item } : { type: "reply_sent", item, secret: false };
+  // Satış görevinde sahte mesaja kanmak bağlantıdaki ödeme isteğini açmaktır, kurulum görevinde
+  // mesajdaki eki indirmek (kurmak istemek "bilgi girildi" olur, Az kalsın).
+  const engage: LabEventData =
+    mission === "install"
+      ? { type: "file_opened", item }
+      : template === "INBOX" || mission === "sale"
+        ? { type: "link_clicked", item }
+        : { type: "reply_sent", item, secret: false };
   switch (outcome) {
     case "reported":
       return [opened, { type: "item_moved", item, to: "spam" }];
@@ -97,7 +103,7 @@ function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: 
 /** Seçilen yolu öğrencinin olaylarına, olayları sahne durumuna çevirir. */
 export function stateFromPath(content: ScenarioContent, template: ScenarioTemplate, path: TryPath): SceneState {
   const events: LabEventData[] = [];
-  const mission = content.mission ? (content.mission.sale ? "sale" : content.mission.signup ? "signup" : "buy") : null;
+  const mission = content.mission ? (content.mission.sale ? "sale" : content.mission.signup ? "signup" : content.mission.install ? "install" : "buy") : null;
   for (const item of content.items) {
     const fallback = item.kind === "fake" ? "reported" : "kept";
     events.push(...itemEvents(item.id, path.items[item.id] ?? fallback, template, mission));
@@ -115,6 +121,13 @@ export function stateFromPath(content: ScenarioContent, template: ScenarioTempla
   }
   if (mission === "buy" && shop && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: shop.id }, { type: "info_entered", item: shop.id }, { type: "code_entered", item: shop.id });
+  }
+  // Kurulum görevi: doğru yol (gerçek oyunu mağazadan kurar, izinlerde doğrusunu seçer, ödevi açar).
+  const realApp = content.mission?.install?.apps.find((a) => !a.copy);
+  if (mission === "install" && realApp && path.missionDone !== false) {
+    events.push({ type: "app_installed", app: realApp.id });
+    realApp.permissions.forEach((p, index) => events.push({ type: "permission_answered", app: realApp.id, index, choice: p.right ?? 0 }));
+    events.push({ type: "homework_opened", app: realApp.id });
   }
   // Giriş görevi: doğru yol (işareti kaldırıp girer, şifreyi kaydetmez, ödevi yükler, çıkıp kalkar).
   if (content.mission?.login) {
