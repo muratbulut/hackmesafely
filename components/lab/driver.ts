@@ -3,6 +3,7 @@
 // çalışan bir sürücüyle açar. Oynatıcı hiçbir zaman doğru cevabı bilmez: bağlantının ne
 // açacağını, hacklenip hacklenmediğini ve raporu hep sürücü söyler.
 
+import type { WifiResult } from "@/lib/lab/setup";
 import type { AlmostStory, EndingTalk, HackedStory, InstallAfter, InstallPrompt, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
@@ -67,6 +68,14 @@ export type LabDriver = {
   ): Promise<{ ok: true; almost: AlmostStory | null; after: InstallAfter | null } | Fail>;
   /** Kurulum görevi: oyunda "Ödevi aç"; görev biter, "açıldı" cümlesi döner. */
   openHomework(attemptId: string, seq: number, appId: string): Promise<{ ok: true; done: string } | Fail>;
+  /** Telefon kurulumu: Wi‑Fi listesinde ağa bağlanır (kilitli ağda şifre kutusu dolu: password). */
+  connectWifi(attemptId: string, seq: number, network: number, password: boolean): Promise<{ ok: true; result: WifiResult } | Fail>;
+  /** Telefon kurulumu: sistem güncellemesini yükler; "yüklendi" cümlesi döner. */
+  installUpdate(attemptId: string, seq: number): Promise<{ ok: true; done: string } | Fail>;
+  /** Telefon kurulumu: uygulamadaki reklamı × ile kapatır. */
+  closeAd(attemptId: string, seq: number, itemId: string): Promise<{ ok: true } | Fail>;
+  /** Telefon kurulumu: arayanın bildirimine "Kurdum!"; görev biter. */
+  finishSetup(attemptId: string, seq: number): Promise<{ ok: true } | Fail>;
   /**
    * Labı bitirir; sonra rapor sayfasına gidilir (önizlemede rapor yerinde açılır). Görevli odada iş
    * doğru yerden yapıldıysa önce iyi bitiş araması, yüz yüze sorunun son sözleri yazılmışsa son konuşma.

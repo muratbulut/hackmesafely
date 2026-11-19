@@ -19,6 +19,7 @@ import { batchEventSchema, reduceEvents, rowToEvent, type ServerEvent } from "./
 import { missionDone, scoreScenario, type ScenarioReport } from "./scoring";
 import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply, type HackedVia } from "./story";
 import { afterInstall, canInstallFile, fileAlmost, installApp as installStep, openHomework as homeworkStep, opensFile, permissionStep } from "./install";
+import { canCloseAd, canFinishSetup, connectWifi as wifiStep, installUpdate as updateStep, openConnected } from "./setup";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "./training";
 
 type Fail = { ok: false; reason: "auth" | "unverified" | "not_found" | "locked" | "ended" | "rate_limited" | "invalid" };
@@ -409,6 +410,59 @@ export async function openHomework(attemptId: string, seq: number, appId: string
   return { ok: true as const, done };
 }
 
+// --- Telefon kurulumu (Wi‑Fi, güncelleme, reklam, "Kurdum!") -------------------------------
+
+/**
+ * Telefon kurulumu: Wi‑Fi listesinde bir ağa bağlanmak. password: kilitli ağda şifre kutusu dolduruldu
+ * (şifre gelmez). Evin ağı ve açık ağ bağlanır (olay yazılır); açık ağda not, bilinmeyen şifrede cümle döner.
+ */
+export async function connectWifi(attemptId: string, seq: number, network: number, password: boolean) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (attempt.lab.template !== "MESSAGING" || !validSeq(seq)) return fail("invalid");
+  const step = wifiStep(attempt.content, stateOf(attempt, seq), network, password === true);
+  if (!step) return fail("invalid");
+  if (step.record && !(await record(attempt.id, seq, { type: "wifi_connected", network }))) return fail("invalid");
+  return { ok: true as const, result: step.result };
+}
+
+/** Telefon kurulumu: Ayarlar'da "Şimdi yükle". Güncellemenin "yüklendi" cümlesi döner. */
+export async function installUpdate(attemptId: string, seq: number) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validSeq(seq)) return fail("invalid");
+  const done = updateStep(attempt.content, stateOf(attempt, seq));
+  if (done === null) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "update_installed" }))) return fail("invalid");
+  return { ok: true as const, done };
+}
+
+/** Telefon kurulumu: uygulamanın içindeki reklamı × ile kapatmak. */
+export async function closeAd(attemptId: string, seq: number, itemId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validRef(itemId) || !validSeq(seq) || !canCloseAd(attempt.content, stateOf(attempt, seq), itemId)) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "ad_closed", item: itemId }))) return fail("invalid");
+  return { ok: true as const };
+}
+
+/** Telefon kurulumu: her şey kurulunca arayanın bildirimine "Kurdum!". Görev biter. */
+export async function finishSetup(attemptId: string, seq: number) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  if (!validSeq(seq) || !canFinishSetup(attempt.content, stateOf(attempt, seq))) return fail("invalid");
+  if (!(await record(attempt.id, seq, { type: "setup_finished" }))) return fail("invalid");
+  return { ok: true as const };
+}
+
 /**
  * "Odayı bitir, raporu gör". Görevli odada iş doğru yerden yapıldıysa iyi bitiş araması da döner;
  * yüz yüze sorunun son sözleri yazılmışsa son konuşma (seçilen cevaba göre).
@@ -421,7 +475,8 @@ export async function finishAttempt(attemptId: string) {
   const report = await close(attempt, "COMPLETED");
   const state = reduceEvents(attempt.events.map(rowToEvent));
   const reportedFake = report.rows.some((r) => r.type === "fake" && (r.outcome === "reported" || r.outcome === "reportedAfterEngaging"));
-  const call = goodCall(attempt.content, missionDone(attempt.content, state), reportedFake);
+  const almost = report.rows.some((r) => r.type === "fake" && r.outcome === "almost");
+  const call = goodCall(attempt.content, missionDone(attempt.content, state), reportedFake, { almost, openWifi: openConnected(attempt.content, state) });
   const talk = endingTalk(attempt.content, state.answers);
   return { ok: true as const, reportPath: paths.labReport(attempt.lab.slug, attempt.id), call, talk };
 }

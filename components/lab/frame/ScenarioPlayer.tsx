@@ -21,6 +21,7 @@ import { InboxScene } from "../inbox/InboxScene";
 import { LoginStage } from "../login/LoginStage";
 import { MessagingScene } from "../messaging/MessagingScene";
 import { InstallPhone, type InstallHandlers } from "../install/InstallPhone";
+import { SetupPhone, type SetupHandlers } from "../install/SetupPhone";
 import { MissionCall } from "../mission/MissionCall";
 import { StageView } from "../stage/StageView";
 import { TalkScene } from "../stage/TalkScene";
@@ -431,6 +432,52 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     },
   };
 
+  /** Telefon kurulumu: Wi‑Fi, güncelleme, reklam ve "Kurdum!" (SetupPhone); karar sürücüde. */
+  const setupHandlers: SetupHandlers = {
+    ...installHandlers,
+    async connectWifi(network, password) {
+      const result = await session.immediate((attemptId, seq) => driver.connectWifi(attemptId, seq, network, password));
+      if (!result) return null;
+      if (!result.ok) {
+        fail(result.reason);
+        return null;
+      }
+      if (result.result.status !== "unknown") session.applyLocal({ type: "wifi_connected", network });
+      return result.result;
+    },
+    async installUpdate() {
+      const result = await session.immediate((attemptId, seq) => driver.installUpdate(attemptId, seq));
+      if (!result) return null;
+      if (!result.ok) {
+        fail(result.reason);
+        return null;
+      }
+      session.applyLocal({ type: "update_installed" });
+      return result.done;
+    },
+    async closeAd(id) {
+      const result = await session.immediate((attemptId, seq) => driver.closeAd(attemptId, seq, id));
+      if (!result) return false;
+      if (!result.ok) {
+        fail(result.reason);
+        return false;
+      }
+      session.applyLocal({ type: "ad_closed", item: id });
+      flashMood("happy", 1800);
+      return true;
+    },
+    async finishSetup() {
+      const result = await session.immediate((attemptId, seq) => driver.finishSetup(attemptId, seq));
+      if (!result) return false;
+      if (!result.ok) {
+        fail(result.reason);
+        return false;
+      }
+      session.applyLocal({ type: "setup_finished" });
+      return true;
+    },
+  };
+
   async function leave() {
     setLeaving(true);
     await session.flush();
@@ -478,6 +525,15 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const appScene =
     template === "INBOX" ? (
       <InboxScene {...sceneProps} />
+    ) : install?.setup && mission ? (
+      <SetupPhone
+        install={install}
+        setup={install.setup}
+        caller={mission.caller}
+        state={state}
+        files={Object.fromEntries(items.flatMap((i) => (i.attachment ? [[i.id, i.attachment]] : [])))}
+        handlers={setupHandlers}
+      />
     ) : install ? (
       <InstallPhone
         install={install}

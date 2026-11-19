@@ -317,13 +317,21 @@ export function smsFor(content: ScenarioContent, item: Item): ShopSms | null {
  * İyi bitiş araması: görevli odada iş doğru yerden yapıldıysa odayı bitirince gösterilir. Sahte
  * maili bildirdiyse teşekkür satırı eklenir. Rapor hesaplandıktan sonra döner (doğrusu artık açık).
  */
-export function goodCall(content: ScenarioContent, done: boolean, reportedFake: boolean) {
+export function goodCall(content: ScenarioContent, done: boolean, reportedFake: boolean, flags: { almost?: boolean; openWifi?: boolean } = {}) {
   const mission = content.mission;
   if (!mission || !done) return null;
   const voice = mission.voice;
+  // Telefon kurulumunda temizleyiciyi kurduysa ve açık ağa bağlandıysa arayan birer satır ekler.
+  const setup = mission.install?.setup;
+  const extra = setup
+    ? [
+        ...(flags.almost && setup.good.almost.trim() ? [[setup.good.almost, setup.voice?.almost ?? ""]] : []),
+        ...(flags.openWifi && setup.good.openWifi.trim() ? [[setup.good.openWifi, setup.voice?.openWifi ?? ""]] : []),
+      ]
+    : [];
   const call = voicedLines(
-    [...mission.good, ...(reportedFake ? [mission.goodReported] : [])],
-    [...mission.good.map((_, i) => voice?.good[i] ?? ""), ...(reportedFake ? [voice?.goodReported ?? ""] : [])],
+    [...mission.good, ...(reportedFake ? [mission.goodReported] : []), ...extra.map((e) => e[0])],
+    [...mission.good.map((_, i) => voice?.good[i] ?? ""), ...(reportedFake ? [voice?.goodReported ?? ""] : []), ...extra.map((e) => e[1])],
   );
   return { caller: mission.caller, ...call, title: mission.goodTitle };
 }

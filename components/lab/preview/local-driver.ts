@@ -8,6 +8,7 @@ import { applyEvent, emptyState, type LabEventData } from "@/lib/lab/events";
 import { missionDone, scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
 import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply } from "@/lib/lab/story";
 import { afterInstall, canInstallFile, fileAlmost, installApp, openHomework, opensFile, permissionStep } from "@/lib/lab/install";
+import { canCloseAd, canFinishSetup, connectWifi, installUpdate, openConnected } from "@/lib/lab/setup";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "@/lib/lab/training";
 import type { Fail, FailReason, LabDriver, TrainingDriver } from "../driver";
 
@@ -166,11 +167,40 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       apply({ type: "homework_opened", app: appId });
       return { ok: true, done };
     },
+    async connectWifi(_attemptId, _seq, network, password) {
+      if (ended) return fail("ended");
+      if (template !== "MESSAGING") return fail("invalid");
+      const step = connectWifi(content, state, network, password);
+      if (!step) return fail("invalid");
+      if (step.record) apply({ type: "wifi_connected", network });
+      return { ok: true, result: step.result };
+    },
+    async installUpdate() {
+      if (ended) return fail("ended");
+      const done = installUpdate(content, state);
+      if (done === null) return fail("invalid");
+      apply({ type: "update_installed" });
+      return { ok: true, done };
+    },
+    async closeAd(_attemptId, _seq, itemId) {
+      if (ended) return fail("ended");
+      if (!canCloseAd(content, state, itemId)) return fail("invalid");
+      apply({ type: "ad_closed", item: itemId });
+      return { ok: true };
+    },
+    async finishSetup() {
+      if (ended) return fail("ended");
+      if (!canFinishSetup(content, state)) return fail("invalid");
+      apply({ type: "setup_finished" });
+      return { ok: true };
+    },
     async finish() {
       const done = missionDone(content, state);
+      const openWifi = openConnected(content, state);
       const result = end();
       const reportedFake = result.rows.some((r) => r.type === "fake" && (r.outcome === "reported" || r.outcome === "reportedAfterEngaging"));
-      return { ok: true, reportPath: "", call: goodCall(content, done, reportedFake), talk: endingTalk(content, state.answers) };
+      const almost = result.rows.some((r) => r.type === "fake" && r.outcome === "almost");
+      return { ok: true, reportPath: "", call: goodCall(content, done, reportedFake, { almost, openWifi }), talk: endingTalk(content, state.answers) };
     },
   };
 }

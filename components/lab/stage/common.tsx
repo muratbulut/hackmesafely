@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Mail, MessageCircle, ShoppingBag, type LucideIcon } from "lucide-react";
+import { Globe, Mail, MessageCircle, Settings, ShoppingBag, type LucideIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { patterns } from "@/components/background/patterns";
 import { defaultLocale, getMessages } from "@/lib/i18n";
@@ -58,19 +58,21 @@ export function StageWall({ pattern = "hero", className }: { pattern?: "hero" | 
   );
 }
 
-export type StageApp = "postam" | "browser" | "messages" | "store";
+export type StageApp = "postam" | "browser" | "messages" | "store" | "settings";
 
 const appIcons: Record<StageApp, LucideIcon> = {
   postam: Mail,
   browser: Globe,
   messages: MessageCircle,
   store: ShoppingBag,
+  settings: Settings,
 };
 const appColors: Record<StageApp, string> = {
   postam: "bg-scene-orange",
   browser: "bg-scene-blue",
   messages: "bg-scene-green",
   store: "bg-scene-violet",
+  settings: "bg-scene-ink-2",
 };
 
 /** Kurgusal uygulamanın simgesi (gerçek marka yok): Postam turuncu zarf, tarayıcı mavi küre, Mesajlar yeşil balon, Mağaza mor çanta. */

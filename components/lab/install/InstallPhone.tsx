@@ -298,7 +298,7 @@ function AppTile({ app, index, className }: { app: ClientStoreApp; index: number
   );
 }
 
-function Store({
+export function Store({
   install,
   open,
   installed,
@@ -308,8 +308,11 @@ function Store({
   onBack,
   onGet,
   onLaunch,
+  queries,
 }: {
   install: ClientInstall;
+  /** Vitrindeki öneriler; verilmezse tek öneri `install.query` (telefon kurulumunda her uygulama). */
+  queries?: string[];
   open: string | null;
   installed: string[];
   removed: string[];
@@ -438,10 +441,10 @@ function Store({
       </form>
       {searched === null ? (
         <StoreShowcase
-          query={install.query}
-          onSuggest={() => {
-            setQuery(install.query);
-            setSearched(install.query);
+          queries={queries ?? (install.query ? [install.query] : [])}
+          onSuggest={(q) => {
+            setQuery(q);
+            setSearched(q);
           }}
         />
       ) : null}
@@ -490,30 +493,33 @@ const showcaseColors = ["bg-scene-blue", "bg-scene-violet", "bg-scene-orange", "
  * görünsün diye süs vitrin (kategoriler, öne çıkanlar, öğrenciler için). Vitrindeki uygulamalar
  * kurgusaldır ve açılmaz; odanın uygulamaları yalnızca aramayla bulunur.
  */
-function StoreShowcase({ query, onSuggest }: { query: string; onSuggest: () => void }) {
+function StoreShowcase({ queries, onSuggest }: { queries: string[]; onSuggest: (query: string) => void }) {
   const t = getMessages().lab.install;
   const apps = t.showcase.apps;
   return (
     <div className="flex flex-col gap-5 pb-6">
-      {query ? (
-        <div className="px-4 pt-4">
-          <span className="mb-2 block text-[12px] font-bold text-scene-ink-muted">{t.suggestion}</span>
-          <button
-            type="button"
-            onClick={onSuggest}
-            className="relative flex w-full cursor-pointer items-center gap-3 rounded-2xl border-2 border-scene-green bg-scene-white p-3 text-left shadow-[0_8px_20px_var(--scene-shadow)]"
-            data-testid="store-suggestion"
-          >
-            <span aria-hidden="true" className="relative flex size-11 flex-none items-center justify-center rounded-full bg-scene-green text-scene-white">
-              <span className="absolute inset-0 rounded-full bg-scene-green opacity-40 motion-safe:animate-ping" />
-              <Search className="relative size-5" strokeWidth={2.4} />
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <b className="truncate text-[16px] text-scene-ink">{query}</b>
-              <span className="text-[12.5px] text-scene-ink-muted">{t.suggestionHint}</span>
-            </span>
-            <ChevronRight className="size-5 flex-none text-scene-green" strokeWidth={2.4} aria-hidden="true" />
-          </button>
+      {queries.length > 0 ? (
+        <div className="flex flex-col gap-2 px-4 pt-4">
+          <span className="block text-[12px] font-bold text-scene-ink-muted">{t.suggestion}</span>
+          {queries.map((query) => (
+            <button
+              key={query}
+              type="button"
+              onClick={() => onSuggest(query)}
+              className="relative flex w-full cursor-pointer items-center gap-3 rounded-2xl border-2 border-scene-green bg-scene-white p-3 text-left shadow-[0_8px_20px_var(--scene-shadow)]"
+              data-testid="store-suggestion"
+            >
+              <span aria-hidden="true" className="relative flex size-11 flex-none items-center justify-center rounded-full bg-scene-green text-scene-white">
+                <span className="absolute inset-0 rounded-full bg-scene-green opacity-40 motion-safe:animate-ping" />
+                <Search className="relative size-5" strokeWidth={2.4} />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <b className="truncate text-[16px] text-scene-ink">{query}</b>
+                <span className="text-[12.5px] text-scene-ink-muted">{t.suggestionHint}</span>
+              </span>
+              <ChevronRight className="size-5 flex-none text-scene-green" strokeWidth={2.4} aria-hidden="true" />
+            </button>
+          ))}
         </div>
       ) : null}
 
@@ -603,6 +609,7 @@ function Game({
 }) {
   const t = getMessages().lab.install;
   if (!app) return null;
+  const game = install.game ?? { title: app.name, homework: "", open: "" };
   const homework = after?.homework === true || opened;
   return (
     <div
@@ -612,15 +619,15 @@ function Game({
       <span aria-hidden="true" className="flex size-24 items-center justify-center rounded-[28%] bg-scene-white text-scene-violet shadow-[0_10px_24px_var(--scene-shadow)] motion-safe:[animation:pop_.4s_ease-out_both]">
         <Castle className="size-14" strokeWidth={1.8} />
       </span>
-      <b className="font-heading text-[24px] leading-tight">{homework ? install.game.title : app.name}</b>
+      <b className="font-heading text-[24px] leading-tight">{homework ? game.title : app.name}</b>
       {homework ? (
         <>
           <span className="rounded-full bg-scene-amber-soft px-3 py-1 text-[11px] font-bold tracking-[0.6px] text-scene-amber-ink">{t.game.kicker.toLocaleUpperCase("tr")}</span>
-          <p className="text-[15px] leading-snug text-scene-ink-2">{install.game.homework}</p>
+          <p className="text-[15px] leading-snug text-scene-ink-2">{game.homework}</p>
           {done || opened ? (
             <p role="status" className="flex items-center gap-2 rounded-xl bg-scene-white px-4 py-3 text-[15px] font-bold text-scene-green shadow-[0_2px_8px_var(--scene-shadow)]" data-testid="homework-done">
               <Check className="size-5" strokeWidth={2.6} aria-hidden="true" />
-              {done ?? install.game.homework}
+              {done ?? game.homework}
             </p>
           ) : (
             <button
@@ -630,7 +637,7 @@ function Game({
               className="flex h-12 cursor-pointer items-center justify-center rounded-full bg-scene-violet px-8 text-[16px] font-bold text-scene-white disabled:opacity-60"
               data-testid="homework-open"
             >
-              {install.game.open}
+              {game.open}
             </button>
           )}
         </>
@@ -656,7 +663,7 @@ function Game({
 }
 
 /** Telefonun izin penceresi: uygulamanın adı ve isteği, altında nedeni, seçenekler alt alta. */
-function PermissionPrompt({ app, prompt, busy, onChoose }: { app: string; prompt: InstallPrompt; busy: boolean; onChoose: (choice: number) => void }) {
+export function PermissionPrompt({ app, prompt, busy, onChoose }: { app: string; prompt: InstallPrompt; busy: boolean; onChoose: (choice: number) => void }) {
   const t = getMessages().lab.install;
   const Icon = cardIconMap[prompt.icon];
   const titleId = useId();
@@ -700,7 +707,7 @@ function PermissionPrompt({ app, prompt, busy, onChoose }: { app: string; prompt
  * Mesajdaki .apk eki: telefonun uyarıları sırayla (indir, yükleme engellendi, ayar, yükle).
  * Her adımda "İptal" var. Dosya inmez; yalnızca "indirdi" ve "yüklemek istedi" olayları gider.
  */
-function FileFlow({
+export function FileFlow({
   name,
   size,
   step,
@@ -712,12 +719,15 @@ function FileFlow({
   onToggle,
   onContinue,
   onInstall,
+  source,
 }: {
   name: string;
   size: string;
   step: FileStep;
   allowed: boolean;
   busy: boolean;
+  /** Dosyanın geldiği uygulama (Ayarlar'daki izin satırı); yazılmazsa Mesajlar. */
+  source?: { name: string; icon: ReactNode };
   onCancel: () => void;
   onDownload: () => void;
   onSettings: () => void;
@@ -740,8 +750,8 @@ function FileFlow({
         </div>
         <div className="flex flex-col gap-4 px-4 py-5">
           <span className="flex items-center gap-3">
-            <AppIcon app="messages" className="size-10" />
-            <b className="text-[15px]">{t.settingsApp}</b>
+            {source ? source.icon : <AppIcon app="messages" className="size-10" />}
+            <b className="text-[15px]">{source ? source.name : t.settingsApp}</b>
           </span>
           <label htmlFor={toggleId} className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-xl border border-scene-line px-3.5 py-2.5">
             <span className="text-[15px]">{t.settingsToggle}</span>

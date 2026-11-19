@@ -2,6 +2,8 @@ import {
   Ban,
   Download,
   FileText,
+  Flashlight,
+  Map as MapIcon,
   Settings,
   Flag,
   Gift,
@@ -73,6 +75,8 @@ export const cardIconMap: Record<CardIcon, LucideIcon> = {
   file: FileText,
   cog: Settings,
   download: Download,
+  flashlight: Flashlight,
+  map: MapIcon,
 };
 
 /**
