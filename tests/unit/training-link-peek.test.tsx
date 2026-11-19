@@ -26,7 +26,7 @@ describe("mini testteki bağlantı düğmesi", () => {
   it("şema düğmeyi kabul eder, tarayıcıya giden kartta doğru cevap yok ama düğme var", () => {
     const content = parseTraining({ meta: { name: "Oda", summary: "Kısa" }, cards: [quiz] })!;
     const client = toClientCard(content.cards[0]);
-    expect(client).toEqual({ id: "nereye", type: "quiz", question: quiz.question, options: ["oyundunyasi.com/odul", "oyun-dunyasi-hediye.xyz/giris"], art: null, link, sms: null, file: null, permission: null, guess: false });
+    expect(client).toEqual({ id: "nereye", type: "quiz", question: quiz.question, options: ["oyundunyasi.com/odul", "oyun-dunyasi-hediye.xyz/giris"], art: null, link, sms: null, file: null, permission: null, wifi: null, popup: null, guess: false });
     expect(JSON.stringify(client)).not.toContain("answer");
   });
 

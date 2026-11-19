@@ -33,6 +33,9 @@ import {
   Tag,
   User,
   Users,
+  Wifi,
+  Bell,
+  QrCode,
   type LucideIcon,
 } from "lucide-react";
 import type { SortColor, CardIcon } from "@/lib/lab/content";
@@ -73,6 +76,9 @@ export const cardIconMap: Record<CardIcon, LucideIcon> = {
   file: FileText,
   cog: Settings,
   download: Download,
+  wifi: Wifi,
+  bell: Bell,
+  qr: QrCode,
 };
 
 /**

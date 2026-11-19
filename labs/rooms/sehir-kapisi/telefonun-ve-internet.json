@@ -1,0 +1,389 @@
+{
+  "slug": "telefonun-ve-internet",
+  "neighborhood": "sehir-kapisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 3,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Telefonun ve internet",
+      "title": "Cebindeki bilgisayarla tanış",
+      "summary": "İnternete nasıl bağlanırsın, telefonunun gerçek uyarıları nereden gelir, konum ve QR kod ne demek?",
+      "story": "Telefonun cebinde taşıdığın küçük bir bilgisayar. İnternete Wi‑Fi'dan ya da mobil veriden bağlanır, güncellenir, nerede olduğunu bilir, kameran QR kod okur. Bunlar işini kolaylaştırır ama nasıl çalıştıklarını bilmezsen sahte bir ağ, sahte bir güncelleme uyarısı ya da bir QR kod seni yanlış yere götürebilir. Bu odada önce tahmin edecek, sonra kuralı göreceksin. Şehrin cihazlarla ilgili odalarına bu bilgiyle gireceksin.",
+      "learn": [
+        {
+          "title": "İnternete bağlanmak",
+          "text": "Wi‑Fi ile mobil veri, şifreli ağ ile açık ağ arasındaki fark."
+        },
+        {
+          "title": "Gerçek uyarı, sahte uyarı",
+          "text": "Telefonunun kendi uyarıları ve güncellemesi nereden gelir, sitedeki uyarı neden sahtedir?"
+        },
+        {
+          "title": "Konum ve QR",
+          "text": "Telefonunun nerede olduğunu kim bilir, QR kod neden bir bağlantıdır?"
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 7
+    },
+    "cards": [
+      {
+        "id": "yeni-telefon",
+        "type": "video",
+        "title": "Lisa ve Ayşegül: yeni telefon",
+        "src": "/videolar/yeni-telefon.mp4",
+        "duration": "1:06",
+        "question": {
+          "at": 17,
+          "question": "Ayşegül evde yeni telefonunu kuruyor ve listede bu üç ağı görüyor. Hangisine bağlanmalı?",
+          "options": [
+            "Bedava_Internet, şifre istemiyor",
+            "Ev_Wifi; şifresini evdekilere sorar",
+            "Komsu_5G, sinyali en güçlü olan",
+            "Listede en üstte hangisi varsa"
+          ],
+          "answer": 1,
+          "explain": "Şifreli bir ağın şifresini ağın sahibi bilir; evde bu ailendir. Şifresiz bir ağı kimin kurduğunu çoğu zaman bilemezsin. Evdeyken en doğru seçim evin kendi ağıdır."
+        }
+      },
+      {
+        "id": "iki-yol",
+        "type": "info",
+        "title": "İnternete iki yoldan çıkarsın",
+        "paragraphs": [
+          "Telefonun internete iki yoldan bağlanır. Hangisine bağlı olduğunu ekranın en üstündeki simgelerden görürsün."
+        ],
+        "points": [
+          {
+            "title": "Wi‑Fi",
+            "icon": "wifi",
+            "text": "Evdeki, okuldaki ya da kafedeki modemin ağı. Her ağın bir adı vardır: Ev_Wifi, Cinar_Ogrenci."
+          },
+          {
+            "title": "Mobil veri",
+            "icon": "phone",
+            "text": "Telefon hattının interneti. Wi‑Fi olmayan yerde de çalışır, ama paketin bitebilir."
+          },
+          {
+            "title": "Şifreli ağ",
+            "icon": "lock",
+            "text": "Şifre ister. Şifreyi ağın sahibinden alırsın: evde ailenden, okulda öğretmeninden, kafede kasadan."
+          },
+          {
+            "title": "Açık ağ",
+            "icon": "eye",
+            "text": "Şifresizdir; kimin kurduğu çoğu zaman belli olmaz. Böyle bir ağda şifre girmemek ve alışveriş yapmamak en güvenlisi."
+          }
+        ]
+      },
+      {
+        "id": "okulun-agi",
+        "type": "quiz",
+        "wifi": [
+          {
+            "name": "Cinar_Ogrenci",
+            "locked": true
+          },
+          {
+            "name": "Cinar_Ogrenci_FREE",
+            "locked": false
+          },
+          {
+            "name": "Kantin_Misafir",
+            "locked": false
+          }
+        ],
+        "question": "Okulda telefonunu Wi‑Fi'a bağlamak istiyorsun ve listede bu ağlar var. Ne yaparsın?",
+        "options": [
+          "FREE olana bağlanırım; okulun adı yazıyor ve şifre istemiyor",
+          "Öğretmenime hangisinin okulun ağı olduğunu sorarım",
+          "Hepsine sırayla bağlanıp en hızlısını seçerim",
+          "Adında okulun adı geçen her ağ okulundur, birini seçerim"
+        ],
+        "answer": 1,
+        "explain": "Ağın adını kuran kişi istediği gibi koyar; okulun adını yazmak çok kolaydır. Hangisinin gerçekten okulun olduğunu okul bilir. Öğretmenine sor, şifresini de ondan al. Emin değilsen mobil veriyi kullan."
+      },
+      {
+        "id": "kim-gosteriyor",
+        "type": "quiz",
+        "guess": true,
+        "popup": {
+          "site": "filmizle-bedava.xyz/izle",
+          "title": "Telefonun virüslü!",
+          "text": "4 virüs bulundu. Hemen temizlemezsen fotoğrafların silinecek.",
+          "button": "Hemen temizle"
+        },
+        "question": "Bir sitede film izlerken bu pencere açıldı. Bu uyarıyı kim gösteriyor?",
+        "options": [
+          "Telefonun kendisi; bir virüs bulmuş",
+          "İzlediğin site; telefonunun bundan haberi yok",
+          "Telefon hattının şirketi",
+          "Telefondaki virüs programı"
+        ],
+        "answer": 1,
+        "explain": "Pencere adres çubuğunun altında, sitenin içinde açıldı; onu site gösteriyor. Bir web sayfası telefonundaki dosyaları tarayamaz. Geri sayım da düşünmeden basman için konmuştur. Telefonunun kendi uyarıları bildirim çubuğunda ya da Ayarlar'da görünür."
+      },
+      {
+        "id": "gercek-uyari",
+        "type": "info",
+        "layout": "steps",
+        "title": "Gerçek uyarı nereden gelir?",
+        "paragraphs": [
+          "Güncelleme telefonundaki açıkları kapatır; asıl işi güvenliktir. Önce sahte uyarıyı, sonra gerçeğin geldiği üç yeri gör. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Sitedeki uyarı",
+            "icon": "ban",
+            "text": "Bir sitenin, reklamın ya da SMS'teki bağlantının içinde çıkan \"güncelle\" uyarısı telefonundan gelmez. Kapat, aşağıdaki yerlerden kendin bak."
+          },
+          {
+            "title": "Bildirim çubuğu",
+            "icon": "bell",
+            "text": "Ekranın üstünden aşağı çekince açılır. Telefonunun \"Güncelleme hazır\" gibi kendi bildirimleri burada görünür."
+          },
+          {
+            "title": "Ayarlar",
+            "icon": "cog",
+            "text": "Çark simgeli uygulama. Telefonunun güncellemesi, ağları, konumu ve izinleri tek yerde. Bir uyarıdan şüphelenirsen buradan kendin bak."
+          },
+          {
+            "title": "Uygulama mağazası",
+            "icon": "shield",
+            "text": "Uygulamalarının güncellemesi mağazadan gelir; çoğu kendiliğinden güncellenir."
+          }
+        ]
+      },
+      {
+        "id": "gercek-mi-sahte-mi",
+        "type": "sort",
+        "title": "Gerçek güncelleme mi, sahte uyarı mı?",
+        "hint": "Her uyarı nerede çıktı: telefonun kendisinde mi, bir sitede ya da mesajda mı?",
+        "bins": [
+          {
+            "label": "Gerçek güncelleme",
+            "note": "Telefonun ya da mağazanın kendisi",
+            "color": "green",
+            "icon": "shield"
+          },
+          {
+            "label": "Sahte uyarı",
+            "note": "Site, reklam ya da mesaj",
+            "color": "red",
+            "icon": "ban"
+          }
+        ],
+        "items": [
+          {
+            "text": "Ayarlar'daki \"Sistem güncellemesi\"",
+            "icon": "cog",
+            "bin": 0
+          },
+          {
+            "text": "Film sitesinde \"Telefonun virüslü! Hemen güncelle\"",
+            "icon": "globe",
+            "bin": 1
+          },
+          {
+            "text": "Mağazada uygulamanın \"Güncelle\" düğmesi",
+            "icon": "shield",
+            "bin": 0
+          },
+          {
+            "text": "SMS: \"Güncelleme için tıkla: guncelle-tr.xyz\"",
+            "icon": "message",
+            "bin": 1
+          },
+          {
+            "text": "Bildirim çubuğunda \"Güncelleme hazır\"",
+            "icon": "bell",
+            "bin": 0
+          },
+          {
+            "text": "Oyun reklamında \"Pilin ölüyor, temizleyiciyi indir\"",
+            "icon": "gamepad",
+            "bin": 1
+          }
+        ],
+        "explain": "Gerçek güncelleme telefonun kendisinden gelir: Ayarlar, bildirim çubuğu ya da uygulama mağazası. Bir sitenin, reklamın ya da SMS'in içindeki uyarı telefonundan gelmez. Ne kadar korkutucu olursa olsun kapat, Ayarlar'dan kendin bak."
+      },
+      {
+        "id": "fotograftaki-konum",
+        "type": "quiz",
+        "guess": true,
+        "question": "Ayça parkta çektiği bir fotoğrafı paylaşıyor. Fotoğrafla birlikte başka ne gidebilir?",
+        "options": [
+          "Hiçbir şey; fotoğraf yalnız resimdir",
+          "Fotoğrafın nerede ve ne zaman çekildiği",
+          "Telefonunun şifresi",
+          "Rehberindeki kişilerin numaraları"
+        ],
+        "answer": 1,
+        "explain": "Kamera, fotoğrafın içine nerede ve ne zaman çekildiğini yazabilir. Bazı uygulamalar bu bilgiyi paylaşırken siler, bazıları silmez. Kameranın konum ayarını kapatırsan fotoğrafa yer yazılmaz."
+      },
+      {
+        "id": "konum",
+        "type": "info",
+        "layout": "steps",
+        "title": "Konumunu kim bilir?",
+        "paragraphs": [
+          "Telefonun nerede olduğunu bilir. Harita için çok işe yarar, ama bu bilgiyi kimin göreceğini sen seçersin. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Konum servisi",
+            "icon": "pin",
+            "text": "Telefonunun yerini bulan ayar. Ayarlar'dan, çoğu telefonda bildirim çubuğundan da açılıp kapanır."
+          },
+          {
+            "title": "Uygulama izni",
+            "icon": "lock",
+            "text": "Her uygulamaya ayrı sorulur. Harita için evet; el feneri ya da boyama oyunu için genelde gerekmez."
+          },
+          {
+            "title": "Fotoğraftaki konum",
+            "icon": "camera",
+            "text": "Kamera, fotoğrafa nerede çekildiğini yazabilir. İstemiyorsan kameranın konum ayarını kapat."
+          },
+          {
+            "title": "Canlı konum",
+            "icon": "users",
+            "text": "Nerede olduğunu saatlerce gösterir. Yalnız ailenle ve gerektiğinde paylaş."
+          }
+        ]
+      },
+      {
+        "id": "qr-okutunca",
+        "type": "quiz",
+        "guess": true,
+        "question": "Kantinin duvarındaki menü afişinde bir QR kod var. Telefonunun kamerasıyla okutunca ne olur?",
+        "options": [
+          "Kamera bir adres bulur; açarsam o siteye giderim",
+          "Menünün fotoğrafı galeriye kaydedilir",
+          "QR kodu yalnız okulun telefonları okuyabilir",
+          "Hiçbir şey; QR kodlar yalnız mağazada çalışır"
+        ],
+        "answer": 0,
+        "explain": "QR kod çoğu zaman bir bağlantıdır. Kamera onu okuyup içindeki adresi gösterir; dokunursan o adres açılır. Yani QR koda da bir bağlantıya bakar gibi bakarsın."
+      },
+      {
+        "id": "qr-kod",
+        "type": "info",
+        "layout": "steps",
+        "title": "QR kod bir bağlantıdır",
+        "paragraphs": [
+          "QR kod kare biçiminde yazılmış bir bağlantıdır. Gözle okunmaz; kamera okur ve açılacak adresi gösterir. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Okut",
+            "icon": "qr",
+            "text": "Kamerayı QR koda tut. Çoğu telefonda hemen açılmaz, önce adres gösterilir."
+          },
+          {
+            "title": "Adresi oku",
+            "icon": "search",
+            "text": "Mesajı okumak'taki gibi alan adını sağdan oku. Beklediğin yer mi?"
+          },
+          {
+            "title": "Yere bak",
+            "icon": "eye",
+            "text": "Afişin üstüne sonradan yapıştırılmış bir QR, gerçeğinin yerine konmuş olabilir."
+          },
+          {
+            "title": "Emin değilsen",
+            "icon": "ask",
+            "text": "Açma. Adresi kendin yaz ya da bir büyüğüne sor."
+          }
+        ]
+      },
+      {
+        "id": "hangisi-ne",
+        "type": "match",
+        "title": "Hangisi ne?",
+        "hint": "Soldaki her kelimeyi, ne olduğuyla eşleştir.",
+        "pairs": [
+          {
+            "left": "Wi‑Fi",
+            "icon": "wifi",
+            "right": "Evin ya da okulun ağı"
+          },
+          {
+            "left": "Mobil veri",
+            "icon": "phone",
+            "right": "Telefon hattının interneti"
+          },
+          {
+            "left": "Bildirim çubuğu",
+            "icon": "bell",
+            "right": "Ekranı yukarıdan çekince açılan yer"
+          },
+          {
+            "left": "Güncelleme",
+            "icon": "shield",
+            "right": "Telefondaki açıkları kapatır"
+          },
+          {
+            "left": "QR kod",
+            "icon": "qr",
+            "right": "Kare biçiminde bir bağlantı"
+          },
+          {
+            "left": "Konum izni",
+            "icon": "pin",
+            "right": "Uygulamanın nerede olduğunu bilmesi"
+          }
+        ],
+        "explain": "Wi‑Fi ve mobil veri internete çıkmanın iki yoludur. Bildirim çubuğu ve Ayarlar telefonunun kendi sesidir; gerçek güncelleme oradan gelir. QR kod bir bağlantıdır, konum izni ise uygulamaya verdiğin bir anahtardır."
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Şifreli bir ağın şifresini ağın [sahibinden] alırım.",
+          "Şifresiz ağda şifre girmem ve [alışveriş] yapmam.",
+          "Gerçek güncelleme telefonumun [Ayarlar] bölümünden gelir.",
+          "Konum iznini yalnız [ihtiyacı] olan uygulamaya veririm.",
+          "QR kodu açmadan önce [adresine] bakarım."
+        ],
+        "extra": [
+          "herkesten",
+          "siteden",
+          "reklamdan",
+          "hemen"
+        ],
+        "explain": "Ağı kimin kurduğunu bilmek, güncellemeyi telefonun kendisinden yapmak ve konumu yalnız ihtiyacı olan uygulamaya vermek telefonunu güvende tutar. QR kod da bir bağlantıdır; açmadan önce adresini okursun."
+      },
+      {
+        "id": "uc-aliskanlik",
+        "type": "info",
+        "layout": "steps",
+        "title": "Telefonun için üç alışkanlık",
+        "paragraphs": [
+          "Şehrin cihazlarla ilgili odalarında bu üç alışkanlık işine yarayacak."
+        ],
+        "points": [
+          {
+            "title": "Bağlanmadan önce",
+            "icon": "wifi",
+            "text": "Bu ağ kimin? Emin değilsen mobil veriyi kullan."
+          },
+          {
+            "title": "Güncellemeyi kendin yap",
+            "icon": "cog",
+            "text": "Ayarlar'dan ve mağazadan; sitedeki uyarıdan değil."
+          },
+          {
+            "title": "İzni ihtiyaca göre ver",
+            "icon": "pin",
+            "text": "Konum, kamera, kişiler: bu uygulamanın gerçekten işine yarıyor mu?"
+          }
+        ]
+      }
+    ]
+  }
+}
