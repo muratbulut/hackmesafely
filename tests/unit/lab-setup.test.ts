@@ -35,6 +35,7 @@ const score = (events: LabEventData[]) => scoreScenario(room, reduceEvents(event
 
 describe("telefon kurulumu: oda dosyası", () => {
   it("şemaya uyuyor, puanı 10, yayına hazır, T1 telefonda ve Ayça arıyor", () => {
+    expect(file.unlockedBy).toBe("telefonun-ve-internet");
     expect(room.stage?.type).toBe("PHONE");
     expect(room.mission?.caller).toBe("Ayça");
     expect(missionMode(room)).toBe("install");

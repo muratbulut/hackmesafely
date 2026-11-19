@@ -5,7 +5,7 @@
   "template": "MESSAGING",
   "sortOrder": 3,
   "status": "PUBLISHED",
-  "unlockedBy": "dosya-ve-uygulama",
+  "unlockedBy": "telefonun-ve-internet",
   "content": {
     "meta": {
       "name": "Yeni telefonunu kur",
@@ -166,7 +166,7 @@
         "**Harita** ve **El Feneri**'ni kur",
         "Bitince **Ayça'ya** haber ver"
       ],
-      "pointIcons": ["key", "download", "pin", "message"],
+      "pointIcons": ["wifi", "download", "pin", "message"],
       "accept": "Tamam, kuruyorum",
       "install": {
         "store": "Mağaza",

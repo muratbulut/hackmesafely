@@ -3,7 +3,7 @@
 | Alan | Değer |
 | --- | --- |
 | Mahalle | Şehir Kapısı |
-| Açan eğitim | Telefonun ve internet (eğitim main'e girene kadar geçici olarak Dosya ve uygulama) |
+| Açan eğitim | Telefonun ve internet |
 | Sahne | Telefon kurulumu: Wi‑Fi, bildirim çubuğu, Ayarlar, Mağaza, izin pencereleri, uygulamadaki reklam (`docs/guides/new-lab.md` 2.19) |
 | Şablon | T1 masadaki telefon (`stage: PHONE`) |
 | Oda adresi | `/oda/yeni-telefonunu-kur` |
