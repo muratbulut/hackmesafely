@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowRight, Copy, Minus, Power, Square, Wifi, X } from "lucide-react";
+import { ArrowRight, Copy, Minus, Power, Square, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import type { Stage } from "@/lib/lab/content";
 import { LogoA } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { Taskbar, WindowBar } from "@/components/device/Computer";
 import { AppIcon, OwnerAvatar, StageWall, useClock, useOwner, type StageApp } from "./common";
 
 type WinId = "main" | "browser";
@@ -252,7 +253,10 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                     }
               }
             >
-              <header
+              <WindowBar
+                app={id === "main" ? app : "browser"}
+                title={appTitle(id)}
+                active={active}
                 onPointerDown={(e) => drag(id, e)}
                 onDoubleClick={(e) =>
                   !(e.target as HTMLElement).closest("button") &&
@@ -262,14 +266,8 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                     [id]: { ...all[id], max: !all[id].max },
                   }))
                 }
-                className={cn(
-                  "flex h-[38px] flex-none touch-none items-center gap-2 pr-1 pl-3 text-[13px] select-none",
-                  active ? "bg-stage-os-title text-stage-os-fg" : "bg-stage-os-title-idle text-stage-os-muted",
-                  !max && "cursor-grab",
-                )}
+                className={cn("touch-none", !max && "cursor-grab")}
               >
-                <AppIcon app={id === "main" ? app : "browser"} className="size-5" />
-                <span className="min-w-0 flex-1 truncate font-medium">{appTitle(id)}</span>
                 <span className="flex">
                   <WinButton label={t.window.min} onClick={() => minimize(id)}>
                     <Minus className="size-4" strokeWidth={2} />
@@ -291,7 +289,7 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                     <X className="size-4" strokeWidth={2} />
                   </WinButton>
                 </span>
-              </header>
+              </WindowBar>
               <div inert={!w.open || w.min} className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-scene-white">
                 {id === "main" ? appNode : (browserNode ?? <NewTab />)}
               </div>
@@ -334,19 +332,23 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
       ) : null}
 
       {/* Görev çubuğu */}
-      <div className="absolute inset-x-0 bottom-0 z-[5] flex h-[46px] items-center gap-1 border-t border-stage-os-line bg-stage-os-bar px-2 backdrop-blur-[12px]">
-        <button
-          type="button"
-          data-start
-          aria-label={t.start}
-          aria-expanded={menu}
-          disabled={!unlocked}
-          onClick={() => setMenu((m) => !m)}
-          className="grid h-[38px] w-11 flex-none cursor-pointer place-items-center rounded-lg hover:bg-stage-os-hover aria-expanded:bg-stage-os-hover"
-        >
-          <LogoA className="h-6 w-auto" />
-        </button>
-        <div role="group" aria-label={t.openApps} className="flex min-w-0 items-center gap-1">
+      <Taskbar
+        className="absolute inset-x-0 bottom-0"
+        start={
+          <button
+            type="button"
+            data-start
+            aria-label={t.start}
+            aria-expanded={menu}
+            disabled={!unlocked}
+            onClick={() => setMenu((m) => !m)}
+            className="dv-pc-start cursor-pointer hover:bg-stage-os-hover aria-expanded:bg-stage-os-hover"
+          >
+            <LogoA />
+          </button>
+        }
+      >
+        <div role="group" aria-label={t.openApps}>
           {ids.map((id) => {
             const w = wins[id];
             const isActive = focus === id && w.open && !w.min;
@@ -356,29 +358,18 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                 type="button"
                 disabled={!unlocked}
                 aria-pressed={isActive}
+                data-open={w.open}
+                data-active={isActive}
                 onClick={() => taskbarClick(id)}
-                className={cn(
-                  "relative flex h-[38px] min-w-11 max-w-[180px] cursor-pointer items-center gap-2 rounded-lg px-2.5 text-[13px] hover:bg-stage-os-hover",
-                  isActive && "bg-stage-os-active",
-                  w.open && "after:absolute after:bottom-0.5 after:h-[3px] after:rounded-sm",
-                  w.open && (isActive ? "after:inset-x-[20%] after:bg-stage-road" : "after:inset-x-[30%] after:bg-stage-os-muted"),
-                )}
+                className="dv-pc-task cursor-pointer hover:bg-stage-os-hover"
               >
-                <AppIcon app={id === "main" ? app : "browser"} className="size-6" />
-                <span className="truncate max-sm:hidden">{id === "main" ? appName(app) : t.browser}</span>
+                <AppIcon app={id === "main" ? app : "browser"} className="dv-pc-icon" />
+                <span className="max-sm:hidden">{id === "main" ? appName(app) : t.browser}</span>
               </button>
             );
           })}
         </div>
-        <span className="ml-auto flex items-center gap-3 pr-1 text-right text-xs leading-tight" aria-hidden="true">
-          <Wifi className="size-4" strokeWidth={2.2} />
-          <span>
-            <span data-testid="stage-clock">{clock.time}</span>
-            <br />
-            <span className="text-stage-os-fg-2">{clock.dateShort}</span>
-          </span>
-        </span>
-      </div>
+      </Taskbar>
 
       {unlocked ? null : <LockScreen name={name} password={password} onUnlock={unlock} time={clock.time} date={clock.dateLong} />}
     </div>

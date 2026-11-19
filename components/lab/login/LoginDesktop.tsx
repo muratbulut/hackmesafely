@@ -1,8 +1,8 @@
 "use client";
 
-import { Copy, Globe, ImageIcon, Minus, Square, StickyNote, Wifi, X, type LucideIcon } from "lucide-react";
+import { Taskbar, WindowBar } from "@/components/device/Computer";
+import { Copy, Globe, ImageIcon, Minus, Square, StickyNote, X, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
-import { LogoA } from "@/lib/brand";
 import { format, getMessages } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { StageWall, useClock } from "../stage/common";
@@ -254,17 +254,14 @@ export function LoginDesktop({ computer, owner, avatar, unlocked, onUnlock, wins
                 : resizeDirs.map((dir) => (
                     <span key={dir} aria-hidden="true" onPointerDown={(e) => drag(id, e, dir)} className={cn("absolute z-[3] touch-none", dirClass[dir])} />
                   ))}
-              <header
+              <WindowBar
+                icon={(cls) => <LoginAppIcon id={id} className={cls} />}
+                title={w.title}
+                active={on}
                 onPointerDown={(e) => drag(id, e, null)}
                 onDoubleClick={(e) => !(e.target as HTMLElement).closest("button") && !narrow && toggleMax(id)}
-                className={cn(
-                  "flex h-[38px] flex-none touch-none items-center gap-2 pr-1 pl-3 text-[13px] select-none",
-                  on ? "bg-stage-os-title text-stage-os-fg" : "bg-stage-os-title-idle text-stage-os-muted",
-                  !full && "cursor-grab",
-                )}
+                className={cn("touch-none", !full && "cursor-grab")}
               >
-                <LoginAppIcon id={id} className="size-5" />
-                <span className="min-w-0 flex-1 truncate font-medium">{w.title}</span>
                 <span className="flex">
                   <WinButton label={t.stage.window.min} onClick={() => onMin(id)}>
                     <Minus className="size-4" strokeWidth={2} />
@@ -278,7 +275,7 @@ export function LoginDesktop({ computer, owner, avatar, unlocked, onUnlock, wins
                     <X className="size-4" strokeWidth={2} />
                   </WinButton>
                 </span>
-              </header>
+              </WindowBar>
               <div inert={!w.open || w.min} className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-scene-white">
                 {w.node}
               </div>
@@ -287,12 +284,9 @@ export function LoginDesktop({ computer, owner, avatar, unlocked, onUnlock, wins
         })}
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-[5] flex h-[46px] items-center gap-1 border-t border-stage-os-line bg-stage-os-bar px-2 backdrop-blur-[12px]">
-        <span aria-hidden="true" className="grid h-[38px] w-11 flex-none place-items-center rounded-lg">
-          <LogoA className="h-6 w-auto" />
-        </span>
+      <Taskbar className="absolute inset-x-0 bottom-0">
         {unlocked ? (
-          <div role="group" aria-label={t.stage.openApps} className="flex min-w-0 items-center gap-1">
+          <div role="group" aria-label={t.stage.openApps}>
             {inBar.map((id) => {
               const w = wins[id];
               const isActive = active === id && w.open && !w.min;
@@ -301,31 +295,20 @@ export function LoginDesktop({ computer, owner, avatar, unlocked, onUnlock, wins
                   key={id}
                   type="button"
                   aria-pressed={isActive}
+                  data-open={w.open}
+                  data-active={isActive}
                   onClick={() => taskbarClick(id)}
-                  className={cn(
-                    "relative flex h-[38px] max-w-[180px] min-w-11 cursor-pointer items-center gap-2 rounded-lg px-2.5 text-[13px] hover:bg-stage-os-hover",
-                    isActive && "bg-stage-os-active",
-                    w.open && "after:absolute after:bottom-0.5 after:h-[3px] after:rounded-sm",
-                    w.open && (isActive ? "after:inset-x-[20%] after:bg-stage-road" : "after:inset-x-[30%] after:bg-stage-os-muted"),
-                  )}
+                  className="dv-pc-task cursor-pointer hover:bg-stage-os-hover"
                   data-testid={`login-taskbar-${id}`}
                 >
-                  <LoginAppIcon id={id} className="size-6" />
-                  <span className="truncate max-sm:hidden">{w.label}</span>
+                  <LoginAppIcon id={id} className="dv-pc-icon" />
+                  <span className="max-sm:hidden">{w.label}</span>
                 </button>
               );
             })}
           </div>
         ) : null}
-        <span className="ml-auto flex items-center gap-3 pr-1 text-right text-xs leading-tight" aria-hidden="true">
-          <Wifi className="size-4" strokeWidth={2.2} />
-          <span>
-            <span>{clock.time}</span>
-            <br />
-            <span className="text-stage-os-fg-2">{clock.dateShort}</span>
-          </span>
-        </span>
-      </div>
+      </Taskbar>
 
       {unlocked ? null : (
         <LockScreen time={clock.time} date={clock.dateLong} avatar={avatar} owner={owner} detail={`${computer} · ${t.login.shared}`} onUnlock={onUnlock} />
