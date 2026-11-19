@@ -2,7 +2,7 @@
 // buradaki liste tanıtım sayfasındaki yol haritası içindir. Günün ipucu veritabanından gelir,
 // havuz boşken buradaki ipucu görünür. Gündem tamamen veritabanındadır (lib/news).
 
-export type NeighborhoodColor = "success" | "accent" | "purple" | "warning" | "pink" | "orange";
+export type NeighborhoodColor = "success" | "accent" | "purple" | "warning" | "pink" | "orange" | "blue";
 export type NeighborhoodIconName = "castle" | "lock" | "mail" | "download" | "card" | "heart" | "door";
 
 export type LandingNeighborhood = {
@@ -15,7 +15,7 @@ export type LandingNeighborhood = {
 
 // Adlar ileride değişecek (doküman Bölüm 3, "Siber şehir ve lablar").
 export const neighborhoods: LandingNeighborhood[] = [
-  { slug: "sehir-kapisi", name: "Şehir Kapısı", topic: "Dijital temeller", color: "orange", icon: "door" },
+  { slug: "sehir-kapisi", name: "Şehir Kapısı", topic: "Dijital temeller", color: "blue", icon: "door" },
   { slug: "hesap-kalesi", name: "Hesap Kalesi", topic: "Hesap güvenliği", color: "success", icon: "castle" },
   { slug: "oltalama-limani", name: "Oltalama Limanı", topic: "Oltalama", color: "accent", icon: "mail" },
   { slug: "yazilim-ormani", name: "Yazılım Ormanı", topic: "Zararlı yazılım", color: "purple", icon: "download" },

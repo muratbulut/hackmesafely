@@ -3,6 +3,7 @@
 // kullanır. Olaylarda doğru/yanlış bilgisi yoktur, yalnızca öğrencinin ne yaptığı vardır.
 
 import * as z from "@/lib/zod";
+import type { MissionMode } from "./content";
 
 export const folders = ["inbox", "spam", "trash"] as const;
 export type Folder = (typeof folders)[number];
@@ -32,7 +33,9 @@ export type ServerEvent =
   | { type: "code_entered"; item: string }
   | { type: "code_refused"; item: string }
   /** Satış görevi: siparişi kargoya verdi; prepared: hazırlık maddelerinin hepsini yaptı (telefonu sıfırladı). */
-  | { type: "item_shipped"; item: string; prepared: boolean };
+  | { type: "item_shipped"; item: string; prepared: boolean }
+  /** Kayıt görevi: görevdeki formu gönderdi (kutulara yazılan gelmez). */
+  | { type: "form_sent"; item: string };
 
 export type LabEventData = BatchEvent | ServerEvent;
 
@@ -52,6 +55,8 @@ export type SceneState = {
   /** Satış görevi: kargoya verdiği siparişler ve bunlardan hazırlayarak (sıfırlayarak) gönderdikleri. */
   shipped: string[];
   prepared: string[];
+  /** Kayıt görevi: formunu gönderdiği öğeler. */
+  formSent: string[];
   answers: Record<string, number>;
   reviewDone: boolean;
   /** Rapora yazılan karar sayısı: taşıma, bildirme, cevap. */
@@ -69,6 +74,7 @@ export const emptyState = (): SceneState => ({
   codeRefused: [],
   shipped: [],
   prepared: [],
+  formSent: [],
   answers: {},
   reviewDone: false,
   decisions: 0,
@@ -103,6 +109,8 @@ export function applyEvent(state: SceneState, event: LabEventData): SceneState {
         prepared: event.prepared ? add(state.prepared ?? [], event.item) : (state.prepared ?? []),
         decisions: state.decisions + 1,
       };
+    case "form_sent":
+      return { ...state, formSent: add(state.formSent ?? [], event.item), decisions: state.decisions + 1 };
     case "reply_sent":
       return {
         ...state,
@@ -127,20 +135,25 @@ export const codeDecided = (state: Pick<SceneState, "codeEntered" | "codeRefused
 export const folderOf = (state: SceneState, item: string): Folder => state.folders[item] ?? "inbox";
 
 /**
- * Görevlerin durumu: sırayla açılır, biri bitmeden sonraki kilitlidir. sale: satış görevli oda
- * (görev, kargoya verince biter).
+ * Görevlerin durumu: sırayla açılır, biri bitmeden sonraki kilitlidir. mode: görevli odanın türü
+ * (lib/lab/content.ts missionMode); görev türüne göre farklı anda biter.
  */
 export function taskProgress(
   tasks: readonly { id: string; type: "action" | "review" | "question" | "mission" }[],
   state: SceneState,
-  sale = false,
+  mode: MissionMode | null = null,
 ) {
   const done = tasks.map((task) => {
     if (task.type === "action") return state.opened.length > 0;
     if (task.type === "review") return state.reviewDone;
     // Alış görevi: mağazada ödeyip onay kodu için bir karar verince (yazdı ya da yazmadı) biter.
     // Satış görevi: siparişi kargoya verince biter (ödeme isteğini reddetmek görevi bitirmez).
-    if (task.type === "mission") return sale ? (state.shipped ?? []).length > 0 : codeDecided(state).length > 0;
+    // Kayıt görevi: formu gönderince biter.
+    if (task.type === "mission") {
+      if (mode === "sale") return (state.shipped ?? []).length > 0;
+      if (mode === "signup") return (state.formSent ?? []).length > 0;
+      return codeDecided(state).length > 0;
+    }
     return task.id in state.answers;
   });
   const current = done.indexOf(false);

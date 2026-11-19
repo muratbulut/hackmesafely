@@ -247,7 +247,7 @@ Numaralar `tasarim/ekran-listesi.md` ile aynıdır. "Tur" sütunu son halin hang
 | 9 | Siber muhafız | 2.400 |
 | 10 | Siber kahraman | 2.700 |
 
-- 13 rozet: Şifre ustası, Oltalama avcısı, Virüs savar, Cüzdan bekçisi, Dost eli (her biri kendi mahallesinin temel yolunu, yani temel eğitimin açtığı senaryoları bitirince; ileri eğitimin senaryoları gerekmez), Şehir turu (senaryo labı olan her mahallede bir senaryo labı), İlk rapor, Kart kurdu, Kusursuz (bir labdan 100/100), Geri dönüş (hacklendiğin labı tekrar yapıp güvende kalmak), Sınıf arkadaşı, Meraklı (7 farklı gün "Neden?"e bakmak), Siber kahraman (en üst seviyeye ulaşmak).
+- 14 rozet: Kapı bekçisi, Şifre ustası, Oltalama avcısı, Virüs savar, Cüzdan bekçisi, Dost eli (her biri kendi mahallesinin temel yolunu, yani temel eğitimin açtığı senaryoları bitirince; ileri eğitimin senaryoları gerekmez), Şehir turu (senaryo labı olan her mahallede bir senaryo labı), İlk rapor, Kart kurdu, Kusursuz (bir labdan 100/100), Geri dönüş (hacklendiğin labı tekrar yapıp güvende kalmak), Sınıf arkadaşı, Meraklı (7 farklı gün "Neden?"e bakmak), Siber kahraman (en üst seviyeye ulaşmak).
 - Ana sayfadaki vitrinde en fazla 5 rozet olur; öğrenci hangilerini göstereceğini profilden seçer.
 - Her rozetin ikonu ayrı bir dosyadır (`rozetler/<rozet-adi>.svg`, PNG de olur), kazanılmamış rozette aynı ikon gri ve soluk görünür. Murat ikonları kendi tasarımıyla değiştirecek. Yeni rozet eklemek listeye bir satır ve bir ikon dosyası demektir.
 - Liderlik tablosu yoktur.

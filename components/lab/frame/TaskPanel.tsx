@@ -168,7 +168,11 @@ function TaskList(props: TaskPanelProps) {
 
               {isCurrent && task.type === "mission" && props.mission ? (
                 <p className="ml-10 rounded-xl border border-card bg-surface-deep px-3 py-2.5 text-[13px] leading-normal text-fg-3 [animation:pop_.25s_ease-out_both]">
-                  {props.mission.sale ? format(m.saleNote, { platform: props.mission.sale.platform }) : format(m.taskNote, { owner: props.mission.owner })}
+                  {props.mission.sale
+                    ? format(m.saleNote, { platform: props.mission.sale.platform })
+                    : props.mission.signup
+                      ? m.signupNote
+                      : format(m.taskNote, { owner: props.mission.owner })}
                 </p>
               ) : null}
 

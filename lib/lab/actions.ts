@@ -13,11 +13,11 @@ import { getPendingLevelUp } from "@/lib/progress/level-up";
 import { awardBadges, getProgressSummary } from "@/lib/progress/summary";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { getUser } from "@/lib/session";
-import { opensOrder, opensRequest, opensShop, parseScenario, usesTrapPage, type ScenarioContent } from "./content";
+import { opensForm, opensOrder, opensRequest, opensShop, parseScenario, usesTrapPage, type ScenarioContent } from "./content";
 import { findInCity, getCity, getPublishedLab, type PublishedLab } from "./data";
 import { batchEventSchema, reduceEvents, rowToEvent, type ServerEvent } from "./events";
 import { missionDone, scoreScenario, type ScenarioReport } from "./scoring";
-import { goodCall, hackedStory, linkPageFor, smsFor, type HackedVia } from "./story";
+import { almostStory, goodCall, hackedStory, linkPageFor, smsFor, type HackedVia } from "./story";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "./training";
 
 type Fail = { ok: false; reason: "auth" | "unverified" | "not_found" | "locked" | "ended" | "rate_limited" | "invalid" };
@@ -154,7 +154,10 @@ export async function openLink(attemptId: string, seq: number, itemId: string) {
   return { ok: true as const, page: linkPageFor(attempt.content, template, { ...item, link: item.link }) };
 }
 
-/** Sahte sayfada "Giriş yap": yalnızca "bilgi girildi" olayı gelir, yazılan metin gelmez. */
+/**
+ * Sahte sayfada "Giriş yap": yalnızca "bilgi girildi" olayı gelir, yazılan metin gelmez. "Az
+ * kalsın" odasında (trap.almost) deneme sürer, hacklendin yerine Az kalsın ekranının metinleri döner.
+ */
 export async function submitTrap(attemptId: string, seq: number, itemId: string) {
   const who = await actor(true);
   if (!who.ok) return who;
@@ -165,7 +168,26 @@ export async function submitTrap(attemptId: string, seq: number, itemId: string)
   const template = attempt.lab.template === "MESSAGING" ? "MESSAGING" : "INBOX";
   if (!item || item.kind !== "fake" || !usesTrapPage(attempt.content, template) || !clicked || !validSeq(seq)) return fail("invalid");
   if (!(await record(attempt.id, seq, { type: "info_entered", item: item.id }))) return fail("invalid");
+  if (attempt.content.trap.almost) return { ok: true as const, almost: almostStory(attempt.content, item) };
   return compromise(attempt, item.id, "link");
+}
+
+/**
+ * Kayıt görevi: görevdeki formda "Gönder". Kutulara yazılan hiç gelmez; yalnızca "form gönderildi"
+ * olayı yazılır ve formun "Kaydın alındı" cümlesi döner. Bağlantısı açılmamış öğede form yoktur.
+ */
+export async function sendForm(attemptId: string, seq: number, itemId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const item = attempt.content.items.find((i) => i.id === itemId);
+  const signup = attempt.content.mission?.signup;
+  if (!item || !signup || attempt.lab.template !== "INBOX" || !opensForm(attempt.content, item) || !hasEvent(attempt, "link_clicked", item.id) || !validSeq(seq)) {
+    return fail("invalid");
+  }
+  if (!(await record(attempt.id, seq, { type: "form_sent", item: item.id }))) return fail("invalid");
+  return { ok: true as const, done: signup.done };
 }
 
 /** Mesajlaşma: cevap gönderildi. Kodu içeriyor mu bilgisini tarayıcı söyler; metnin kendisi gelmez. */

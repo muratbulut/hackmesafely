@@ -26,9 +26,27 @@
         }
       ],
       "difficulty": "EASY",
-      "durationMin": 7
+      "durationMin": 8
     },
     "cards": [
+      {
+        "id": "bu-mail-kimden",
+        "type": "video",
+        "title": "Ayşegül ve Ayça: bu mail kimden?",
+        "src": "/videolar/bu-mail-kimden.mp4",
+        "duration": "1:07",
+        "question": {
+          "at": 22,
+          "question": "Gönderenin adı Oyun Dünyası. Bu, mailin gerçekten oyundan geldiğini gösterir mi?",
+          "options": [
+            "Evet, adı açıkça yazıyor",
+            "Hayır, bu adı herkes yazabilir",
+            "Logosu da varsa gösterir"
+          ],
+          "answer": 1,
+          "explain": "Mailin üstündeki adı gönderen kendisi yazar, istediği adı koyabilir. Logo da kopyalanabilir. Mailin nereden geldiğini adres söyler."
+        }
+      },
       {
         "id": "iki-ad",
         "type": "info",
@@ -229,7 +247,7 @@
           "mudur@cinarortaokulu.k12.tr.giris.net"
         ],
         "answer": 1,
-        "explain": "Yalnız mudur@cinarortaokulu.k12.tr'de @ işaretinden sonrası tam olarak okulun adresi. cinar-ortaokulu.com tire eklenmiş bir .com. Üçüncüde okulun adı @ işaretinden önce, yani kutunun adında; mail duyuru.xyz'den gelmiş. Dördüncünün sahibi giris.net."
+        "explain": "Yalnız mudur@cinarortaokulu.k12.tr'de @ işaretinden sonrası tam olarak okulun adresi. Diğerlerinin sahibi cinar-ortaokulu.com, duyuru.xyz ve giris.net. Okul adresinin sonu ülkeye göre değişir: Türkiye'de okullar k12.tr, üniversiteler edu.tr; İngiltere'de okullar sch.uk, Avustralya'da edu.au, Japonya'da ed.jp. Önemli olan kendi okulunun adresini bilmek."
       },
       {
         "id": "basmadan-bak",

@@ -5,7 +5,7 @@
 // Puan: sahte her öğe en fazla 4, gerçek her öğe 1, her soru seçtiği seçeneğin puanı. Rapor
 // yalnızca kodlar ve sayılar tutar; ekrandaki cümleler sözlükten ve içerikten gelir.
 
-import { maxScore, missionPoints, reportScale, type CompromiseKind, type ScenarioContent } from "./content";
+import { maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type ScenarioContent } from "./content";
 import { codeDecided, folderOf, type SceneState } from "./events";
 
 export type RowState = "ok" | "part" | "bad" | "skip";
@@ -13,9 +13,10 @@ export type RowState = "ok" | "part" | "bad" | "skip";
 /**
  * Sahte öğe: hacklendi, önce tıklayıp sonra bildirdi, bildirdi, sildi, tıklayıp bıraktı, dokunmadı.
  * stopped: görevli odada sahte mağazaya kartla ödedi ama onay kodunu yazmadı (son anda durdu;
- * hacklenmiş sayılmaz ama kart bilgisi gitti, 0 puan).
+ * hacklenmiş sayılmaz ama kart bilgisi gitti, 0 puan). almost: "Az kalsın" odasında (trap.almost)
+ * sahte sayfaya bilgi girdi; oda bitmedi, hacklenmiş sayılmaz ama 0 puan.
  */
-export type FakeOutcome = "hacked" | "stopped" | "reportedAfterEngaging" | "reported" | "deleted" | "engagedLeft" | "ignored";
+export type FakeOutcome = "hacked" | "almost" | "stopped" | "reportedAfterEngaging" | "reported" | "deleted" | "engagedLeft" | "ignored";
 export type RealOutcome = "reported" | "deleted" | "kept";
 
 /**
@@ -51,6 +52,7 @@ export type ScenarioReport = {
 
 const fakeScores: Record<FakeOutcome, [RowState, number]> = {
   hacked: ["bad", 0],
+  almost: ["bad", 0],
   stopped: ["bad", 0],
   reportedAfterEngaging: ["part", 2],
   reported: ["ok", 4],
@@ -67,13 +69,14 @@ const realScores: Record<RealOutcome, [RowState, number]> = {
 
 /**
  * Görevli odada (mission) sahte mağazaya kart bilgisi girmek tek başına ele geçirilme değildir;
- * ele geçirilme onay kodunu yazmaktır. Diğer odalarda bilgi girmek ele geçirilmedir.
+ * ele geçirilme onay kodunu yazmaktır. Diğer odalarda bilgi girmek ele geçirilmedir; "Az kalsın"
+ * odasında (almost) ele geçirilme değil, "az kalsın"dır.
  */
-export function fakeOutcome(state: SceneState, item: string, mission = false): FakeOutcome {
+export function fakeOutcome(state: SceneState, item: string, mission = false, almost = false): FakeOutcome {
   if (mission) {
     if ((state.codeEntered ?? []).includes(item)) return "hacked";
     if (state.infoEntered.includes(item)) return "stopped";
-  } else if (state.infoEntered.includes(item)) return "hacked";
+  } else if (state.infoEntered.includes(item)) return almost ? "almost" : "hacked";
   if (state.secretSent.includes(item)) return "hacked";
   const engaged = state.clicked.includes(item) || state.replied.includes(item);
   const folder = folderOf(state, item);
@@ -99,6 +102,10 @@ export function realOutcome(state: SceneState, item: string): RealOutcome {
  * hazırlayarak (telefonu sıfırlayarak) kargoya verdiyse iş doğru yapıldı.
  */
 export function missionDone(content: Pick<ScenarioContent, "items" | "mission">, state: SceneState) {
+  if (content.mission?.signup) {
+    const sent = state.formSent ?? [];
+    return content.items.some((i) => i.kind === "real" && i.form && sent.includes(i.id));
+  }
   if (content.mission?.sale) {
     const prepared = state.prepared ?? [];
     return content.items.some((i) => i.kind === "real" && i.order && prepared.includes(i.id));
@@ -109,11 +116,13 @@ export function missionDone(content: Pick<ScenarioContent, "items" | "mission">,
 
 export function scoreScenario(content: ScenarioContent, state: SceneState): ScenarioReport {
   const rows: ReportRow[] = [];
-  const mission = !!content.mission;
+  // Kayıt görevinde sahte sayfa diğer odalardaki gibidir: ele geçirilme bilgi girmektir.
+  const mode = missionMode(content);
+  const mission = mode === "shop" || mode === "sale";
 
   for (const item of content.items) {
     if (item.kind === "fake") {
-      const outcome = fakeOutcome(state, item.id, mission);
+      const outcome = fakeOutcome(state, item.id, mission, content.trap.almost);
       const [rowState, points] = fakeScores[outcome];
       const by = engagedBy(state, item.id);
       const via = by === "link" && item.request && content.mission?.sale ? "request" : by;
@@ -158,7 +167,8 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
   const engaged = hacked || content.items.some((i) => i.kind === "fake" && (state.clicked.includes(i.id) || state.replied.includes(i.id)));
   const conditions = {
     engaged,
-    hacked,
+    // "Az kalsın" odasında sahte sayfaya bilgi girmek de bu ipucunu açar (şifreni değiştir).
+    hacked: hacked || fakes.some((r) => r.outcome === "almost"),
     missedFake: fakes.some((r) => r.state !== "ok"),
     reportedReal: rows.some((r) => r.type === "real" && r.outcome === "reported"),
     always: true,

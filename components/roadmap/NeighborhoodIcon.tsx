@@ -102,6 +102,16 @@ const tones: Record<string, Tone> = {
     outline: "outline-pink",
     chip: "border-pink/40 bg-pink/12",
   },
+  blue: {
+    text: "text-blue-fg",
+    soft: "bg-blue/18",
+    fill: "bg-blue",
+    stroke: "stroke-blue",
+    border: "border-blue",
+    glow: "bg-blue/20",
+    outline: "outline-blue",
+    chip: "border-blue/40 bg-blue/12",
+  },
   orange: {
     text: "text-orange-fg",
     soft: "bg-orange/18",

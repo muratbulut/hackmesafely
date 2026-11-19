@@ -77,6 +77,22 @@ export function routeOf(district: Pick<DistrictView, "trainings" | "scenarios">)
   return district.trainings.flatMap((training) => [training, ...district.scenarios.filter((s) => s.gateSlug === training.slug)]);
 }
 
+/**
+ * Şehrin kapısı (19 Kasım, Murat; tuvaldeki K1): yol haritasında ilk mahalle iki kart genişliğinde
+ * "Buradan başla" kartıdır. Odası olmayan mahallede null. "start": henüz hiçbir odaya
+ * başlanmadı; "continue": başlandı, sıradaki oda `target`; "done": rotanın hepsi bitti (kart normal
+ * boya döner).
+ */
+export type CityGatePhase = "start" | "continue" | "done";
+export function cityGateOf(district: Pick<DistrictView, "trainings" | "scenarios">): { phase: CityGatePhase; target: LabView | null } | null {
+  const route = routeOf(district);
+  if (route.length === 0) return null;
+  if (route.every((l) => l.state === "done")) return { phase: "done", target: null };
+  const target = route.find((l) => l.inProgress) ?? route.find((l) => l.state === "next") ?? route.find((l) => l.state === "open") ?? route[0];
+  const started = route.some((l) => l.state === "done" || l.inProgress);
+  return { phase: started ? "continue" : "start", target };
+}
+
 /** Temel eğitim mi (mahallenin ilk eğitimi). */
 export const isBasicTraining = (district: Pick<DistrictView, "trainings">, lab: Pick<LabView, "slug">) => district.trainings[0]?.slug === lab.slug;
 

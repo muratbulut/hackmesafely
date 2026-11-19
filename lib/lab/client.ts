@@ -59,6 +59,8 @@ export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" 
   card: Mission["card"] | null;
   shop: Mission["shop"] | null;
   sale: Omit<NonNullable<Mission["sale"]>, "unprepared"> | null;
+  /** Kayıt görevi mi (formun kendisi bağlantı açılınca sunucudan gelir). */
+  signup: boolean;
 };
 
 export function toClientScenario(content: ScenarioContent, template: ScenarioTemplate): ClientScenario {
@@ -106,6 +108,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
                 prep: content.mission.sale.prep.filter((p) => p.trim()),
               }
             : null,
+          signup: !!content.mission.signup,
         }
       : null,
     stage: content.stage ?? null,

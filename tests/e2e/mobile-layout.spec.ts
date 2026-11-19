@@ -626,7 +626,7 @@ type AdminData = {
   teacher: string;
   member: string;
   school: string;
-  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale", string>;
+  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup", string>;
   article: string;
 };
 
@@ -825,6 +825,41 @@ const adminScreens: Screen<AdminData>[] = [
       await app.getByRole("button", { name: "ikincielpazari.com.tr/siparis/77310" }).click();
     },
   },
+  // Kayıt görevli oda ve Az kalsın: Deniz'in araması, sahte okul girişi, Az kalsın ve okulun formu (Şehir Kapısı "Bağlantı nereye gidiyor?").
+  { name: "Oda önizleme, Deniz'in araması", path: (d) => `/yonetim/odalar/${d.labs.signup}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  { name: "Oda önizleme, Deniz'le görüşme", open: (page) => page.getByTestId("mission-call").getByRole("button", { name: "Aç", exact: true }).click() },
+  {
+    name: "Oda önizleme, sahte okul girişi",
+    open: async (page) => {
+      await page.getByTestId("mission-call").getByRole("button", { name: "Geç ›" }).click();
+      await page.getByTestId("mission-call").getByRole("button", { name: "Tamam, hemen bakıyorum" }).click();
+      await signInDesktop(page);
+      const app = page.getByTestId("scenario-player");
+      await app.getByRole("button", { name: /^Kodlama Kulübü Kayıt/ }).click();
+      await app.getByRole("button", { name: "cinarortaokulu.k12.tr/kayit" }).click();
+    },
+  },
+  {
+    name: "Oda önizleme, Az kalsın",
+    open: async (page) => {
+      const app = page.getByTestId("scenario-player");
+      // Az kalsın odasında şifre yazılmaz: kutuya dokununca noktalar gelir.
+      await app.getByLabel("Okul hesabının şifresi").click();
+      await expect(app.getByLabel("Okul hesabının şifresi")).toHaveValue("•".repeat(9));
+      await app.getByRole("button", { name: "Giriş yap ve doğrula" }).click();
+    },
+  },
+  {
+    name: "Oda önizleme, okulun kayıt formu",
+    open: async (page) => {
+      await page.getByTestId("almost-back").click();
+      const app = page.getByTestId("scenario-player");
+      const back = app.getByRole("button", { name: "Listeye dön" });
+      if (await back.isVisible()) await back.click();
+      await app.getByRole("button", { name: /^Çınar Ortaokulu Kodlama Kulübü/ }).click();
+      await app.getByRole("button", { name: "Kayıt formu", exact: true }).click();
+    },
+  },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
   {
@@ -987,7 +1022,7 @@ test.describe("telefon düzeni", () => {
     const labs = Object.fromEntries(
       (
         await query(
-          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat')`,
+          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor')`,
         )
       ).map((r) => [r.slug, r.id]),
     );
@@ -1009,6 +1044,7 @@ test.describe("telefon düzeni", () => {
           money: labs["kart-ve-para-guvenligi"],
           mission: labs["kulaklik-icin-veli-karti"],
           sale: labs["eski-telefonunu-sat"],
+          signup: labs["baglanti-nereye-gidiyor"],
         },
         article: (await query(`SELECT "id" FROM "NewsArticle" WHERE "slug" = $1`, [draft]))[0].id as string,
       });

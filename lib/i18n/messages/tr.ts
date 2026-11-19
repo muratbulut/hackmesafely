@@ -820,6 +820,16 @@ export const tr = {
     enter: "Mahalleye gir",
     here: "Buradasın · Mahalleye gir",
     hereShort: "BURADASIN",
+    // Şehrin kapısı: yol haritasındaki ilk mahallenin geniş kartı (19 Kasım, Murat).
+    cityGate: {
+      start: "Buradan başla",
+      here: "Buradasın",
+      done: "Kapıdan geçtin",
+      lead: "Şehre herkes buradan girer. Önce temelleri öğren, sonra istediğin mahalleye geç.",
+      begin: "Başla: {name}",
+      resume: "Devam et: {name}",
+      visitorGo: "Kayıt ol ve başla",
+    },
     ring: "{done}/{total}",
     ringLabel: "{done}/{total} oda bitti",
 
@@ -1016,6 +1026,7 @@ export const tr = {
     stats: { labsDone: "oda bitti", cardsRead: "okunan kart", reports: "rapor", badges: "rozet" },
     badgesCount: "{n}/{total}",
     badges: {
+      "kapi-bekcisi": { name: "Kapı bekçisi", how: "Şehir Kapısı'nda temel eğitimin açtığı bütün senaryo odalarını bitir" },
       "sifre-ustasi": { name: "Şifre ustası", how: "Hesap Kalesi'nde temel eğitimin açtığı bütün senaryo odalarını bitir" },
       "ilk-rapor": { name: "İlk rapor", how: "İlk senaryo odasını bitir" },
       "kart-kurdu": { name: "Kart kurdu", how: "Bir eğitim odasının bütün kartlarını bitir" },
@@ -1257,6 +1268,8 @@ export const tr = {
       submit: "Giriş yap ve doğrula",
       submitOther: "Gönder ve devam et",
       placeholder: "Buraya yaz",
+      // "Az kalsın" odasında şifre kutusu: dokununca noktalar kendiliğinden yazılır.
+      tapPlaceholder: "Şifreni yazmak için dokun",
       timer: "Kalan süre:",
       secure: "Güvenli",
       more: "Diğer seçenekler",
@@ -1270,6 +1283,24 @@ export const tr = {
       siteNote: "Sekmeyi kapatıp odaya dönebilirsin.",
       linkStatus: "Bağlantının gittiği adres",
       requestTab: "Ödeme isteği",
+    },
+    // Kayıt görevli oda (Şehir Kapısı "Bağlantı nereye gidiyor?"): görevdeki form.
+    form: {
+      sending: "Gönderiliyor…",
+      note: "Bu odada yazdığın hiçbir yere gönderilmez ve kaydedilmez.",
+      placeholder: "İstersen boş bırakabilirsin",
+      sentTitle: "Gönderildi",
+      back: "Gelen kutusuna dön",
+    },
+    // "Az kalsın" ekranı (trap.almost): sahte sayfaya bilgi girince hacklendin yerine.
+    almost: {
+      kicker: "Az kalsın",
+      title: "Az kalsın!",
+      shown: "Düğmede yazan",
+      real: "Gerçek adres",
+      owner: "Sahibi: <b>{owner}</b>",
+      nextTime: "Bir dahaki sefere",
+      back: "Gelen kutusuna dön",
     },
 
     hacked: {
@@ -1429,6 +1460,8 @@ export const tr = {
       task: "{owner} görevi",
       taskNote: "Postam'daki bağlantıdan mağazaya git, ödemeyi {owner} kartıyla yap.",
       saleNote: "Siparişi {platform} bildirimindeki bağlantıdan aç, telefonu hazırlayıp kargoya ver.",
+      signupNote: "Postam'daki doğru bağlantıdan formu aç ve gönder. Basmadan önce gerçek adrese bak.",
+      signed: "Form gönderildi",
       ordered: "Sipariş verildi",
       listing: "İlanın · {platform}",
       shipped: "Kargoya verildi",
@@ -1781,6 +1814,7 @@ export const tr = {
       outcomes: {
         INBOX: {
           hacked: "Linke tıkladın ve açılan sahte sayfaya bilgilerini yazdın.",
+          almost: "Linke tıkladın ve sahte sayfaya şifreni yazdın. Az kalsın: gerçek hayatta hesabın başkasının eline geçebilirdi.",
           stopped: "Sahte siteye kart bilgisini girdin, onay kodunu yazmadan son anda durdun. Kart bilgisi yine de gitti; kart hemen kapatılmalı.",
           reportedAfterEngaging: "Oltalama olarak bildirdin, ama önce linke tıkladın.",
           reported: "Oltalama olarak bildirdin.",
@@ -1793,6 +1827,7 @@ export const tr = {
         },
         MESSAGING: {
           hacked: "İstenen kodu sahte mesaja gönderdin.",
+          almost: "Bağlantıyı açtın ve sahte sayfaya bilgilerini yazdın. Az kalsın: gerçek hayatta hesabın başkasının eline geçebilirdi.",
           stopped: "Sahte sayfaya bilgi girdin, son anda durdun. Bilgi yine de gitti.",
           reportedAfterEngaging: "Bildirip engelledin, ama önce cevap yazdın.",
           reported: "Bildirip engelledin.",

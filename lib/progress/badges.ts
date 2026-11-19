@@ -7,6 +7,7 @@ import { topLevel } from "./levels";
 
 /** Mahalleyi bitirince kazanılan rozetler (mahalle adresine göre). */
 const neighborhoodBadges = {
+  "sehir-kapisi": "kapi-bekcisi",
   "hesap-kalesi": "sifre-ustasi",
   "oltalama-limani": "oltalama-avcisi",
   "yazilim-ormani": "virus-savar",
@@ -15,6 +16,7 @@ const neighborhoodBadges = {
 } as const;
 
 export const badgeCodes = [
+  "kapi-bekcisi",
   "sifre-ustasi",
   "ilk-rapor",
   "kart-kurdu",
@@ -102,7 +104,8 @@ export function evaluateBadges(facts: ProgressFacts): BadgeState[] {
 }
 
 /** Rozetin kendi rengi (tema rengi adı); ikon dosyası da aynı rengi kullanır. */
-export const badgeColor: Record<BadgeCode, "success" | "accent" | "purple" | "warning" | "pink" | "orange"> = {
+export const badgeColor: Record<BadgeCode, "success" | "accent" | "purple" | "warning" | "pink" | "orange" | "blue"> = {
+  "kapi-bekcisi": "blue",
   "sifre-ustasi": "success",
   "ilk-rapor": "warning",
   "kart-kurdu": "accent",

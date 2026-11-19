@@ -3,10 +3,10 @@
 // gitmesidir. İçeriğin tamamı (doğru kararlar dahil) burada durur, çünkü onu zaten yazan
 // yönetim ekibi görüyor; öğrencinin tarayıcısına bu dosya hiç gitmez. Hiçbir şey kaydedilmez.
 
-import { opensOrder, opensRequest, opensShop, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "@/lib/lab/content";
+import { opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "@/lib/lab/content";
 import { applyEvent, emptyState, type LabEventData } from "@/lib/lab/events";
 import { missionDone, scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
-import { goodCall, hackedStory, linkPageFor, smsFor } from "@/lib/lab/story";
+import { almostStory, goodCall, hackedStory, linkPageFor, smsFor } from "@/lib/lab/story";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "@/lib/lab/training";
 import type { Fail, FailReason, LabDriver, TrainingDriver } from "../driver";
 
@@ -57,6 +57,7 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       if (ended) return fail("ended");
       if (!item || item.kind !== "fake" || !usesTrapPage(content, template) || !state.clicked.includes(item.id)) return fail("invalid");
       apply({ type: "info_entered", item: item.id });
+      if (content.trap.almost) return { ok: true, almost: almostStory(content, item) };
       end();
       const now = new Date();
       return { ok: true, hacked: hackedStory(content, template, item, "link", { first: clicked.get(item.id) ?? now, second: now }, "") };
@@ -102,6 +103,14 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       if (!item || !sale || template !== "MESSAGING" || !opensOrder(content, item) || !state.clicked.includes(item.id) || state.shipped.includes(item.id)) return fail("invalid");
       apply({ type: "item_shipped", item: item.id, prepared });
       return { ok: true, reply: prepared ? "" : sale.unprepared, done: prepared && item.kind === "real" };
+    },
+    async sendForm(_attemptId, _seq, itemId) {
+      const item = itemOf(itemId);
+      const signup = content.mission?.signup;
+      if (ended) return fail("ended");
+      if (!item || !signup || template !== "INBOX" || !opensForm(content, item) || !state.clicked.includes(item.id)) return fail("invalid");
+      apply({ type: "form_sent", item: item.id });
+      return { ok: true, done: signup.done };
     },
     async finish() {
       const done = missionDone(content, state);

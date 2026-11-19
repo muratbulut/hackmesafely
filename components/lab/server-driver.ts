@@ -9,6 +9,7 @@ import {
   payShop,
   saveTrainingProgress,
   sendEvents,
+  sendForm,
   sendReply,
   shipOrder,
   startAttempt,
@@ -27,6 +28,7 @@ export function serverDriver(slug: string): LabDriver {
     payShop,
     answerCode,
     shipOrder,
+    sendForm,
     finish: finishAttempt,
   };
 }
