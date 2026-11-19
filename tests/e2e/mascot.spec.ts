@@ -131,6 +131,9 @@ test("404'teki maskot kapalı düğmedir; dokununca açılmaya çalışır", asy
 
 test.describe("sayfa geçişi örtüsü", () => {
   test("sayfa 0,3 saniyede açılmazsa örtü çıkar, sayfa gelince kalkar", async ({ page }) => {
+    // Canlı sitede (Cloudflare önünde) gecikme her isteğe ulaşmıyor, sayfa 0,3 saniyeden önce açılıp
+    // örtü haklı olarak çıkmıyor; test yalnızca kendi derlememize karşı koşar.
+    test.skip(isLive, "zamanlamaya bağlı test canlı sitede çalışmaz");
     // Gündem sayfasının bütün istekleri (ön yükleme dahil) 2 saniye bekletilir.
     await page.route(/\/gundem(\?|$)/, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2_000));
