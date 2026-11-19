@@ -17,6 +17,7 @@ import {
   defaultSelection,
   detailAction,
   districtRing,
+  cityGateOf,
   goHref,
   goKind,
   labHref,
@@ -111,6 +112,19 @@ describe("mahalle rotası", () => {
     expect(districtRing(districtView(lab({ slug: "t", type: "TRAINING" }), [lab({ slug: "a" })]))).toEqual({ done: 0, total: 2 });
     expect(districtRing(districtView(t, []))).toEqual({ done: 1, total: 1 });
     expect(districtRing(districtView(null, []))).toEqual({ done: 0, total: 0 });
+  });
+
+  it("şehrin kapısı: başlanmadıysa başla, başlandıysa sıradaki oda, hepsi bitince bitti", () => {
+    const fresh = districtView(lab({ slug: "t", type: "TRAINING", state: "next" }), [lab({ slug: "a", state: "locked" })]);
+    expect(cityGateOf(fresh)).toMatchObject({ phase: "start", target: { slug: "t" } });
+    const half = districtView(lab({ slug: "t", type: "TRAINING", state: "done" }), [lab({ slug: "a", state: "next" })]);
+    expect(cityGateOf(half)).toMatchObject({ phase: "continue", target: { slug: "a" } });
+    // Yarım kalan oda sıradakinden önce gelir.
+    const resumed = districtView(lab({ slug: "t", type: "TRAINING", state: "open", inProgress: true }), [lab({ slug: "a", state: "locked" })]);
+    expect(cityGateOf(resumed)).toMatchObject({ phase: "continue", target: { slug: "t" } });
+    const done = districtView(lab({ slug: "t", type: "TRAINING", state: "done" }), [lab({ slug: "a", state: "done" })]);
+    expect(cityGateOf(done)).toEqual({ phase: "done", target: null });
+    expect(cityGateOf(districtView(null, []))).toBeNull();
   });
 
   it("genel ilerleme eğitim ve senaryoyu ayrı sayar", () => {

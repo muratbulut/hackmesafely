@@ -820,6 +820,16 @@ export const tr = {
     enter: "Mahalleye gir",
     here: "Buradasın · Mahalleye gir",
     hereShort: "BURADASIN",
+    // Şehrin kapısı: yol haritasındaki ilk mahallenin geniş kartı (19 Kasım, Murat).
+    cityGate: {
+      start: "Buradan başla",
+      here: "Buradasın",
+      done: "Kapıdan geçtin",
+      lead: "Şehre herkes buradan girer. Önce temelleri öğren, sonra istediğin mahalleye geç.",
+      begin: "Başla: {name}",
+      resume: "Devam et: {name}",
+      visitorGo: "Kayıt ol ve başla",
+    },
     ring: "{done}/{total}",
     ringLabel: "{done}/{total} oda bitti",
 
@@ -1016,6 +1026,7 @@ export const tr = {
     stats: { labsDone: "oda bitti", cardsRead: "okunan kart", reports: "rapor", badges: "rozet" },
     badgesCount: "{n}/{total}",
     badges: {
+      "kapi-bekcisi": { name: "Kapı bekçisi", how: "Şehir Kapısı'nda temel eğitimin açtığı bütün senaryo odalarını bitir" },
       "sifre-ustasi": { name: "Şifre ustası", how: "Hesap Kalesi'nde temel eğitimin açtığı bütün senaryo odalarını bitir" },
       "ilk-rapor": { name: "İlk rapor", how: "İlk senaryo odasını bitir" },
       "kart-kurdu": { name: "Kart kurdu", how: "Bir eğitim odasının bütün kartlarını bitir" },

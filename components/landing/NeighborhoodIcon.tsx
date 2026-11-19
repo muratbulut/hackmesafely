@@ -20,6 +20,7 @@ export const neighborhoodColors: Record<NeighborhoodColor, { text: string; bg: s
   warning: { text: "text-warning-fg", bg: "bg-warning/12" },
   pink: { text: "text-pink-fg", bg: "bg-pink/12" },
   orange: { text: "text-orange-fg", bg: "bg-orange/12" },
+  blue: { text: "text-blue-fg", bg: "bg-blue/12" },
 };
 
 export function NeighborhoodIcon({ icon, color, className }: { icon: NeighborhoodIconName; color: NeighborhoodColor; className?: string }) {
