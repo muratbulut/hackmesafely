@@ -1,5 +1,6 @@
 "use client";
 
+import { Computer } from "@/components/device/Computer";
 import { BellRing, Smartphone } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ClientMission, ClientStage } from "@/lib/lab/client";
@@ -371,27 +372,25 @@ export function LoginStage(props: LoginStageProps) {
       <span aria-hidden="true" className="st-lamp" />
       {/* eslint-disable-next-line @next/next/no-img-element -- süs görseli */}
       <img src="/stage/mug.webp" alt={""} aria-hidden="true" draggable={false} className="st-prop st-prop-mug" />
-      <div className="st-monitor" inert={inHand}>
-        <div className="st-monitor-screen">
-          <LoginDesktop
-            computer={login.computer}
-            owner={owner}
-            avatar={props.avatar}
-            unlocked={unlocked}
-            onUnlock={unlock}
-            wins={desktopWins}
-            front={front}
-            onOpen={openWin}
-            onClose={closeWin}
-            onMin={minWin}
-            desktopIcons={[
-              { id: "browser", label: getMessages().lab.stage.browser },
-              { id: "note", label: login.note.title },
-              { id: "image", label: login.homework.file },
-            ]}
-          />
-        </div>
-      </div>
+      <Computer className="st-monitor" inert={inHand}>
+        <LoginDesktop
+          computer={login.computer}
+          owner={owner}
+          avatar={props.avatar}
+          unlocked={unlocked}
+          onUnlock={unlock}
+          wins={desktopWins}
+          front={front}
+          onOpen={openWin}
+          onClose={closeWin}
+          onMin={minWin}
+          desktopIcons={[
+            { id: "browser", label: getMessages().lab.stage.browser },
+            { id: "note", label: login.note.title },
+            { id: "image", label: login.homework.file },
+          ]}
+        />
+      </Computer>
 
       {inHand ? <button type="button" aria-label={t.phone.drop} onClick={dropPhone} className="absolute inset-0 z-[11] cursor-pointer" /> : null}
       <DeskPhone place="t2" inHand={inHand} onPick={pickPhone} onDrop={dropPhone} notice={phoneNotice} hideDrop>

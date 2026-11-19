@@ -1,4 +1,5 @@
 import { Check, EyeOff, Lock } from "lucide-react";
+import { Computer, ComputerDesktop, ComputerWindow } from "@/components/device/Computer";
 import { Phone } from "@/components/device/Phone";
 import { brand } from "@/lib/brand";
 import { getMessages } from "@/lib/i18n";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
 // kopyaları; hiçbir veri okunmaz. Adlar ve sayılar tahtadaki örneklerdir.
 
 const t = getMessages().teachersPage.tour;
+const stage = getMessages().lab.stage;
 
 /** Her adımda içerik hafifçe yukarı kayarak gelir, telefon biraz sonra ("Hareketi azalt"ta hareket yok). */
 const stepIn = "animate-[fade-up_0.35s_ease-out_both]";
@@ -85,103 +87,101 @@ function Cell({ done, fresh = false }: { done: boolean; fresh?: boolean }) {
 /** Öğretmenin ekranı: adıma göre kod, ödev, tablo ya da sınıfın toplamı. */
 export function TeacherScreen({ step }: { step: number }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface-deep shadow-card lg:flex-1">
-      <div className="flex items-center gap-1.5 border-b border-card bg-surface-raised px-3 py-2.5">
-        <span className="size-[9px] rounded-full bg-danger" />
-        <span className="size-[9px] rounded-full bg-warning" />
-        <span className="size-[9px] rounded-full bg-success" />
-        <span className="ml-2 text-xs text-fg-4">{t.teacherName}</span>
-      </div>
-      <div className="flex min-h-[236px] flex-1 flex-col justify-center p-3 lg:min-h-[250px] lg:p-4">
-        {step === 0 ? (
-          <div key="code" className={cn("flex flex-col items-center gap-3 py-2", stepIn)}>
-            <div className="flex flex-col items-center gap-2 rounded-[14px] bg-surface-raised p-3.5">
-              <span className="text-[10px] font-bold tracking-[2px] text-fg-3">{t.join}</span>
-              <CodeBoxes size="board" />
-            </div>
-            <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold text-success-fg", popLate)}>
-              <span className="size-2 rounded-full bg-success" />
-              {t.joined}
-            </span>
-          </div>
-        ) : null}
-
-        {step === 1 ? (
-          <div key="assign" className={cn("flex flex-col gap-2", stepIn)}>
-            {t.districts.map((name, i) => (
-              <div
-                key={name}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-[10px] border-[1.5px] px-3 py-[9px]",
-                  i === 1 ? "border-accent bg-accent/8" : "border-line",
-                )}
-              >
-                <span className={cn("size-[9px] rounded-full", districtDots[i])} />
-                <b className="flex-1 text-[13px]">{name}</b>
-                {i === 1 ? (
-                  <span className={cn("rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-on-accent", popLate)}>
-                    {t.assigned}
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        ) : null}
-
-        {step === 2 ? (
-          <div key="table" className={cn("flex flex-col gap-2.5", stepIn)}>
-            <div className="flex items-center gap-2.5">
-              <span className="text-[10px] font-bold tracking-[1px] text-fg-3">{t.homework}</span>
-              <b className="text-[13px]">{t.homeworkDistrict}</b>
-              <span className="h-1.5 flex-1 rounded-full bg-card">
-                <span className="anim-bar-in block h-full w-[62%] rounded-full bg-accent" />
-              </span>
-              <b className="text-[13px]">{t.homeworkDone}</b>
-            </div>
-            <div className="grid grid-cols-[78px_repeat(4,minmax(0,1fr))] items-end gap-1 border-b border-line pb-1.5">
-              <span />
-              {t.labs.map((lab) => (
-                <span key={lab} className="text-center text-[9px] leading-[1.2] font-bold text-fg-3">
-                  {lab}
+    <Computer k={0.8} stand className="lg:flex-1">
+      <ComputerDesktop narrow="phone" apps={[{ app: "browser", label: stage.browser, active: true }]}>
+        <ComputerWindow app="browser" title={`${brand.name} · ${t.teacherName}`} site bodyClassName="bg-surface-deep">
+          <div className="flex min-h-[236px] flex-1 flex-col justify-center p-3 lg:min-h-[250px] lg:p-4">
+            {step === 0 ? (
+              <div key="code" className={cn("flex flex-col items-center gap-3 py-2", stepIn)}>
+                <div className="flex flex-col items-center gap-2 rounded-[14px] bg-surface-raised p-3.5">
+                  <span className="text-[10px] font-bold tracking-[2px] text-fg-3">{t.join}</span>
+                  <CodeBoxes size="board" />
+                </div>
+                <span className={cn("inline-flex items-center gap-1.5 text-xs font-bold text-success-fg", popLate)}>
+                  <span className="size-2 rounded-full bg-success" />
+                  {t.joined}
                 </span>
-              ))}
-            </div>
-            {t.students.map((name, row) => (
-              <div key={name} className="grid grid-cols-[78px_repeat(4,minmax(0,1fr))] items-center gap-1 border-b border-card py-[5px] last:border-b-0">
-                <span className="truncate text-[11px] font-bold">{name}</span>
-                {matrix[row].map((done, col) => (
-                  <Cell key={col} done={done || (row === 0 && col === 0)} fresh={row === 0 && col === 0} />
+              </div>
+            ) : null}
+
+            {step === 1 ? (
+              <div key="assign" className={cn("flex flex-col gap-2", stepIn)}>
+                {t.districts.map((name, i) => (
+                  <div
+                    key={name}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-[10px] border-[1.5px] px-3 py-[9px]",
+                      i === 1 ? "border-accent bg-accent/8" : "border-line",
+                    )}
+                  >
+                    <span className={cn("size-[9px] rounded-full", districtDots[i])} />
+                    <b className="flex-1 text-[13px]">{name}</b>
+                    {i === 1 ? (
+                      <span className={cn("rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-on-accent", popLate)}>
+                        {t.assigned}
+                      </span>
+                    ) : null}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
-        ) : null}
+            ) : null}
 
-        {step === 3 ? (
-          <div key="summary" className={cn("flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-3.5", stepIn)}>
-            <span className="text-[10px] font-bold tracking-[1.5px] text-fg-3">{t.summary.label}</span>
-            {t.summary.rows.map((row) => (
-              <div key={row.lab} className="flex flex-col gap-0.5 border-b border-card pb-2 last:border-b-0 last:pb-0">
-                <span className="flex items-baseline justify-between gap-2">
-                  <b className="text-[13px]">{row.lab}</b>
-                  <span className="flex-none text-[11px] text-fg-3">{row.done}</span>
-                </span>
-                <span className="text-[11px] leading-[1.45]">
-                  <span className="text-fg-3">{t.summary.noticed}</span>
-                  <span className="text-success-fg">{row.first}</span>
-                  <span className="mx-1 text-fg-4">·</span>
-                  <span className="text-success-fg">{row.last}</span>
+            {step === 2 ? (
+              <div key="table" className={cn("flex flex-col gap-2.5", stepIn)}>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[10px] font-bold tracking-[1px] text-fg-3">{t.homework}</span>
+                  <b className="text-[13px]">{t.homeworkDistrict}</b>
+                  <span className="h-1.5 flex-1 rounded-full bg-card">
+                    <span className="anim-bar-in block h-full w-[62%] rounded-full bg-accent" />
+                  </span>
+                  <b className="text-[13px]">{t.homeworkDone}</b>
+                </div>
+                <div className="grid grid-cols-[78px_repeat(4,minmax(0,1fr))] items-end gap-1 border-b border-line pb-1.5">
+                  <span />
+                  {t.labs.map((lab) => (
+                    <span key={lab} className="text-center text-[9px] leading-[1.2] font-bold text-fg-3">
+                      {lab}
+                    </span>
+                  ))}
+                </div>
+                {t.students.map((name, row) => (
+                  <div key={name} className="grid grid-cols-[78px_repeat(4,minmax(0,1fr))] items-center gap-1 border-b border-card py-[5px] last:border-b-0">
+                    <span className="truncate text-[11px] font-bold">{name}</span>
+                    {matrix[row].map((done, col) => (
+                      <Cell key={col} done={done || (row === 0 && col === 0)} fresh={row === 0 && col === 0} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 3 ? (
+              <div key="summary" className={cn("flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-3.5", stepIn)}>
+                <span className="text-[10px] font-bold tracking-[1.5px] text-fg-3">{t.summary.label}</span>
+                {t.summary.rows.map((row) => (
+                  <div key={row.lab} className="flex flex-col gap-0.5 border-b border-card pb-2 last:border-b-0 last:pb-0">
+                    <span className="flex items-baseline justify-between gap-2">
+                      <b className="text-[13px]">{row.lab}</b>
+                      <span className="flex-none text-[11px] text-fg-3">{row.done}</span>
+                    </span>
+                    <span className="text-[11px] leading-[1.45]">
+                      <span className="text-fg-3">{t.summary.noticed}</span>
+                      <span className="text-success-fg">{row.first}</span>
+                      <span className="mx-1 text-fg-4">·</span>
+                      <span className="text-success-fg">{row.last}</span>
+                    </span>
+                  </div>
+                ))}
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-fg-4">
+                  <EyeOff className="size-3" strokeWidth={2} />
+                  {t.summary.note}
                 </span>
               </div>
-            ))}
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-fg-4">
-              <EyeOff className="size-3" strokeWidth={2} />
-              {t.summary.note}
-            </span>
+            ) : null}
           </div>
-        ) : null}
-      </div>
-    </div>
+        </ComputerWindow>
+      </ComputerDesktop>
+    </Computer>
   );
 }
 

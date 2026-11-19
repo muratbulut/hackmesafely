@@ -1,0 +1,292 @@
+/*
+ * Sitenin tek bilgisayarı (19 Kasım, Murat): gövde T2'deki masa monitörü, ekranı M1 masaüstü
+ * (gri duvar ve sarı ağ, pencereler, görev çubuğu). Bütün ölçüler `--pc-k` ile birlikte küçülür;
+ * odadaki bilgisayar 1, öğretmenler turu ve eğitim kartları daha küçük bir k ile çizer. Renkler sahne
+ * değişkenlerinden (globals.css, iki temada aynı: bilgisayar hep koyu kalır).
+ */
+
+.dv-pc {
+  --pc-k: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Monitörün gövdesi (T2'deki .st-monitor ile aynı): koyu çerçeve, altı biraz kalın. */
+.dv-pc-body {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+  min-height: 0;
+  flex: 1;
+  border-radius: calc(12px * var(--pc-k, 1));
+  padding: calc(6px * var(--pc-k, 1)) calc(6px * var(--pc-k, 1)) calc(16px * var(--pc-k, 1));
+  background: linear-gradient(180deg, var(--stage-monitor), var(--stage-bezel));
+  box-shadow:
+    0 0 0 1px var(--stage-monitor-edge),
+    0 20px 40px var(--stage-shadow);
+}
+
+.dv-pc-screen {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: calc(6px * var(--pc-k, 1));
+}
+
+/* Ayakta duran monitör (önden görünüş): boyun ve taban, gövdenin renginde. */
+.dv-pc-neck {
+  width: 16%;
+  height: calc(22px * var(--pc-k, 1));
+  background: linear-gradient(90deg, var(--stage-bezel-lo), var(--stage-bezel-hi) 50%, var(--stage-bezel-lo));
+}
+
+.dv-pc-foot {
+  width: 34%;
+  height: calc(9px * var(--pc-k, 1));
+  border-radius: calc(9px * var(--pc-k, 1)) calc(9px * var(--pc-k, 1)) calc(3px * var(--pc-k, 1)) calc(3px * var(--pc-k, 1));
+  background: linear-gradient(180deg, var(--stage-bezel-hi), var(--stage-bezel-lo));
+  box-shadow: 0 10px 22px var(--stage-shadow);
+}
+
+/* Masaüstü: duvar arkada, pencereler ortada, görev çubuğu altta. */
+.dv-pc-desk {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--stage-os-fg);
+}
+
+/* Sayfa düzenindeki masaüstü (eğitim kartı, öğretmenler turu): pencere içeriği kadar uzar. */
+.dv-pc-area {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: calc(14px * var(--pc-k, 1)) calc(16px * var(--pc-k, 1));
+}
+
+.dv-pc-desk[data-narrow="true"] .dv-pc-area {
+  padding: 0;
+}
+
+/* "phone": yalnız telefon genişliğinde (390 px) dar; pencere bütün masaüstünü kaplar. */
+@media (width < 40rem) {
+  .dv-pc-desk[data-narrow="phone"] .dv-pc-area {
+    padding: 0;
+  }
+  .dv-pc-desk[data-narrow="phone"] .dv-pc-win {
+    flex: 1;
+    border: 0;
+    border-radius: 0;
+  }
+  .dv-pc-desk[data-narrow="phone"] .dv-pc-task > span:last-child {
+    display: none;
+  }
+}
+
+/* Pencere: koyu başlık, beyaz gövde (uygulamalar açık renktir). */
+.dv-pc-win {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--stage-os-line);
+  border-radius: calc(10px * var(--pc-k, 1));
+  background: var(--scene-white);
+  color: var(--scene-ink);
+  box-shadow: 0 18px 50px var(--stage-os-shadow);
+}
+
+.dv-pc-desk[data-narrow="true"] .dv-pc-win {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+}
+
+.dv-pc-winbar {
+  display: flex;
+  height: calc(38px * var(--pc-k, 1));
+  flex: none;
+  align-items: center;
+  gap: calc(8px * var(--pc-k, 1));
+  padding-left: calc(12px * var(--pc-k, 1));
+  padding-right: calc(4px * var(--pc-k, 1));
+  background: var(--stage-os-title);
+  color: var(--stage-os-fg);
+  font-size: calc(13px * var(--pc-k, 1));
+  user-select: none;
+}
+
+.dv-pc-winbar[data-active="false"] {
+  background: var(--stage-os-title-idle);
+  color: var(--stage-os-muted);
+}
+
+.dv-pc-winbar > .dv-pc-icon {
+  width: calc(20px * var(--pc-k, 1));
+  height: calc(20px * var(--pc-k, 1));
+}
+
+/* Sistem penceresinin işareti (güvenlik uyarısı): simge kutusu yok, uyarı renginde çizgi simge. */
+.dv-pc-glyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--stage-road);
+}
+
+.dv-pc-glyph svg {
+  width: 90%;
+  height: 90%;
+}
+
+.dv-pc-wintitle {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Süs pencere düğmeleri (küçült, büyüt, kapat): odadaki pencerede aynı yerde gerçek düğmeler. */
+.dv-pc-winctl {
+  display: flex;
+}
+
+.dv-pc-winctl > span {
+  display: grid;
+  width: calc(40px * var(--pc-k, 1));
+  height: calc(34px * var(--pc-k, 1));
+  place-items: center;
+}
+
+.dv-pc-winctl svg {
+  width: calc(15px * var(--pc-k, 1));
+  height: calc(15px * var(--pc-k, 1));
+}
+
+/* Görev çubuğu. */
+.dv-pc-bar {
+  z-index: 5;
+  display: flex;
+  height: calc(46px * var(--pc-k, 1));
+  flex: none;
+  align-items: center;
+  gap: calc(4px * var(--pc-k, 1));
+  padding: 0 calc(8px * var(--pc-k, 1));
+  border-top: 1px solid var(--stage-os-line);
+  background: var(--stage-os-bar);
+  backdrop-filter: blur(12px);
+  font-size: calc(13px * var(--pc-k, 1));
+}
+
+.dv-pc-desk > .dv-pc-bar {
+  position: relative;
+}
+
+/* Başlat düğmesi gözlü a: bilgisayar iki temada da koyu olduğu için a hep yol sarısı. */
+.dv-pc-start {
+  --logo: var(--stage-road);
+  display: grid;
+  height: calc(38px * var(--pc-k, 1));
+  width: calc(44px * var(--pc-k, 1));
+  flex: none;
+  place-items: center;
+  border-radius: calc(8px * var(--pc-k, 1));
+}
+
+.dv-pc-start svg {
+  width: auto;
+  height: calc(24px * var(--pc-k, 1));
+}
+
+.dv-pc-apps,
+.dv-pc-apps > [role="group"] {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: calc(4px * var(--pc-k, 1));
+}
+
+.dv-pc-task {
+  position: relative;
+  display: flex;
+  height: calc(38px * var(--pc-k, 1));
+  min-width: calc(44px * var(--pc-k, 1));
+  max-width: calc(180px * var(--pc-k, 1));
+  align-items: center;
+  gap: calc(8px * var(--pc-k, 1));
+  padding: 0 calc(10px * var(--pc-k, 1));
+  border-radius: calc(8px * var(--pc-k, 1));
+}
+
+.dv-pc-task > .dv-pc-icon {
+  width: calc(24px * var(--pc-k, 1));
+  height: calc(24px * var(--pc-k, 1));
+}
+
+.dv-pc-task > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dv-pc-task[data-active="true"] {
+  background: var(--stage-os-active);
+}
+
+/* Açık uygulamanın altındaki çizgi: öndeyse yol sarısı ve uzun, arkadaysa gri ve kısa. */
+.dv-pc-task[data-open="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: calc(2px * var(--pc-k, 1));
+  left: 30%;
+  right: 30%;
+  height: calc(3px * var(--pc-k, 1));
+  border-radius: 2px;
+  background: var(--stage-os-muted);
+}
+
+.dv-pc-task[data-open="true"][data-active="true"]::after {
+  left: 20%;
+  right: 20%;
+  background: var(--stage-road);
+}
+
+.dv-pc-tray {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  gap: calc(12px * var(--pc-k, 1));
+  padding-right: calc(4px * var(--pc-k, 1));
+  font-size: calc(12px * var(--pc-k, 1));
+  line-height: 1.25;
+  text-align: right;
+}
+
+.dv-pc-tray svg {
+  width: calc(16px * var(--pc-k, 1));
+  height: calc(16px * var(--pc-k, 1));
+}
+
+.dv-pc-tray small {
+  display: block;
+  color: var(--stage-os-fg-2);
+  font-size: inherit;
+}
+
+.dv-pc-desk[data-narrow="true"] .dv-pc-task > span:last-child {
+  display: none;
+}

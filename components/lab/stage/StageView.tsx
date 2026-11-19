@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+import { Computer } from "@/components/device/Computer";
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ClientStage } from "@/lib/lab/client";
 import { getMessages } from "@/lib/i18n";
@@ -146,9 +147,9 @@ function DesktopPhone({ children, barSlot }: { children: ReactNode; barSlot: HTM
       <div className="st-stage st-wood relative flex min-h-0 flex-1 flex-col overflow-hidden" data-stage="t2" data-hand={inHand ? "true" : "false"}>
         <span aria-hidden="true" className="st-lamp" />
         <DeskProps only="mug" />
-        <div className="st-monitor" inert={inHand}>
-          <div className="st-monitor-screen">{children}</div>
-        </div>
+        <Computer className="st-monitor" inert={inHand}>
+          {children}
+        </Computer>
         <DeskPhone place="t2" inHand={inHand} onPick={() => setInHand(true)} onDrop={() => setInHand(false)} notice={inHand ? null : notice} barSlot={barSlot}>
           <div ref={setScreen} className="flex min-h-0 flex-1 flex-col" />
           {busy ? null : (
