@@ -22,6 +22,8 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
   const missionTasks = content.tasks.filter((t) => t.type === "mission");
   // Görevli odaya özgü bağlantılar: mağaza ödemesi, ödeme isteği, sipariş.
   const linked = content.items.filter((i) => i.payment || i.request || i.order || i.form);
+  // Giriş görevli odada mail yok, tuzak sahte sayfa değil çıkış yapmadan kalkmaktır (Az kalsın).
+  const login = !!mission?.login;
 
   const checks: CheckItem<ScenarioCheck>[] = [
     // Odanın kendi hatırlatmaları artık zorunlu değil: öğrenci odaya girerken genel hatırlatmaları görür (18. revize).
@@ -29,7 +31,7 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
     {
       key: "items",
       section: "items",
-      ok: fakes.length >= 1 && reals.length >= 1 && content.items.every((i) => filled(i.sender) && filled(i.body)),
+      ok: login ? content.items.length === 0 : fakes.length >= 1 && reals.length >= 1 && content.items.every((i) => filled(i.sender) && filled(i.body)),
     },
     {
       key: "signs",
@@ -41,8 +43,9 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
     {
       key: "trap",
       section: "trap",
-      ok:
-        filled(trap.ask) &&
+      ok: login
+        ? trap.almost && filled(trap.realLife) && trap.actions.some(filled)
+        : filled(trap.ask) &&
         // Görevli odada tuzak sahte mağazadır: sayfası mağaza sayfası, adresi sahte maildeki bağlantı.
         // Kayıt görevinde tuzak yine sahte sayfadır.
         (mission && !mission.signup
@@ -76,14 +79,32 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
   ];
   const talks = content.tasks.some((t) => t.talk);
   return checks.filter(
-    (c) => (c.key !== "mission" || mission || missionTasks.length > 0 || linked.length > 0) && (c.key !== "stage" || content.stage || talks),
+    (c) =>
+      (c.key !== "mission" || mission || missionTasks.length > 0 || linked.length > 0) &&
+      (c.key !== "stage" || content.stage || talks) &&
+      // Giriş görevinde sahte öğe ve işaret yok.
+      (c.key !== "signs" || !login),
   );
 }
 
 function stageReady(content: ScenarioContent, template: ScenarioTemplate) {
   const stage = content.stage;
   const stageOk = !stage || (stageFits(stage.type, template) && (!stage.password || filled(stage.password.value)));
-  return stageOk && content.tasks.every((t) => !t.talk || (t.type === "question" && filled(t.talk.speaker)));
+  // Giriş görevi bilgisayar ve masadaki telefonla (T2) açılır: kod telefona gelir.
+  const loginOk = !content.mission?.login || stage?.type === "DESKTOP_PHONE";
+  return (
+    stageOk &&
+    loginOk &&
+    content.tasks.every(
+      (t) =>
+        !t.talk ||
+        (t.type === "question" &&
+          filled(t.talk.speaker) &&
+          t.talk.lines.length <= t.talk.lines.filter(filled).length &&
+          t.talk.replies.length <= t.options.length &&
+          t.talk.endings.length <= t.options.length),
+    )
+  );
 }
 
 /**
@@ -101,6 +122,7 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
     mission.good.some(filled) &&
     // Kayıt görevinde kötü bitiş araması yok: yanlış yol "Az kalsın"a gider, oda sürer.
     (!!mission.signup || mission.bad.some(filled));
+  if (mission.login) return loginReady(content, template);
   if (!common) return false;
   if (mission.signup) {
     const forms = content.items.filter((i) => i.form);
@@ -142,6 +164,31 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
     paid.some((i) => i.kind === "fake") &&
     paid.every((i) => i.link !== null && filled(i.payment!.shop) && filled(i.payment!.amount)) &&
     content.items.every((i) => !i.request && !i.order)
+  );
+}
+
+/**
+ * Giriş görevi hazır mı: arama yok, görevi not verir (başlık, maddeler, kabul düğmesi); portal,
+ * bilgisayar, ödev, zil ve giriş kodu dolu; görevlerde bir "uygulamada yap" (portala giriş), bir
+ * "görev" (ödev), bir "bırak" (kalk) var. Alış, satış ve kayıt alanları yazılmaz.
+ */
+function loginReady(content: ScenarioContent, template: ScenarioTemplate) {
+  const mission = content.mission!;
+  const login = mission.login!;
+  const count = (type: string) => content.tasks.filter((t) => t.type === type).length;
+  return (
+    template === "INBOX" &&
+    !mission.shop &&
+    !mission.card &&
+    !mission.sale &&
+    !mission.signup &&
+    [mission.owner, mission.title, mission.accept, mission.done, mission.code].every(filled) &&
+    mission.points.some(filled) &&
+    [login.site, login.school, login.url, login.user, login.computer, login.note.title, login.homework.title, login.homework.file, login.bell.text, login.bell.button, login.bell.left, login.next].every(filled) &&
+    count("action") === 1 &&
+    count("mission") === 1 &&
+    count("leave") === 1 &&
+    count("review") === 0
   );
 }
 

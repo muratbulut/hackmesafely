@@ -1,0 +1,261 @@
+{
+  "slug": "okul-bilgisayarinda-giris",
+  "neighborhood": "sehir-kapisi",
+  "type": "SCENARIO",
+  "template": "INBOX",
+  "sortOrder": 2,
+  "status": "PUBLISHED",
+  "unlockedBy": "hesap-ve-giris",
+  "content": {
+    "meta": {
+      "name": "Okul bilgisayarında giriş yap ve çık",
+      "title": "Zil çaldı, kapı açık kaldı",
+      "summary": "Bilişim dersinde sınıfın ortak bilgisayarından Okul Portalı'na gir, afiş ödevini yükle. Zil çalınca bilgisayarı sıradakine bırakacaksın.",
+      "story": "Bilişim dersindesin. Emre Hoca herkesten afiş ödevini Okul Portalı'na yüklemesini istiyor. Sınıfın bilgisayarları ortak: her ders başka bir sınıf oturuyor. Portala gir, ödevini yükle, kalkmadan kapıyı kapat. Bilgisayar yolda sana birkaç soru soracak.",
+      "learn": [
+        {
+          "title": "Ortak bilgisayar senin değil",
+          "text": "Ortak bilgisayarda Beni hatırla'nın işaretini kaldır, tarayıcıya şifreni kaydettirme."
+        },
+        {
+          "title": "Sekmeyi kapatmak çıkış değil",
+          "text": "İşin bitince menüden Çıkış yap. Tarayıcıyı kapatmak hesabını kapatmaz."
+        },
+        {
+          "title": "Kod sende kalır",
+          "text": "Doğrulama kodunu en yakın arkadaşın istese bile söyleme, gösterme."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 5
+    },
+    "reminders": [
+      "Bu bilgisayar kimin?: Ortak bilgisayarda verdiğin cevaplar değişir.",
+      "Kapı açık kalmasın: İşin bitince ne yapacağını düşün."
+    ],
+    "items": [],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "",
+      "secret": "",
+      "kind": "account",
+      "account": "Okul Portalı",
+      "scene": "",
+      "realLife": "7-C'den biri PC 12'ye oturdu, tarayıcıyı açtı. Portal onu **“Hoş geldin, 2741”** diye karşıladı. Gerçek hayatta ödevini silebilir, öğretmenine senin adına mesaj yazabilirdi.",
+      "actions": [
+        "Ortak bilgisayarda Beni hatırla'yı kaldır, şifreyi kaydetme.",
+        "İşin bitince menüden Çıkış yap. Sekmeyi kapatmak çıkış değildir.",
+        "Unuttuysan kendi telefonundan “Tüm cihazlardan çıkış yap”."
+      ],
+      "almost": true
+    },
+    "tasks": [
+      {
+        "id": "giris",
+        "type": "action",
+        "text": "Okul Portalı'na giriş yap",
+        "hint": "Tarayıcıyı aç. Kullanıcı adın dolu, şifreye dokunman yeter.",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "deniz",
+        "type": "question",
+        "text": "Deniz senden kodunu istiyor. Ne dersin?",
+        "options": [
+          {
+            "text": "Kod bende kalır. Emre Hoca'ya söyleyelim, sana başka yol bulur.",
+            "points": 2
+          },
+          {
+            "text": "Söylerim, arkadaşımsın sonuçta.",
+            "points": 0
+          },
+          {
+            "text": "Ekranımı sana çevireyim, sen bak yaz.",
+            "points": 0
+          }
+        ],
+        "right": "Kodu kimseyle paylaşmamak; arkadaşın kodu gelmiyorsa öğretmene söylemek.",
+        "why": "Doğrulama kodu hesabının ikinci anahtarıdır. Söylemek de ekranını göstermek de kapıyı açar: arkadaşın senin hesabınla girebilir, hesabın onun işiyle karışır.",
+        "talk": {
+          "speaker": "Deniz",
+          "look": "friend",
+          "place": "school",
+          "lines": [
+            "Pst! Benim telefon evde kaldı, kod gelmiyor.",
+            "Senin hesabından girip benim afişi de yükleyeyim mi? Kodu bir söylesene."
+          ],
+          "replies": [
+            "Haklısın, kod sende kalsın. Hocam! Benim kod gelmiyor, bakar mısınız?",
+            "Eyvallah! Tamam, aklımda: 527 104. Sen önce kendi ödevini yükle.",
+            "Tamam, gördüm: 527 104. Sağ ol!"
+          ],
+          "endings": [
+            [
+              "Emre Hoca benimkini yarına uzattı, sorun yok.",
+              "Kodu vermemen iyi oldu bu arada, hoca da öyle dedi. Hadi, teneffüs bitmeden kantine!"
+            ],
+            [
+              "Emre Hoca benimkini yarına uzattı, sorun yok.",
+              "Kodunu bana söyledin ya, hoca “bir daha kimseye söyleme” dedi. Hadi, kantine!"
+            ],
+            [
+              "Emre Hoca benimkini yarına uzattı, sorun yok.",
+              "Kodunu bana söyledin ya, hoca “bir daha kimseye söyleme” dedi. Hadi, kantine!"
+            ]
+          ],
+          "voice": {
+            "lines": [
+              "/sesler/okul-bilgisayarinda-giris/soru-1.mp3",
+              "/sesler/okul-bilgisayarinda-giris/soru-2.mp3"
+            ],
+            "replies": [
+              "/sesler/okul-bilgisayarinda-giris/cevap-1.mp3",
+              "/sesler/okul-bilgisayarinda-giris/cevap-2.mp3",
+              "/sesler/okul-bilgisayarinda-giris/cevap-3.mp3"
+            ],
+            "endings": [
+              [
+                "/sesler/okul-bilgisayarinda-giris/son-1.mp3",
+                "/sesler/okul-bilgisayarinda-giris/son-2-iyi.mp3"
+              ],
+              [
+                "/sesler/okul-bilgisayarinda-giris/son-1.mp3",
+                "/sesler/okul-bilgisayarinda-giris/son-2-kotu.mp3"
+              ],
+              [
+                "/sesler/okul-bilgisayarinda-giris/son-1.mp3",
+                "/sesler/okul-bilgisayarinda-giris/son-2-kotu.mp3"
+              ]
+            ]
+          }
+        }
+      },
+      {
+        "id": "odev",
+        "type": "mission",
+        "text": "Kodu yaz, afiş ödevini yükle",
+        "hint": "Dosyan masaüstünde: afis.png. Teslim zil çalana kadar.",
+        "options": [],
+        "right": "Telefonuna gelen kodu kendin yazıp afiş ödevini zil çalmadan yüklemek.",
+        "why": "Ödevi teslim etmek görevin. Kod yalnız senin telefonuna gelir, onu yalnız sen yazarsın."
+      },
+      {
+        "id": "kalk",
+        "type": "leave",
+        "text": "Zil çaldı: bilgisayarı sıradakine bırak",
+        "hint": "Kalkmadan önce bilgisayarı nasıl bırakacağına sen karar ver.",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "evde",
+        "type": "question",
+        "text": "Diyelim ki okuldan çıktın ve portaldan çıkmayı unuttun. Evdesin. Ne yaparsın?",
+        "options": [
+          {
+            "text": "Kendi telefonumdan portala girer, “Tüm cihazlardan çıkış yap”a basarım",
+            "points": 1
+          },
+          {
+            "text": "Yarın okula gidince çıkarım",
+            "points": 0
+          },
+          {
+            "text": "Bir şey olmaz, bilgisayar kapanınca çıkar",
+            "points": 0
+          }
+        ],
+        "right": "Kendi telefonundan portala girip “Tüm cihazlardan çıkış yap”a basmak.",
+        "why": "Açık kalan oturum sen dönene kadar açık kalır; bilgisayar kapanınca da kapanmayabilir. “Tüm cihazlardan çıkış yap” kapıyı uzaktan kapatır."
+      }
+    ],
+    "tips": [
+      {
+        "text": "İşin bitince menüden Çıkış yap. Sekmeyi kapatmak kapıyı kapatmaz.",
+        "when": "leftOpen"
+      },
+      {
+        "text": "Ortak bilgisayarda Beni hatırla'nın işaretini kaldır.",
+        "when": "remembered"
+      },
+      {
+        "text": "Ortak bilgisayarda şifreyi kaydetme. Kaydettiysen tarayıcının ayarlarından sil.",
+        "when": "savedPassword"
+      },
+      {
+        "text": "Doğrulama kodu yalnız sende kalır, en yakın arkadaşın bile istese. Söylemek de göstermek de kapıyı açmaktır.",
+        "when": "wrongAnswer",
+        "task": "deniz"
+      },
+      {
+        "text": "Açık kalan kapıyı uzaktan da kapatabilirsin: kendi telefonundan “Tüm cihazlardan çıkış yap”.",
+        "when": "wrongAnswer",
+        "task": "evde"
+      },
+      {
+        "text": "Kapıyı açtın, kapatmayı unutma.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Emre Hoca",
+      "look": "father",
+      "owner": "Emre Hoca'nın",
+      "lines": [],
+      "title": "Afiş ödevini portala yükle",
+      "points": [
+        "Afişini **Okul Portalı**'ndaki ödeve yükle.",
+        "Dosyan masaüstünde: **afis.png**",
+        "Zil **10.40**'ta, sonra 7-C geliyor."
+      ],
+      "pointIcons": [
+        "globe",
+        "image",
+        "calendar"
+      ],
+      "accept": "Tamam, başlıyorum",
+      "good": [],
+      "bad": [],
+      "done": "Afiş ödevini zil çalmadan portala yükledin.",
+      "code": "527 104",
+      "login": {
+        "site": "Okul Portalı",
+        "school": "Çınar Ortaokulu",
+        "url": "portal.cinarortaokulu.k12.tr",
+        "user": "2741",
+        "group": "7-B",
+        "computer": "Bilişim Sınıfı · PC 12",
+        "note": {
+          "title": "Emre Hoca'nın notu",
+          "heading": "Bilişim · 7-B",
+          "from": "Emre Tunç · bugün"
+        },
+        "homework": {
+          "title": "Afiş ödevi",
+          "meta": "Bilişim · Emre Tunç · teslim bugün 10.40",
+          "file": "afis.png",
+          "size": "1,2 MB",
+          "image": "/stage/okul-afis.svg",
+          "other": "ders-programi.pdf"
+        },
+        "news": "Kodlama Kulübü perşembe 15.30'da",
+        "bell": {
+          "text": "**Teneffüs!** 2 dakika sonra 7-C geliyor.",
+          "button": "Kalk, sıradakine bırak",
+          "left": "Kalktın. PC 12 artık 7-C'nin."
+        },
+        "next": "Tarayıcıyı açtı: **senin hesabın**, şifresiz."
+      }
+    },
+    "stage": {
+      "type": "DESKTOP_PHONE",
+      "owner": "Öğrenci"
+    }
+  }
+}

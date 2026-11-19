@@ -1,4 +1,4 @@
-import { CreditCard, Eye, Flag, Globe, Hourglass, Lightbulb, MessageSquareLock, type LucideIcon } from "lucide-react";
+import { CreditCard, Eye, Flag, Globe, Hourglass, Lightbulb, LogOut, MessageSquareLock, Monitor, type LucideIcon } from "lucide-react";
 import { getMessages } from "@/lib/i18n";
 import { tipKind, type TipKind } from "@/lib/lab/tip-kind";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,8 @@ const kindStyle: Record<TipKind, { Icon: LucideIcon; band: string; icon: string 
   address: { Icon: Eye, band: "bg-accent/12", icon: "bg-accent/18 text-accent-fg" },
   self: { Icon: Globe, band: "bg-success/12", icon: "bg-success/18 text-success-fg" },
   report: { Icon: Flag, band: "bg-danger/12", icon: "bg-danger/18 text-danger-fg" },
+  door: { Icon: LogOut, band: "bg-success/12", icon: "bg-success/18 text-success-fg" },
+  shared: { Icon: Monitor, band: "bg-blue/12", icon: "bg-blue/18 text-blue-fg" },
   code: { Icon: MessageSquareLock, band: "bg-purple/12", icon: "bg-purple/18 text-purple-fg" },
   hurry: { Icon: Hourglass, band: "bg-warning/12", icon: "bg-warning/18 text-warning-fg" },
   card: { Icon: CreditCard, band: "bg-orange/12", icon: "bg-orange/18 text-orange-fg" },

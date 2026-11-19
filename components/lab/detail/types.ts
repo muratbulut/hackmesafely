@@ -41,7 +41,7 @@ export type LabDetailData = {
     caller: string | null;
     items: number;
     /** shop: mağazanın adı ve kartın sahibi ("Annenin"); sale: pazar yeri ve ürün. */
-    deal: { kind: "shop"; name: string; owner: string } | { kind: "sale"; name: string; product: string } | null;
+    deal: { kind: "shop"; name: string; owner: string } | { kind: "sale"; name: string; product: string } | { kind: "login"; name: string } | null;
     tasks: number;
   };
   /** Arayanın sesi çalan oda: ana düğmenin yanında "kulaklık takabilirsin" notu. */

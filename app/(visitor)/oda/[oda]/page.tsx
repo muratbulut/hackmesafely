@@ -136,23 +136,28 @@ async function detailData(lab: PublishedLab, userId: string, verified: boolean):
   };
 }
 
-/** Görevli odada arayanın sesi var mı (oda dosyasındaki mission.voice). */
+/** Odada ses var mı: görevli odada arayanın sesi (mission.voice) ya da yüz yüze konuşmanın sesleri. */
 function hasSound(lab: PublishedLab) {
   const voice = lab.scenario?.mission?.voice;
-  return voice ? [...voice.lines, ...voice.good, voice.goodReported, ...voice.bad].some((src) => src.trim() !== "") : false;
+  const call = voice ? [...voice.lines, ...voice.good, voice.goodReported, ...voice.bad] : [];
+  const talks = (lab.scenario?.tasks ?? []).flatMap((task) => (task.talk?.voice ? [...task.talk.voice.lines, ...task.talk.voice.replies, ...task.talk.voice.endings.flat()] : []));
+  return [...call, ...talks].some((src) => src.trim() !== "");
 }
 
 /** "Seni neler bekliyor": yalnızca sayılar ve görevin adları; doğru kararlar gitmez. */
 function aheadOf(lab: PublishedLab): LabDetailData["ahead"] {
   const mission = lab.scenario?.mission;
   return {
-    caller: mission?.caller || null,
+    // Giriş görevinde arama yok: görevi masaüstündeki not verir.
+    caller: mission?.login ? null : mission?.caller || null,
     items: lab.scenario?.items.length ?? 0,
     deal: mission?.shop
       ? { kind: "shop", name: mission.shop.name, owner: mission.owner }
       : mission?.sale
         ? { kind: "sale", name: mission.sale.platform, product: mission.sale.product }
-        : null,
+        : mission?.login
+          ? { kind: "login", name: `${mission.login.site} · ${mission.login.school}` }
+          : null,
     tasks: lab.scenario?.tasks.length ?? 0,
   };
 }

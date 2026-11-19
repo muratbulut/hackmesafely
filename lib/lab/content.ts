@@ -356,21 +356,31 @@ export const trapSchema = z.object({
 });
 export type Trap = z.infer<typeof trapSchema>;
 
+/** Görevli odadaki arama ve konuşma sesleri: yalnızca sitenin kendi dosyası ("//site" dış adrestir). */
+const voiceSrc = z.string().trim().max(200).regex(/^(\/(?!\/)[\w\-./]*\.mp3)?$/, "ses sitenin kendi mp3 dosyası olmalı");
+
+/** Konuşmanın yeri (T3): evde sehpa (anne, baba) ya da okulda sıra (sınıf arkadaşı). */
+export const talkPlaces = ["home", "school"] as const;
+export type TalkPlace = (typeof talkPlaces)[number];
+
 /** Arayanın çizimi: anne, baba ya da arkadaş (Deniz) (components/lab/mission/CallerAvatar.tsx). */
 export const callerLooks = ["mother", "father", "friend"] as const;
 export type CallerLook = (typeof callerLooks)[number];
 
-export const taskTypes = ["action", "review", "question", "mission"] as const;
+export const taskTypes = ["action", "review", "question", "mission", "leave"] as const;
 export type TaskType = (typeof taskTypes)[number];
 
 export const taskSchema = z.object({
   id,
   /**
    * action: uygulamayı aç; review: incele, şüphelileri bildir; question: 3 seçenekli soru;
-   * mission: görevli odada velinin işi (mağazadan al), doğru mağazadan alınca 1 puan.
+   * mission: görevli odada velinin işi (mağazadan al), doğru mağazadan alınca 1 puan; leave:
+   * giriş görevinde (mission.login) zil çalınca bilgisayarı sıradakine bırakmak, kalkınca biter.
    */
   type: z.enum(taskTypes),
   text: line(200),
+  /** Panelde, sıradaki görevin altındaki kısa yol tarifi ("Tarayıcıyı aç..."), isteğe bağlı. */
+  hint: line(200).optional(),
   options: z.array(z.object({ text: line(160), points: z.number().int().min(0).max(4) })).max(4).default([]),
   /** Raporda "Doğrusu" ve "Neden?"; yalnızca soru görevinde. Eski BİLDİR görevlerinde dolu olabilir, kullanılmaz. */
   right: line(300).default(""),
@@ -380,7 +390,37 @@ export const taskSchema = z.object({
    * sorulur. Sinema şeritli sahnede karşıdakinin silüeti, sözü (görevin metni) üstte altyazı,
    * seçenekler altta 1, 2, 3. Puanı ve raporu diğer sorularla aynıdır; yalnızca soru görevinde.
    */
-  talk: z.object({ speaker: line(40), look: z.enum(callerLooks).default("mother") }).optional(),
+  talk: z
+    .object({
+      speaker: line(40),
+      look: z.enum(callerLooks).default("mother"),
+      /** Sahnenin yeri: evde sehpa, okulda sıra (klavye ve telefon). */
+      place: z.enum(talkPlaces).default("home"),
+      /**
+       * Sorudan önce söylenenler (Şehir Kapısı, okul bilgisayarı), sırayla "Devam" ile; son satırdan
+       * sonra seçenekler gelir. Boşsa görevin metni söylenir (eski odalar böyle kalır).
+       */
+      lines: z.array(line(200)).max(4).default([]),
+      /**
+       * Seçenekten sonra karşıdakinin cevabı, seçeneklerin sırasıyla. Cevap doğrusunu ele verdiği
+       * için tarayıcıya önceden gitmez; seçilince sunucu söyler (lib/lab/actions.ts answerTalk).
+       */
+      replies: z.array(line(200)).max(4).default([]),
+      /**
+       * Oda bitince karşıdakiyle son konuşma, seçeneğe göre (seçeneklerin sırasıyla, her biri birkaç
+       * satır). Odayı bitirince sunucudan gelir; boşsa son konuşma yok.
+       */
+      endings: z.array(z.array(line(200)).max(3)).max(4).default([]),
+      /** Satırların sesleri, aynı sırayla (sesi olmayan satır yalnızca altyazıyla geçer). */
+      voice: z
+        .object({
+          lines: z.array(voiceSrc).max(4).default([]),
+          replies: z.array(voiceSrc).max(4).default([]),
+          endings: z.array(z.array(voiceSrc).max(3)).max(4).default([]),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 export type Task = z.infer<typeof taskSchema>;
 
@@ -388,13 +428,23 @@ export type Task = z.infer<typeof taskSchema>;
  * Rapordaki "Bir dahaki sefere" ipucunun ne zaman çıkacağı. engaged: sahte maildeki linke
  * tıkladıysa (mesajlaşmada cevap yazdıysa), hacked: hacklendiyse ("Az kalsın" odasında sahte
  * sayfaya bilgi girdiyse), missedFake: sahte olanı
- * bildirmediyse, reportedReal: gerçek olanı bildirdiyse, always: her zaman.
+ * bildirmediyse, reportedReal: gerçek olanı bildirdiyse, always: her zaman. Giriş görevinde
+ * (mission.login): leftOpen: çıkış yapmadan kalktıysa, remembered: "Beni hatırla"yı işaretli
+ * bıraktıysa, savedPassword: şifreyi tarayıcıya kaydettirdiyse, wrongAnswer: bir soruda tam puan
+ * almadıysa.
  */
-export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always"] as const;
+export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always", "leftOpen", "remembered", "savedPassword", "wrongAnswer"] as const;
 export type TipCondition = (typeof tipConditions)[number];
 
 /** Görevli odanın görev puanı: doğru yerden alınca 1. */
 export const missionPoints = 1;
+
+/**
+ * Giriş görevindeki kararların puanı (Şehir Kapısı, okul bilgisayarı): kalkmadan önce çıkış 4,
+ * "Beni hatırla"nın işaretini kaldırmak 1, şifreyi kaydetmemek 1.
+ */
+export const loginPoints = { logout: 4, remember: 1, save: 1 } as const;
+export type LoginChoice = keyof typeof loginPoints;
 
 /**
  * Görevli oda (Para Çarşısı "Kulaklık için veli kartı", 2 Kasım): oda bir görüntülü aramayla
@@ -403,10 +453,6 @@ export const missionPoints = 1;
  * gelen SMS'i (öğedeki `payment`) sunucu söyler, öğrenci kodu yazar ya da yazmaz. Bitiş aramaları
  * (`good`, `bad`) yalnızca bittiğinde sunucudan gelir. Kişi adları içerikte: "Annem", "Annenin".
  */
-/** Görevli odadaki arama sesleri: yalnızca sitenin kendi dosyası ("//site" dış adrestir). */
-const voiceSrc = z.string().trim().max(200).regex(/^(\/(?!\/)[\w\-./]*\.mp3)?$/, "ses sitenin kendi mp3 dosyası olmalı");
-
-
 export const missionSchema = z.object({
   /** Arayanın telefondaki adı: "Annem". */
   caller: line(40),
@@ -467,7 +513,47 @@ export const missionSchema = z.object({
       done: line(120),
     })
     .optional(),
-  /** SMS'teki onay kodu: "481 920". */
+  /**
+   * Giriş görevi (Şehir Kapısı "Okul bilgisayarında giriş yap ve çık"): ortak bir bilgisayarda
+   * okulun portalına girilir, ödev yüklenir, zil çalınca bilgisayar sıradakine bırakılır. Görevi
+   * masaüstündeki not verir (arama yok; maddeleri `points`). Kararlar (Beni hatırla, şifreyi
+   * kaydetmek, çıkış) sunucuda puanlanır; çıkış yapmadan kalkınca "Az kalsın" açılır (trap.realLife
+   * ve trap.actions), oda sürer. Telefona gelen giriş kodu `code`. Postam ve mail yok (items boş).
+   */
+  login: z
+    .object({
+      /** Portalın adı, sahibi ve adresi: "Okul Portalı", "Çınar Ortaokulu", "portal.cinarortaokulu.k12.tr". */
+      site: line(40),
+      school: line(60),
+      url: fakeUrl,
+      /** Kullanıcı adı (okul numarası, kutuda hazır yazılı) ve sınıfı: "2741", "7-B". */
+      user: line(30),
+      group: line(30).default(""),
+      /** Bilgisayarın adı, kilit ekranında ve masaüstünde: "Bilişim Sınıfı · PC 12". */
+      computer: line(60),
+      /** Görevi veren not penceresi: başlık, üst satır ve kimden ("Emre Hoca'nın notu", "Bilişim · 7-B", "Emre Tunç · bugün"). */
+      note: z.object({ title: line(60), heading: line(60).default(""), from: line(60).default("") }),
+      /**
+       * Ödev: adı, alt satırı, teslim edilecek dosya (masaüstünde), boyutu, görüntüleyicide açılan
+       * resmi (sitenin kendi dosyası) ve dosya seçicideki yanlış türde ikinci dosya.
+       */
+      homework: z.object({
+        title: line(60),
+        meta: line(120).default(""),
+        file: line(40),
+        size: line(20).default(""),
+        image: z.string().trim().max(200).regex(/^(\/(?!\/)[\w\-./]*\.(svg|png|webp|jpg))?$/, "resim sitenin kendi dosyası olmalı").default(""),
+        other: line(40).default(""),
+      }),
+      /** Portalın ana sayfasındaki duyuru satırı (süs), isteğe bağlı. */
+      news: line(120).default(""),
+      /** Zil: kartın metni, "Kalk" düğmesi ve doğru kalkınca çıkan bildirim. */
+      bell: z.object({ text: line(120), button: line(40), left: line(120) }),
+      /** Az kalsın ekranında "Sıradaki" kutusu: sıradakinin ne yaptığı. */
+      next: line(120),
+    })
+    .optional(),
+  /** SMS'teki onay kodu: "481 920". Giriş görevinde telefona gelen giriş kodu. */
   code: line(20).default(""),
   /**
    * Oda kapağındaki (/oda/[oda]) yuvarlak etiketin ikonu, isteğe bağlı: hikâyenin anı ("gift":
@@ -545,7 +631,8 @@ export const scenarioSchema = z.object({
   items: z.array(itemSchema).max(8).default([]),
   trap: trapSchema.default(trapSchema.parse({})),
   tasks: z.array(taskSchema).max(8).default([]),
-  tips: z.array(z.object({ text: line(240), when: z.enum(tipConditions) })).max(8).default([]),
+  /** İpuçları; wrongAnswer'da `task` yazılırsa yalnızca o soruda tam puan alınmadıysa çıkar. */
+  tips: z.array(z.object({ text: line(240), when: z.enum(tipConditions), task: id.optional() })).max(8).default([]),
   /** Görevli oda, isteğe bağlı: alış görevi gelen kutusunda, satış görevi (sale) mesajlaşmada. */
   mission: missionSchema.optional(),
   /** Oda sahne şablonu, isteğe bağlı (stageSchema). */
@@ -569,7 +656,7 @@ export function isScenario(template: Template): template is ScenarioTemplate {
  * cevapta gönderilen koddur (eski odalar böyle kalır).
  */
 export function usesTrapPage(content: Pick<ScenarioContent, "trap"> & { mission?: Mission }, template: ScenarioTemplate) {
-  // Kayıt görevinde sahte bağlantı sahte sayfayı açar; mağaza ve satış görevinde açmaz.
+  // Kayıt görevinde sahte bağlantı sahte sayfayı açar; mağaza, satış ve giriş görevinde açmaz.
   if (content.mission) return !!content.mission.signup && template === "INBOX";
   return template === "INBOX" || content.trap.title.trim().length > 0;
 }
@@ -584,13 +671,13 @@ export function opensForm(content: Pick<ScenarioContent, "mission">, item: Pick<
   return !!content.mission?.signup && !!item.link && item.form === true && item.kind === "real";
 }
 
-/** Görevli odanın türü: alış (mağaza), satış ya da kayıt; görevli değilse null. */
-export type MissionMode = "shop" | "sale" | "signup";
+/** Görevli odanın türü: alış (mağaza), satış, kayıt ya da giriş; görevli değilse null. */
+export type MissionMode = "shop" | "sale" | "signup" | "login";
 
-export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown } | null }): MissionMode | null {
+export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown; login?: unknown } | null }): MissionMode | null {
   const mission = content.mission;
   if (!mission) return null;
-  return mission.sale ? "sale" : mission.signup ? "signup" : "shop";
+  return mission.sale ? "sale" : mission.signup ? "signup" : mission.login ? "login" : "shop";
 }
 
 /** Satış görevli odada bu öğenin bağlantısı bankanın ödeme isteğini açar mı? */
@@ -619,14 +706,18 @@ function displayMeta<T extends { name: string; title: string }>(meta: T): T {
   return { ...meta, name: smartQuotes(meta.name), title: smartQuotes(meta.title) };
 }
 
-/** Senaryo labının en yüksek puanı: her sahte 4, her gerçek 1, her soru en yüksek seçeneği, görev 1. */
-export function maxScore(content: Pick<ScenarioContent, "items" | "tasks">) {
+/**
+ * Senaryo labının en yüksek puanı: her sahte 4, her gerçek 1, her soru en yüksek seçeneği, görev 1;
+ * giriş görevinde kararlar (loginPoints, toplam 6).
+ */
+export function maxScore(content: Pick<ScenarioContent, "items" | "tasks"> & { mission?: { login?: unknown } }) {
   const items = content.items.reduce((sum, item) => sum + (item.kind === "fake" ? 4 : 1), 0);
   const questions = content.tasks
     .filter((task) => task.type === "question")
     .reduce((sum, task) => sum + Math.max(0, ...task.options.map((o) => o.points)), 0);
   const missions = content.tasks.filter((task) => task.type === "mission").length * missionPoints;
-  return items + questions + missions;
+  const login = content.mission?.login ? loginPoints.logout + loginPoints.remember + loginPoints.save : 0;
+  return items + questions + missions + login;
 }
 
 /** Formdaki ham puanların toplamı: yayına hazırlık listesi her senaryo labında 10 ister. */

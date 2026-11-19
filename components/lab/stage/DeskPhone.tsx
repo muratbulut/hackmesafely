@@ -28,6 +28,7 @@ export function DeskPhone({
   notice,
   children,
   screenRef,
+  hideDrop = false,
 }: {
   place: "t1" | "t2";
   inHand: boolean;
@@ -37,6 +38,8 @@ export function DeskPhone({
   children: ReactNode;
   /** Ekranın kendisi (T2'de velinin SMS'i buraya çizilir). */
   screenRef?: Ref<HTMLDivElement>;
+  /** "Masaya bırak" telefonun dışında (sahnenin altında) duruyorsa ekrandaki düğme çizilmez. */
+  hideDrop?: boolean;
 }) {
   const t = getMessages().lab.stage.phone;
   const clock = useClock();
@@ -75,7 +78,7 @@ export function DeskPhone({
           <div className="st-phone-screen">
             <div className="flex h-11 flex-none items-center justify-between bg-scene-paper px-5 text-[13px] font-bold text-scene-ink">
               <span aria-hidden="true">{clock.time}</span>
-              {inHand ? (
+              {inHand && !hideDrop ? (
                 <button
                   type="button"
                   onClick={onDrop}

@@ -6,7 +6,7 @@
 import { opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "@/lib/lab/content";
 import { applyEvent, emptyState, type LabEventData } from "@/lib/lab/events";
 import { missionDone, scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
-import { almostStory, goodCall, hackedStory, linkPageFor, smsFor } from "@/lib/lab/story";
+import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply } from "@/lib/lab/story";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "@/lib/lab/training";
 import type { Fail, FailReason, LabDriver, TrainingDriver } from "../driver";
 
@@ -116,11 +116,25 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       apply({ type: "form_sent", item: item.id });
       return { ok: true, done: signup.done };
     },
+    async answerTalk(_attemptId, _seq, taskId, option) {
+      const task = content.tasks.find((t) => t.id === taskId);
+      if (ended) return fail("ended");
+      if (!task || task.type !== "question" || !task.talk || !task.options[option] || taskId in state.answers) return fail("invalid");
+      apply({ type: "talk_answered", task: task.id, option });
+      return { ok: true, reply: talkReply(task, option) };
+    },
+    async leaveDesk(_attemptId, _seq, closed) {
+      if (ended) return fail("ended");
+      if (!content.mission?.login || template !== "INBOX" || !state.uploaded || state.left) return fail("invalid");
+      const open = state.verified && !state.loggedOut;
+      apply({ type: "desk_left", open, closed: open && closed });
+      return { ok: true, almost: open ? leaveStory(content, closed) : null };
+    },
     async finish() {
       const done = missionDone(content, state);
       const result = end();
       const reportedFake = result.rows.some((r) => r.type === "fake" && (r.outcome === "reported" || r.outcome === "reportedAfterEngaging"));
-      return { ok: true, reportPath: "", call: goodCall(content, done, reportedFake) };
+      return { ok: true, reportPath: "", call: goodCall(content, done, reportedFake), talk: endingTalk(content, state.answers) };
     },
   };
 }

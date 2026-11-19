@@ -17,6 +17,16 @@ export const batchEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("attachment_opened"), item: ref }),
   z.object({ type: z.literal("review_done") }),
   z.object({ type: z.literal("answer"), task: ref, option: z.number().int().min(0).max(3) }),
+  /**
+   * Giriş görevi (mission.login): portalda "Giriş yap" (remember: "Beni hatırla" işaretliydi;
+   * şifre hiç gelmez, kutu dokununca kendiliğinden dolar), kodu yazıp içeri girdi, tarayıcının
+   * "Şifreyi kaydedeyim mi?" sorusu (saved), ödevi yükledi, portaldan çıkış yaptı.
+   */
+  z.object({ type: z.literal("login_submitted"), remember: z.boolean() }),
+  z.object({ type: z.literal("login_verified") }),
+  z.object({ type: z.literal("password_saved"), saved: z.boolean() }),
+  z.object({ type: z.literal("homework_uploaded") }),
+  z.object({ type: z.literal("logged_out") }),
 ]);
 export type BatchEvent = z.infer<typeof batchEventSchema>;
 
@@ -35,7 +45,14 @@ export type ServerEvent =
   /** Satış görevi: siparişi kargoya verdi; prepared: hazırlık maddelerinin hepsini yaptı (telefonu sıfırladı). */
   | { type: "item_shipped"; item: string; prepared: boolean }
   /** Kayıt görevi: görevdeki formu gönderdi (kutulara yazılan gelmez). */
-  | { type: "form_sent"; item: string };
+  | { type: "form_sent"; item: string }
+  /**
+   * Giriş görevi: zil çalınca kalktı. open: o an portalda oturumu açıktı (sunucu olaylardan
+   * bulur); closed: tarayıcıyı kapatmıştı (Az kalsın ekranının "Sen" kutusu için).
+   */
+  | { type: "desk_left"; open: boolean; closed: boolean }
+  /** T3 konuşma: soru yüz yüze cevaplandı; sunucu yazar, çünkü karşıdakinin cevabını o söyler. */
+  | { type: "talk_answered"; task: string; option: number };
 
 export type LabEventData = BatchEvent | ServerEvent;
 
@@ -59,6 +76,20 @@ export type SceneState = {
   formSent: string[];
   answers: Record<string, number>;
   reviewDone: boolean;
+  /**
+   * Giriş görevi: "Beni hatırla" kararı (girişte; null: henüz girmedi), koda geçip içeri girdi,
+   * şifreyi kaydetme kararı (null: sorulmadı), ödevi yükledi, çıkış yaptı. leftOpen: çıkış
+   * yapmadan kaç kez kalktı (Az kalsın), leftClosed: o kalkışta tarayıcıyı kapatmıştı, left:
+   * çıkış yapıp kalktı (görev biter).
+   */
+  remember: boolean | null;
+  verified: boolean;
+  passwordSaved: boolean | null;
+  uploaded: boolean;
+  loggedOut: boolean;
+  leftOpen: number;
+  leftClosed: boolean;
+  left: boolean;
   /** Rapora yazılan karar sayısı: taşıma, bildirme, cevap. */
   decisions: number;
 };
@@ -77,6 +108,14 @@ export const emptyState = (): SceneState => ({
   formSent: [],
   answers: {},
   reviewDone: false,
+  remember: null,
+  verified: false,
+  passwordSaved: null,
+  uploaded: false,
+  loggedOut: false,
+  leftOpen: 0,
+  leftClosed: false,
+  left: false,
   decisions: 0,
 });
 
@@ -111,6 +150,25 @@ export function applyEvent(state: SceneState, event: LabEventData): SceneState {
       };
     case "form_sent":
       return { ...state, formSent: add(state.formSent ?? [], event.item), decisions: state.decisions + 1 };
+    // Giriş görevinde her karar bir kez sayılır: ilk "Giriş yap" ve tarayıcının ilk sorusu.
+    case "login_submitted":
+      return state.remember !== null ? state : { ...state, remember: event.remember, decisions: state.decisions + 1 };
+    // İçeri girince oturum açılır; çıkış yaptıktan sonra yeniden giren yine açık oturumla kalkabilir.
+    case "login_verified":
+      return { ...state, verified: true, loggedOut: false };
+    case "password_saved":
+      return state.passwordSaved !== null ? state : { ...state, passwordSaved: event.saved, decisions: state.decisions + 1 };
+    case "homework_uploaded":
+      return state.uploaded ? state : { ...state, uploaded: true, decisions: state.decisions + 1 };
+    case "logged_out":
+      return { ...state, loggedOut: true };
+    case "desk_left":
+      if (state.left) return state;
+      return event.open
+        ? { ...state, leftOpen: state.leftOpen + 1, leftClosed: state.leftOpen === 0 ? event.closed : state.leftClosed, decisions: state.decisions + 1 }
+        : { ...state, left: true, decisions: state.decisions + 1 };
+    case "talk_answered":
+      return { ...state, answers: { ...state.answers, [event.task]: event.option }, decisions: state.decisions + 1 };
     case "reply_sent":
       return {
         ...state,
@@ -139,12 +197,14 @@ export const folderOf = (state: SceneState, item: string): Folder => state.folde
  * (lib/lab/content.ts missionMode); görev türüne göre farklı anda biter.
  */
 export function taskProgress(
-  tasks: readonly { id: string; type: "action" | "review" | "question" | "mission" }[],
+  tasks: readonly { id: string; type: "action" | "review" | "question" | "mission" | "leave" }[],
   state: SceneState,
   mode: MissionMode | null = null,
 ) {
   const done = tasks.map((task) => {
-    if (task.type === "action") return state.opened.length > 0;
+    // Giriş görevinde "uygulamada yap" portala giriş yapınca ("Giriş yap"), "bırak" kalkınca biter.
+    if (task.type === "action") return mode === "login" ? state.remember !== null : state.opened.length > 0;
+    if (task.type === "leave") return !!state.left;
     if (task.type === "review") return state.reviewDone;
     // Alış görevi: mağazada ödeyip onay kodu için bir karar verince (yazdı ya da yazmadı) biter.
     // Satış görevi: siparişi kargoya verince biter (ödeme isteğini reddetmek görevi bitirmez).
@@ -152,6 +212,8 @@ export function taskProgress(
     if (task.type === "mission") {
       if (mode === "sale") return (state.shipped ?? []).length > 0;
       if (mode === "signup") return (state.formSent ?? []).length > 0;
+      // Giriş görevi: ödevi yükleyince biter.
+      if (mode === "login") return !!state.uploaded;
       return codeDecided(state).length > 0;
     }
     return task.id in state.answers;

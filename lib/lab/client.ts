@@ -23,9 +23,16 @@ export type ClientTask = {
   type: TaskType;
   text: string;
   options: string[];
-  /** T3: soru yüz yüze sorulur (konuşanın adı ve çizimi); puanları gitmez. */
-  talk: NonNullable<Task["talk"]> | null;
+  /** Paneldeki kısa yol tarifi (boşsa yok). */
+  hint: string;
+  /**
+   * T3: soru yüz yüze sorulur (konuşanın adı, çizimi, yeri, sorudan önceki satırlar ve sesleri);
+   * puanları, karşıdakinin cevapları ve son sözler gitmez (cevaplayınca ve bitince sunucudan gelir).
+   */
+  talk: ClientTalk | null;
 };
+
+export type ClientTalk = Pick<NonNullable<Task["talk"]>, "speaker" | "look" | "place" | "lines"> & { voice: (string | null)[] };
 
 /** Oda sahne şablonu; şifre ve ipucu sahnede zaten görünür (puanlama alanı değildir). */
 export type ClientStage = Stage;
@@ -61,6 +68,11 @@ export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" 
   sale: Omit<NonNullable<Mission["sale"]>, "unprepared"> | null;
   /** Kayıt görevi mi (formun kendisi bağlantı açılınca sunucudan gelir). */
   signup: boolean;
+  /**
+   * Giriş görevi: portal, bilgisayar, not, ödev, zil ve telefona gelen giriş kodu. Kod sahnede
+   * zaten görünür (telefonda); "Az kalsın" metinleri gitmez, kalkınca sunucudan gelir.
+   */
+  login: (Omit<NonNullable<Mission["login"]>, "next"> & { code: string }) | null;
 };
 
 export function toClientScenario(content: ScenarioContent, template: ScenarioTemplate): ClientScenario {
@@ -84,7 +96,16 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
       type: task.type,
       text: task.text,
       options: task.type === "question" ? task.options.map((o) => o.text) : [],
-      talk: task.type === "question" && task.talk ? task.talk : null,
+      hint: task.hint?.trim() ?? "",
+      talk:
+        task.type === "question" && task.talk
+          ? {
+              speaker: task.talk.speaker,
+              look: task.talk.look,
+              place: task.talk.place,
+              ...voicedLines(task.talk.lines, task.talk.voice?.lines),
+            }
+          : null,
     })),
     secret: template === "MESSAGING" ? content.trap.secret : "",
     mission: content.mission
@@ -109,10 +130,17 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
               }
             : null,
           signup: !!content.mission.signup,
+          login: content.mission.login ? { ...withoutNext(content.mission.login), code: content.mission.code } : null,
         }
       : null,
     stage: content.stage ?? null,
   };
+}
+
+function withoutNext(login: NonNullable<Mission["login"]>) {
+  const { next: _next, ...rest } = login;
+  void _next;
+  return rest;
 }
 
 export type ClientCard =

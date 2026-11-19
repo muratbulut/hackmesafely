@@ -49,7 +49,8 @@ async function PreviewLoader({ params }: Pick<PageProps<"/yonetim/odalar/[id]/on
     return <LabPreview kind="training" content={content} exitHref={exitHref} playHref={playHref} />;
   }
   const content = lab.draft as ScenarioContent;
-  if (content.items.length === 0) return <Incomplete exitHref={exitHref} />;
+  // Giriş görevli odada mail yok (sahne ortak bilgisayar ve okul portalı).
+  if (content.items.length === 0 && !content.mission?.login) return <Incomplete exitHref={exitHref} />;
   const neighborhood = (await getNeighborhoods()).find((n) => n.id === lab.neighborhood.id);
   return (
     <LabPreview

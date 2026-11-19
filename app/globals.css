@@ -148,6 +148,18 @@
   /* Sahte sayfanın sitesi (kurgusal kargo firması gibi): sarı şerit */
   --scene-site: #facc15;
   --scene-site-ink: #1c1917;
+  /* Okul Portalı (Şehir Kapısı, okul bilgisayarı): okul yeşili, öğretmenin sarı notu, bilgi kutusu */
+  --scene-school: #15803d;
+  --scene-school-soft: #dcfce7;
+  --scene-school-ink: #14532d;
+  --scene-note: #fef9c3;
+  --scene-note-ink: #422006;
+  --scene-note-muted: #854d0e;
+  --scene-note-chip: #fde68a;
+  --scene-violet-soft: #ede9fe;
+  --scene-info-soft: #eff6ff;
+  --scene-info-line: #93c5fd;
+  --scene-info-ink: #1e3a8a;
   /* "Hacklendin" alarmı: yumuşak bordo ve pembe, iki temada da aynı (Hacklendin-Son-Alarm) */
   --alarm-bg: #1c0d16;
   --alarm-bg-2: #3a1527;
@@ -283,6 +295,11 @@
   --stage-talk-bg: #0b0b0c;
   --stage-letterbox: #000000;
   --stage-silhouette: #110c09;
+  /* T3 okulda: sınıfın sırası (açık gri laminat) ve tahtanın yeşili */
+  --stage-desk-top: #9aa3a8;
+  --stage-desk: #c7cdd0;
+  --stage-desk-low: #aeb5b9;
+  --stage-desk-shade: rgb(0 0 0 / 0.25);
   --stage-rim: #ffe7c4;
   --stage-tea: #d9772e;
   --stage-tea-plate: #3a2a20;
@@ -498,6 +515,18 @@
   --scene-shadow: rgb(0 0 0 / 0.3);
   --scene-site: #facc15;
   --scene-site-ink: #1c1917;
+  /* Okul Portalı (Şehir Kapısı, okul bilgisayarı): okul yeşili, öğretmenin sarı notu, bilgi kutusu */
+  --scene-school: #15803d;
+  --scene-school-soft: #dcfce7;
+  --scene-school-ink: #14532d;
+  --scene-note: #fef9c3;
+  --scene-note-ink: #422006;
+  --scene-note-muted: #854d0e;
+  --scene-note-chip: #fde68a;
+  --scene-violet-soft: #ede9fe;
+  --scene-info-soft: #eff6ff;
+  --scene-info-line: #93c5fd;
+  --scene-info-ink: #1e3a8a;
   --alarm-bg: #1c0d16;
   --alarm-bg-2: #3a1527;
   --alarm-card: rgb(40 18 30 / 0.78);
@@ -629,6 +658,11 @@
   --stage-talk-bg: #0b0b0c;
   --stage-letterbox: #000000;
   --stage-silhouette: #110c09;
+  /* T3 okulda: sınıfın sırası (açık gri laminat) ve tahtanın yeşili */
+  --stage-desk-top: #9aa3a8;
+  --stage-desk: #c7cdd0;
+  --stage-desk-low: #aeb5b9;
+  --stage-desk-shade: rgb(0 0 0 / 0.25);
   --stage-rim: #ffe7c4;
   --stage-tea: #d9772e;
   --stage-tea-plate: #3a2a20;
@@ -914,6 +948,17 @@
   --color-scene-scrim: var(--scene-scrim);
   --color-scene-site: var(--scene-site);
   --color-scene-site-ink: var(--scene-site-ink);
+  --color-scene-school: var(--scene-school);
+  --color-scene-school-soft: var(--scene-school-soft);
+  --color-scene-school-ink: var(--scene-school-ink);
+  --color-scene-note: var(--scene-note);
+  --color-scene-note-ink: var(--scene-note-ink);
+  --color-scene-note-muted: var(--scene-note-muted);
+  --color-scene-note-chip: var(--scene-note-chip);
+  --color-scene-violet-soft: var(--scene-violet-soft);
+  --color-scene-info-soft: var(--scene-info-soft);
+  --color-scene-info-line: var(--scene-info-line);
+  --color-scene-info-ink: var(--scene-info-ink);
   --color-alarm-bg: var(--alarm-bg);
   --color-alarm-bg-2: var(--alarm-bg-2);
   --color-alarm-card: var(--alarm-card);

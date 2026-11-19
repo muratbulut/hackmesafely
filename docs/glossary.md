@@ -34,7 +34,11 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | Oda sahnesi (oda sahne şablonu): M1 masaüstü, T1 masadaki telefon, T2 bilgisayar ve telefon | stage (`scenario.stage`, `stageSchema`; `type`: `DESKTOP`, `PHONE`, `DESKTOP_PHONE`; `components/lab/stage/`) |
 | Bilgisayarın sahibi, kilit ekranı, şifre ipucu | `stage.owner`, `LockScreen` (`Desktop.tsx`), `stage.password` (`value`, `hint`, `hintFrom`) |
 | Masadaki telefon, telefonu al / masaya bırak | `DeskPhone` (`inHand`, `onPick`, `onDrop`), T2'de ekranı `StagePhoneContext` |
-| T3 karşılıklı konuşma (S1 sinema şeritleri), konuşan, silüet | talk (soru görevinde `task.talk`: `speaker`, `look`; `TalkScene`) |
+| T3 karşılıklı konuşma (S1 sinema şeritleri), konuşan, silüet, yer (evde sehpa, okulda sıra) | talk (soru görevinde `task.talk`: `speaker`, `look`, `place`: `home`, `school`; `TalkScene`) |
+| Konuşmanın satırları, karşıdakinin cevabı, son sözler (oda bitince) | `talk.lines`, `talk.replies` (`talkReply`, sunucu eylemi `answerTalk`, olay `talk_answered`), `talk.endings` (`endingTalk`, `finish` sonucu `talk`) |
+| Giriş görevi (ortak bilgisayarda okul portalı), öğretmenin notu, okul portalı | login (`mission.login`; `MissionMode` `login`; `components/lab/login/`: `LoginStage`, `LoginDesktop`, `SchoolPortal`) |
+| Beni hatırla, şifreyi kaydet, çıkış yap, ödev yükle | olaylar `login_submitted` (`remember`), `login_verified`, `password_saved`, `logged_out`, `homework_uploaded`; puanları `loginPoints` |
+| Zil, kalkış (bilgisayarı sıradakine bırakmak), kalkış Az kalsın'ı | görev türü `leave`, sunucu eylemi `leaveDesk`, olay `desk_left` (`open`, `closed`), `LeaveStory` / `LeaveAlmostDialog` |
 | Ödeme isteği (bankanın ekranı) | request (mesajda `request`; `opensRequest`, `RequestSite`; hacklenme yolu `request`) |
 | Sipariş, kargoya verme | order, ship (mesajda `order`; `opensOrder`, `OrderSite`, `shipOrder`; olay `item_shipped`) |
 | Mağaza sayfası, ödeme, onay kodu SMS'i | shop, payment (`item.payment`, `ShopSite`, `payShop`), `answerCode`; olaylar `code_entered`, `code_refused` |

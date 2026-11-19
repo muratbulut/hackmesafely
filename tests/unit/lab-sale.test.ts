@@ -159,7 +159,7 @@ describe("satış görevi: önizleme sürücüsü (sunucuyla aynı kurallar)", (
     const shipped = await driver.shipOrder("x", 1, "pazar", false);
     expect(shipped).toMatchObject({ ok: true, done: false });
     if (shipped.ok) expect(shipped.reply).toContain("fotoğrafların duruyor");
-    expect(await driver.finish("x")).toEqual({ ok: true, reportPath: "", call: null });
+    expect(await driver.finish("x")).toEqual({ ok: true, reportPath: "", call: null, talk: null });
   });
 
   it("ödeme isteğini onaylayınca kötü bitiş araması (baba) ve odaya özgü alarm", async () => {

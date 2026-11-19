@@ -91,3 +91,34 @@ export function badgeTone() {
   [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => note(ctx, f, now + i * 0.09, i === 3 ? 0.5 : 0.2, 0.1));
   window.setTimeout(() => void ctx.close().catch(() => {}), 1200);
 }
+
+/** Okul zili (Şehir Kapısı, okul bilgisayarı): iki saniyelik elektrikli zil, hızlı vuruşlarla. */
+export function bellTone() {
+  const ctx = context();
+  if (!ctx) return;
+  const t0 = ctx.currentTime + 0.03;
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+  gain.connect(ctx.destination);
+  for (const [freq, level] of [
+    [1240, 0.5],
+    [1860, 0.18],
+    [2730, 0.18],
+  ] as const) {
+    const osc = ctx.createOscillator();
+    const part = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = freq;
+    part.gain.value = level;
+    osc.connect(part);
+    part.connect(gain);
+    osc.start(t0);
+    osc.stop(t0 + 2.3);
+  }
+  for (let i = 0; i < 44; i++) {
+    const at = t0 + i * 0.05;
+    gain.gain.setValueAtTime(0.09, at);
+    gain.gain.exponentialRampToValueAtTime(0.012, at + 0.045);
+  }
+  window.setTimeout(() => void ctx.close().catch(() => {}), 2600);
+}
