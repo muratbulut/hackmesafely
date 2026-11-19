@@ -59,6 +59,8 @@ export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" 
   card: Mission["card"] | null;
   shop: Mission["shop"] | null;
   sale: Omit<NonNullable<Mission["sale"]>, "unprepared"> | null;
+  /** Kayıt görevi mi (formun kendisi bağlantı açılınca sunucudan gelir). */
+  signup: boolean;
 };
 
 export function toClientScenario(content: ScenarioContent, template: ScenarioTemplate): ClientScenario {
@@ -106,6 +108,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
                 prep: content.mission.sale.prep.filter((p) => p.trim()),
               }
             : null,
+          signup: !!content.mission.signup,
         }
       : null,
     stage: content.stage ?? null,
@@ -115,7 +118,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
 export type ClientCard =
   | Extract<Card, { type: "info" }>
   | (Omit<Extract<Card, { type: "clickFind" }>, "spots"> & { spotCount: number })
-  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null }
+  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null }
   | {
       id: string;
       type: "video";
@@ -147,7 +150,7 @@ export function toClientCard(card: Card): ClientCard {
       return { ...rest, spotCount: spots.length };
     }
     case "quiz":
-      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null };
+      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null };
     case "video":
       return {
         id: card.id,

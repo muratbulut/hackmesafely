@@ -1,0 +1,272 @@
+{
+  "slug": "baglanti-nereye-gidiyor",
+  "neighborhood": "sehir-kapisi",
+  "type": "SCENARIO",
+  "template": "INBOX",
+  "sortOrder": 1,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Bağlantı nereye gidiyor?",
+      "title": "Yazıda bir şey, içinde başka bir şey",
+      "summary": "Okulun Kodlama Kulübü'ne kayıt bugün bitiyor. Gelen kutunda kulübün adıyla iki mail var. Doğru bağlantıyı bul ve kaydol.",
+      "story": "Sınıf arkadaşın Deniz arıyor: okulun Kodlama Kulübü'ne kayıtlar bugün bitiyormuş ve seninle birlikte gitmek istiyor. Kulübün öğretmeni kayıt formunu öğrencilere mail atmış. Postam'da kulübün adıyla iki mail var, ikisinde de bir kayıt düğmesi var ama ikisi aynı yere gitmiyor. Düğmelere basmadan önce gerçek adreslerine bak, doğru olanla kaydol.",
+      "learn": [
+        {
+          "title": "Ad değil adres",
+          "text": "Mailin kimden geldiğini görünen ad değil, @ işaretinden sonraki adres söyler."
+        },
+        {
+          "title": "Yazı değil bağlantı",
+          "text": "Düğmenin yazısını mail atan yazar. Gideceğin yer, basmadan önce görebildiğin gerçek adrestir."
+        },
+        {
+          "title": "Adresi sağdan oku",
+          "text": "Okulun adı başta durabilir; adresin sahibi en sağdaki parçalardır."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 5
+    },
+    "reminders": [
+      "Kimden geldi?: Görünen ada değil, @ işaretinden sonrasına bak.",
+      "Nereye gidiyor?: Düğmeye basmadan önce üstüne gel ya da basılı tut."
+    ],
+    "items": [
+      {
+        "id": "kulup-sahte",
+        "kind": "fake",
+        "sender": "Kodlama Kulübü Kayıt",
+        "address": "kayit@cinarortaokulu-kulup.xyz",
+        "subject": "SON GÜN: Kodlama Kulübü kaydı",
+        "time": "08:41",
+        "body": "Merhaba,\n\nKodlama Kulübü kayıtları **bugün saat 17.00'de** kapanıyor.\n\nKaydını tamamlamak için aşağıdaki bağlantıdan **okul hesabınla giriş yap**.\n\nKodlama Kulübü",
+        "footer": "Çınar Ortaokulu · Kodlama Kulübü",
+        "link": {
+          "url": "cinarortaokulu.k12.tr.kayit-formu.xyz/giris",
+          "text": "cinarortaokulu.k12.tr/kayit"
+        },
+        "attachment": null,
+        "signs": [
+          {
+            "at": "sender",
+            "text": "Adres okulun değil: @ işaretinden sonrası cinarortaokulu-kulup.xyz. Okulun adresi cinarortaokulu.k12.tr ile biter.",
+            "quote": "cinarortaokulu-kulup.xyz"
+          },
+          {
+            "at": "text",
+            "text": "Kulübe kaydolmak için okul hesabının şifresi gerekmez. Gerçek mailde form doğrudan açılıyor, yalnızca adını ve sınıfını istiyor.",
+            "quote": "okul hesabınla giriş yap"
+          },
+          {
+            "at": "link",
+            "text": "Düğmenin yazısı okulun adresi gibi ama gerçek adres başka. Sağdan okununca sahibi kayit-formu.xyz.",
+            "quote": "cinarortaokulu.k12.tr/kayit"
+          }
+        ],
+        "why": "Bu mail okulun adresinden gelmedi, düğmesi de yazısının söylediği yere gitmiyordu. Gerçek adresi sağdan okuyunca sahibi kayit-formu.xyz çıkıyor. Seni okul hesabının şifresini isteyen bir sayfaya götürüyordu."
+      },
+      {
+        "id": "kulup",
+        "kind": "real",
+        "sender": "Çınar Ortaokulu Kodlama Kulübü",
+        "address": "kulup@cinarortaokulu.k12.tr",
+        "subject": "Kodlama Kulübü'ne kayıtlar bugün bitiyor",
+        "time": "08:15",
+        "body": "Merhaba,\n\nKodlama Kulübü'ne kayıtlar bugün bitiyor. Kayıt formu aşağıda; **adını ve sınıfını** yazman yeterli.\n\nİlk buluşma perşembe 15.30'da bilgisayar sınıfında.\n\nSevgiler,\nKodlama Kulübü Öğretmeni Emre Tunç",
+        "footer": "Çınar Ortaokulu · cinarortaokulu.k12.tr",
+        "link": {
+          "url": "cinarortaokulu.k12.tr/kulup/kayit",
+          "text": "Kayıt formu"
+        },
+        "attachment": null,
+        "signs": [],
+        "why": "Adres cinarortaokulu.k12.tr ile bitiyor, bağlantı da okulun kendi sitesine gidiyor. Form yalnızca adını ve sınıfını istiyordu, şifre istemiyordu.",
+        "form": true
+      },
+      {
+        "id": "annem",
+        "kind": "real",
+        "sender": "Annem",
+        "address": "lisa@postam.com",
+        "subject": "Akşam",
+        "time": "07:30",
+        "body": "Akşam teyzen geliyor, okuldan sonra oyalanma, erken gel.\n\nÖptüm.",
+        "footer": "",
+        "link": null,
+        "attachment": null,
+        "signs": [],
+        "why": "Annenin bildiğin adresi. Bağlantı yok, senden bir şey istemiyor."
+      },
+      {
+        "id": "market-puan",
+        "kind": "real",
+        "sender": "Market Puan",
+        "address": "kampanya@marketpuan.com",
+        "subject": "Hafta sonuna özel kırtasiye indirimi",
+        "time": "Dün",
+        "body": "Merhaba,\n\nOkul alışverişin bizden: hafta sonu boyunca defter, kalem ve çantalarda **%20 indirim** var.\n\nİndirim mağazada ve sitemizde geçerli.",
+        "footer": "Market Puan · Bu maili kampanya izni verdiğin için aldın.",
+        "link": {
+          "url": "marketpuan.com/kirtasiye",
+          "text": "Kampanyayı gör"
+        },
+        "attachment": null,
+        "signs": [],
+        "why": "Market Puan'ın kendi adresinden geliyor, bağlantısı da kendi sitesine gidiyor. Bir kampanya maili olması onu sahte yapmaz."
+      }
+    ],
+    "trap": {
+      "url": "cinarortaokulu.k12.tr.kayit-formu.xyz/giris",
+      "title": "Okul hesabı girişi",
+      "text": "Kodlama Kulübü kaydını tamamlamak için okul hesabınla giriş yap.",
+      "ask": "Okul hesabının şifresi",
+      "secret": "",
+      "kind": "account",
+      "account": "Okul hesabı",
+      "scene": "",
+      "realLife": "Bu sayfa okulun değildi. Şifreni yazdığın için gerçek hayatta okul hesabın başkasının eline geçebilirdi: ödevlerin, notların, mesajların.",
+      "actions": [
+        "Düğmeye basmadan önce üstüne gel ya da basılı tut, gerçek adresi oku.",
+        "Adresi sağdan oku: sonu cinarortaokulu.k12.tr mi?",
+        "Gerçek hayatta şifreni yazdıysan hemen değiştir ve bir büyüğüne söyle."
+      ],
+      "almost": true
+    },
+    "tasks": [
+      {
+        "id": "ac",
+        "type": "action",
+        "text": "Gelen kutunu aç, maillere göz at",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "kaydol",
+        "type": "mission",
+        "text": "Kodlama Kulübü'ne kaydol",
+        "options": [],
+        "right": "Okulun adresinden (cinarortaokulu.k12.tr) gelen maildeki \"Kayıt formu\" bağlantısıyla kaydolmak; basmadan önce gerçek adresine bakmak.",
+        "why": "İki mail de kulübün adını taşıyordu. Gerçeğini ayıran gönderen adresi ve düğmenin gerçek adresiydi; gerçek form şifre de istemiyordu."
+      },
+      {
+        "id": "incele",
+        "type": "review",
+        "text": "Gelen kutunu incele, şüpheli bulduklarını bildir",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "nereye",
+        "type": "question",
+        "text": "Bir bağlantının gerçekten nereye gittiğini nasıl anlarsın?",
+        "options": [
+          {
+            "text": "Üstüne gelir ya da basılı tutar, gerçek adresi okurum",
+            "points": 1
+          },
+          {
+            "text": "Düğmenin üstündeki yazıyı okurum",
+            "points": 0
+          },
+          {
+            "text": "Basarım, açılan sayfaya bakarım",
+            "points": 0
+          }
+        ],
+        "right": "Basmadan önce üstüne gelip ya da basılı tutup gerçek adrese bakmak.",
+        "why": "Düğmenin yazısını mail atan yazar; adres gibi bile görünebilir. Basınca açılan sayfa da gerçeğinin kopyası olabilir. Gerçek adres basmadan önce görünür."
+      },
+      {
+        "id": "sahibi",
+        "type": "question",
+        "text": "cinarortaokulu.k12.tr.kayit-formu.xyz adresinin sahibi kim?",
+        "options": [
+          {
+            "text": "kayit-formu.xyz",
+            "points": 1
+          },
+          {
+            "text": "Çınar Ortaokulu",
+            "points": 0
+          },
+          {
+            "text": "k12.tr",
+            "points": 0
+          }
+        ],
+        "right": "kayit-formu.xyz",
+        "why": "Adres sağdan okunur. Okulun adı başta durduğu için tanıdık görünüyor ama asıl sahibi en sondaki kayit-formu.xyz."
+      }
+    ],
+    "tips": [
+      {
+        "text": "Sahte sayfayı açtın ama şifreni yazmadın. Bir dahaki sefere basmadan önce gerçek adrese bak, sayfaya hiç gitmene gerek kalmasın.",
+        "when": "engaged"
+      },
+      {
+        "text": "Şifre isteyen sayfaya bilgi girdin. Gerçek hayatta şifreni hemen değiştir ve bir büyüğüne haber ver.",
+        "when": "hacked"
+      },
+      {
+        "text": "Sahte kayıt mailini bildirmedin. Adresi okulun olmayan bir mail okul adına yazıyorsa bildir.",
+        "when": "missedFake"
+      },
+      {
+        "text": "Gerçek bir maili bildirdin. Adresi sağdan oku: sonu beklediğin yer ise mail gerçektir.",
+        "when": "reportedReal"
+      },
+      {
+        "text": "Ad değil adres, yazı değil bağlantı.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Deniz",
+      "look": "friend",
+      "owner": "Deniz'in",
+      "lines": [
+        "Selam! Kodlama Kulübü'nün kaydı bugün bitiyormuş, haberin var mı?",
+        "Emre Hoca formu herkese mail atmış. Ben kaydoldum, sen de gel, birlikte gideriz.",
+        "Mailindeki bağlantıdan kaydol, olunca bana yaz!"
+      ],
+      "title": "Kodlama Kulübü'ne kaydol",
+      "points": [
+        "Kayıt formu **okulun mailinde**",
+        "Kayıtlar bugün **17.00'de** kapanıyor",
+        "Kaydolunca **Deniz'e** haber ver"
+      ],
+      "pointIcons": [
+        "mail",
+        "calendar",
+        "message"
+      ],
+      "accept": "Tamam, hemen bakıyorum",
+      "signup": {
+        "site": "Çınar Ortaokulu",
+        "title": "Kodlama Kulübü kayıt formu",
+        "fields": [
+          "Adın",
+          "Sınıfın"
+        ],
+        "button": "Gönder",
+        "done": "Kaydın alındı, perşembe 15.30'da bilgisayar sınıfında görüşürüz!"
+      },
+      "good": [
+        "Listede adını gördüm, süper!",
+        "Perşembe 15.30'da bilgisayar sınıfında buluşuyoruz."
+      ],
+      "goodReported": "Sahte maili de bildirmişsin, Emre Hoca'ya söyleyeyim, herkesi uyarsın.",
+      "goodTitle": "Kodlama Kulübü'ne kaydoldun",
+      "done": "Okulun formuyla Kodlama Kulübü'ne kaydoldun.",
+      "voice": {
+        "lines": ["/sesler/baglanti-nereye-gidiyor/acilis-1.mp3", "/sesler/baglanti-nereye-gidiyor/acilis-2.mp3", "/sesler/baglanti-nereye-gidiyor/acilis-3.mp3"],
+        "good": ["/sesler/baglanti-nereye-gidiyor/iyi-1.mp3", "/sesler/baglanti-nereye-gidiyor/iyi-2.mp3"],
+        "goodReported": "/sesler/baglanti-nereye-gidiyor/iyi-3.mp3"
+      }
+    },
+    "stage": { "type": "DESKTOP" }
+  }
+}

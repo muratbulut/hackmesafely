@@ -14,6 +14,9 @@ import type { RoomFile } from "./rooms.ts";
 
 // Renk ve ikon adları tema değişkenlerine ve ikon listesine karşılık gelir (sabit renk kodu yok).
 const neighborhoods = [
+  // 18 Kasım (Murat): diğer mahallelerin varsaydığı dijital temeller; şehre herkes buradan girer.
+  // Renk ve ikon geçici, tasarım turunda kesinleşecek.
+  { slug: "sehir-kapisi", name: "Şehir Kapısı", topic: "Dijital temeller", color: "orange", icon: "door", sortOrder: 0 },
   { slug: "hesap-kalesi", name: "Hesap Kalesi", topic: "Hesap güvenliği", color: "success", icon: "castle", sortOrder: 1 },
   { slug: "oltalama-limani", name: "Oltalama Limanı", topic: "Oltalama", color: "accent", icon: "mail", sortOrder: 2 },
   { slug: "yazilim-ormani", name: "Yazılım Ormanı", topic: "Zararlı yazılım", color: "purple", icon: "download", sortOrder: 3 },

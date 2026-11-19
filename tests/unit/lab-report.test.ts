@@ -110,7 +110,7 @@ describe("yönetim önizlemesinin sürücüsü (Öğrenci gibi dene)", () => {
     const link = await driver.openLink(id, 1, "kargo");
     expect(link.ok && link.page.kind).toBe("trap");
     const trap = await driver.submitTrap(id, 2, "kargo");
-    expect(trap.ok && trap.hacked.kind).toBe("account");
+    expect(trap.ok && "hacked" in trap && trap.hacked.kind).toBe("account");
     expect(onEnd).toHaveBeenCalledTimes(1);
     const expected = report([
       { type: "item_opened", item: "kargo" },
@@ -202,7 +202,7 @@ describe("Mesajlar'da bağlantı sahte sayfa açar (M1)", () => {
     const link = await driver.openLink("x", 0, "deniz");
     expect(link.ok && link.page.kind).toBe("trap");
     const trap = await driver.submitTrap("x", 1, "deniz");
-    expect(trap.ok && trap.hacked).toMatchObject({ template: "MESSAGING", via: "link", domain: "cekilis-tablet.xyz" });
+    expect(trap.ok && "hacked" in trap && trap.hacked).toMatchObject({ template: "MESSAGING", via: "link", domain: "cekilis-tablet.xyz" });
     const result: ScenarioReport = onEnd.mock.calls[0][0];
     expect(result.status).toBe("hacked");
     expect(result.rows[0]).toMatchObject({ type: "fake", outcome: "hacked", by: "link" });

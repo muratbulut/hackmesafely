@@ -5,13 +5,15 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { MascotMood } from "@/components/mascot/Mascot";
 import { Toast } from "@/components/status/Toast";
 import { withNext } from "@/lib/account/shared";
-import type { HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
+import type { AlmostStory, HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
+import { missionMode } from "@/lib/lab/content";
 import type { ClientItem, ClientScenario } from "@/lib/lab/client";
 import { containsSecret, emptyState, taskProgress, type Folder, type SceneState } from "@/lib/lab/events";
 import { stageFits } from "@/lib/lab/content";
 import { getMessages } from "@/lib/i18n";
 import { routes } from "@/lib/navigation";
 import type { EndingCall, FailReason, LabDriver } from "../driver";
+import { AlmostDialog } from "../almost/AlmostDialog";
 import { HackedAlarm } from "../hacked/HackedAlarm";
 import { HackedScene } from "../hacked/HackedScene";
 import { BrowserPage } from "../inbox/BrowserPage";
@@ -79,6 +81,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [browser, setBrowser] = useState<{ item: ClientItem; page: LinkPage } | null>(null);
   const [busy, setBusy] = useState(false);
   const [story, setStory] = useState<HackedStory | null>(null);
+  // "Az kalsın" odasında sahte sayfaya bilgi girince: oda sürer, bu pencere açılır.
+  const [almost, setAlmost] = useState<AlmostStory | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [failure, setFailure] = useState<SessionProblem | null>(null);
   const [exitOpen, setExitOpen] = useState(false);
@@ -95,7 +99,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
 
   const { state } = session;
   const { template, items, tasks } = scenario;
-  const progress = taskProgress(tasks, state, !!mission?.sale);
+  const progress = taskProgress(tasks, state, missionMode({ mission }));
   const problem = failure ?? session.problem;
   const title = scenario.meta.title || scenario.meta.name;
 
@@ -193,7 +197,26 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     if (!result) return;
     if (!result.ok) return fail(result.reason);
     session.applyLocal({ type: "info_entered", item: id });
+    if ("almost" in result) {
+      setBrowser(null);
+      flashMood("surprised", 2400);
+      setAlmost(result.almost);
+      return;
+    }
     hacked(result.hacked);
+  }
+
+  /** Kayıt görevi: formda "Gönder". Yazılanlar gitmez; formun cümlesi döner. */
+  async function sendForm(id: string): Promise<string | null> {
+    const result = await session.immediate((attemptId, seq) => driver.sendForm(attemptId, seq, id));
+    if (!result) return null;
+    if (!result.ok) {
+      fail(result.reason);
+      return null;
+    }
+    session.applyLocal({ type: "form_sent", item: id });
+    setNotice(t.mission.signed);
+    return result.done;
   }
 
   async function reply(id: string, text: string) {
@@ -341,6 +364,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                     onPay: () => payShop(browser.item.id),
                     onCode: (enter) => answerCode(browser.item.id, enter),
                     onShip: (prepared) => shipOrder(browser.item.id, prepared),
+                    onForm: () => sendForm(browser.item.id),
                   }
                 : undefined
             }
@@ -475,6 +499,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
           }}
         />
       ) : null}
+      {almost ? <AlmostDialog story={almost} onBack={() => setAlmost(null)} /> : null}
       {phase === "intro" ? <StartDialog name={title} template={template} starting={starting} onStart={start} /> : null}
       <ExitDialog open={exitOpen} leaving={leaving} onStay={() => setExitOpen(false)} onLeave={leave} />
       {phase === "hacked" && story ? <HackedAlarm kind={story.kind} account={story.account} avatar={avatar} contact={story.contact} alarm={story.alarm} onDone={showScene} /> : null}

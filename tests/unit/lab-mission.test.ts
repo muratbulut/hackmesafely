@@ -75,7 +75,7 @@ describe("görevli oda: tarayıcıya giden içerik", () => {
       expect(json).not.toContain(secret);
     }
     expect(client.items.some((i) => "payment" in i)).toBe(false);
-    expect(Object.keys(client.mission!).sort()).toEqual(["accept", "caller", "card", "lines", "look", "owner", "pointIcons", "points", "refuse", "sale", "shop", "title", "voice"]);
+    expect(Object.keys(client.mission!).sort()).toEqual(["accept", "caller", "card", "lines", "look", "owner", "pointIcons", "points", "refuse", "sale", "shop", "signup", "title", "voice"]);
     // Yalnızca açılışın sesleri gider; bitişlerin sesi bitişle birlikte gelir.
     expect(client.mission?.voice).toEqual(room.mission!.voice!.lines.map((src) => src || null));
     expect(client.mission?.voice[2]).toBeNull();

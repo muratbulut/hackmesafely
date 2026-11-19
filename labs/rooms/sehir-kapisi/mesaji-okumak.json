@@ -1,0 +1,405 @@
+{
+  "slug": "mesaji-okumak",
+  "neighborhood": "sehir-kapisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 0,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Mesajı okumak",
+      "title": "Ad değil adres, yazı değil bağlantı",
+      "summary": "Bir mesajın kimden geldiğini ve bir bağlantının nereye gittiğini çözmeyi oynayarak öğren.",
+      "story": "Ekranda gördüğün ad ile mesajın geldiği yer, düğmenin yazısı ile bağlantının gittiği yer her zaman aynı değildir. Bu odada okumaktan çok bulacak, ayıracak ve seçeceksin. Sonunda her mesaja üç bakışla bakmayı bileceksin.",
+      "learn": [
+        {
+          "title": "Kimden geldi?",
+          "text": "Görünen ad değil, adres."
+        },
+        {
+          "title": "Bu adres kimin?",
+          "text": "Alan adını sağdan okumak, benzer adresleri yakalamak."
+        },
+        {
+          "title": "Bağlantı nereye gidiyor?",
+          "text": "Yazısına değil, basmadan gerçek adresine bakmak."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 7
+    },
+    "cards": [
+      {
+        "id": "iki-ad",
+        "type": "info",
+        "title": "Her mesajın iki adı var",
+        "paragraphs": [
+          "Bir mesajın üstünde gördüğün ad, gönderenin kendine taktığı addır. Herkes kendine \"Okul Müdürlüğü\", \"Postam Destek\" ya da en yakın arkadaşının adını koyabilir.",
+          "Mesajın gerçekten nereden geldiğini adres söyler: mailde mail adresi, SMS'te numara, uygulamalarda kullanıcı adı."
+        ],
+        "points": [
+          {
+            "title": "Görünen ad",
+            "icon": "user",
+            "text": "Gönderen kendisi yazar, istediği adı koyabilir. Kimliği kanıtlamaz."
+          },
+          {
+            "title": "Adres",
+            "icon": "mail",
+            "text": "Mail adresi, telefon numarası ya da kullanıcı adı. Mesajın geldiği yeri bu söyler."
+          },
+          {
+            "title": "Rehberdeki ad",
+            "icon": "phone",
+            "text": "SMS'te ve Mesajlar'da gördüğün ad, senin kaydettiğin addır. Kayıtlı değilse yalnızca numara görünür."
+          },
+          {
+            "title": "Yeni hesap",
+            "icon": "flag",
+            "text": "\"Bugün katıldı\" yazısı ya da tanıdık bir profil fotoğrafı kimliği kanıtlamaz. Fotoğrafı herkes kopyalayabilir."
+          }
+        ]
+      },
+      {
+        "id": "sagdan-oku",
+        "type": "info",
+        "layout": "steps",
+        "title": "Adresi sağdan oku",
+        "paragraphs": [
+          "Örnek: **destek@postam.com.hesap-onay.net**. Adımlara dokun, birlikte okuyalım."
+        ],
+        "points": [
+          {
+            "title": "@ işaretini bul",
+            "icon": "search",
+            "text": "Solu kutunun adı, herkes seçer. **Sağı mailin geldiği yer.**"
+          },
+          {
+            "title": "En sağdan başla",
+            "icon": "flag",
+            "text": "**.net** en sondaki parça."
+          },
+          {
+            "title": "Bir sola geç",
+            "icon": "globe",
+            "text": "**hesap-onay.net** adresin sahibi bu."
+          },
+          {
+            "title": "Gerisi süs",
+            "icon": "stop",
+            "text": "Baştaki postam.com seni kandırmak için orada. Bu mail Postam'dan değil."
+          }
+        ]
+      },
+      {
+        "id": "postamin-mi",
+        "type": "sort",
+        "title": "Bu adresler Postam'ın mı?",
+        "hint": "Postam'ın adresi postam.com. Her birini sağdan oku.",
+        "bins": [
+          {
+            "label": "Postam'ın",
+            "note": "Sonu tam postam.com",
+            "color": "green",
+            "icon": "shield"
+          },
+          {
+            "label": "Başkasının",
+            "note": "Benziyor ama değil",
+            "color": "red",
+            "icon": "ban"
+          }
+        ],
+        "items": [
+          {
+            "text": "destek@postam.com",
+            "icon": "mail",
+            "bin": 0
+          },
+          {
+            "text": "destek@p0stam.com",
+            "icon": "mail",
+            "bin": 1
+          },
+          {
+            "text": "giris.postam.com",
+            "icon": "globe",
+            "bin": 0
+          },
+          {
+            "text": "postam.com.hesap-onay.net",
+            "icon": "globe",
+            "bin": 1
+          },
+          {
+            "text": "guvenlik@postam-destek.xyz",
+            "icon": "mail",
+            "bin": 1
+          },
+          {
+            "text": "bildirim@postam.com",
+            "icon": "mail",
+            "bin": 0
+          },
+          {
+            "text": "destek@postarn.com",
+            "icon": "mail",
+            "bin": 1
+          },
+          {
+            "text": "postam.co",
+            "icon": "globe",
+            "bin": 1
+          }
+        ],
+        "explain": "Sonu tam postam.com olanlar Postam'ın; önünde \"giris.\" olması bir şey değiştirmez. Diğer beşi Postam'a benzemek için kurulmuş başka adresler: sıfırlı, rn'li, kelime eklenmiş, uzantısı değişmiş ve tanıdık adı başa konmuş."
+      },
+      {
+        "id": "benzer-adres",
+        "type": "info",
+        "title": "Benzer adres tuzakları",
+        "paragraphs": [
+          "Kandırmak isteyen biri gerçek bir adresi kullanamaz, çünkü o adres gerçek sahibinindir. Bu yüzden ona çok benzeyen bir adres alır ve hızlı okuyanın fark etmeyeceğini umar."
+        ],
+        "points": [
+          {
+            "title": "Harf oyunu",
+            "icon": "search",
+            "text": "0 ile o, rn ile m, büyük I ile küçük l yer değiştirir: p0stam.com, postarn.com."
+          },
+          {
+            "title": "Eklenen kelime",
+            "icon": "pen",
+            "text": "postam-guvenlik.com, postam-destek.xyz. Tire ile eklenen her kelime yeni bir adres demektir."
+          },
+          {
+            "title": "Başka uzantı",
+            "icon": "globe",
+            "text": "postam.co, postam.net, postam.xyz. Sondaki parça değişince sahibi de değişir."
+          },
+          {
+            "title": "Önde tanıdık ad",
+            "icon": "tag",
+            "text": "postam.com.hesap-onay.net. Tanıdık ad başta durur ama adres sağdan okunur."
+          }
+        ]
+      },
+      {
+        "id": "hile-adi",
+        "type": "match",
+        "title": "Hangi hile kullanılmış?",
+        "hint": "Her sahte adresi, kullandığı hileyle eşleştir.",
+        "pairs": [
+          {
+            "left": "p0stam.com",
+            "icon": "search",
+            "right": "Harf değişmiş: o yerine 0"
+          },
+          {
+            "left": "postarn.com",
+            "icon": "eye",
+            "right": "Harf değişmiş: m yerine rn"
+          },
+          {
+            "left": "postam-destek.xyz",
+            "icon": "pen",
+            "right": "Kelime eklenmiş"
+          },
+          {
+            "left": "postam.co",
+            "icon": "globe",
+            "right": "Sondaki parça değişmiş"
+          },
+          {
+            "left": "postam.com.hesap-onay.net",
+            "icon": "tag",
+            "right": "Tanıdık ad başta, sahibi sonda"
+          }
+        ],
+        "explain": "Gerçek adresi yalnız sahibi kullanabilir, bu yüzden kandırmak isteyen ona çok benzeyen bir adres alır. Harf oyunu, eklenen kelime, değişen uzantı ve başa konan tanıdık ad en sık dört hiledir. Hepsini sağdan okuyunca yakalarsın."
+      },
+      {
+        "id": "okul-adresi",
+        "type": "quiz",
+        "question": "Okulunun adresi cinarortaokulu.k12.tr. Hangi mail okuldan gelmiş olabilir?",
+        "options": [
+          "mudur@cinar-ortaokulu.com",
+          "mudur@cinarortaokulu.k12.tr",
+          "cinarortaokulu.k12.tr@duyuru.xyz",
+          "mudur@cinarortaokulu.k12.tr.giris.net"
+        ],
+        "answer": 1,
+        "explain": "Yalnız mudur@cinarortaokulu.k12.tr'de @ işaretinden sonrası tam olarak okulun adresi. Diğerlerinin sahibi cinar-ortaokulu.com, duyuru.xyz ve giris.net. Okul adresinin sonu ülkeye göre değişir: Türkiye'de okullar k12.tr, üniversiteler edu.tr; İngiltere'de okullar sch.uk, Avustralya'da edu.au, Japonya'da ed.jp. Önemli olan kendi okulunun adresini bilmek."
+      },
+      {
+        "id": "basmadan-bak",
+        "type": "info",
+        "layout": "steps",
+        "title": "Basmadan önce bak",
+        "paragraphs": [
+          "Bir bağlantının yazısını gönderen yazar. Gideceğin yer, yazının arkasındaki **gerçek adrestir**. Onu basmadan görebilirsin, adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Bilgisayarda",
+            "icon": "eye",
+            "text": "Farenle üstüne gel, **basma**. Adres ekranın alt köşesinde çıkar."
+          },
+          {
+            "title": "Telefonda",
+            "icon": "phone",
+            "text": "Parmağınla **basılı tut**. Önizlemede adres yazar."
+          },
+          {
+            "title": "Sağdan oku",
+            "icon": "search",
+            "text": "Beklediğin yer mi, ona benzeyen bir yer mi?"
+          },
+          {
+            "title": "Emin değilsen",
+            "icon": "ask",
+            "text": "Bağlantıyı bırak. **Siteyi kendin aç** ya da bir büyüğüne sor."
+          }
+        ]
+      },
+      {
+        "id": "hangisine-gider",
+        "type": "quiz",
+        "question": "Bu maildeki düğmeye basarsan nereye gidersin?",
+        "options": [
+          "oyundunyasi.com/odul, düğmede öyle yazıyor",
+          "oyun-dunyasi-hediye.xyz/giris, düğmenin gerçek adresi",
+          "İkisi aynı yere gider"
+        ],
+        "answer": 1,
+        "explain": "Düğmenin yazısı yalnızca bir yazıdır. Seni götüreceği yer, üstüne gelince ya da basılı tutunca çıkan gerçek adrestir. Sağdan okursan sahibi oyun-dunyasi-hediye.xyz, Oyun Dünyası değil.",
+        "link": {
+          "text": "oyundunyasi.com/odul",
+          "url": "https://oyun-dunyasi-hediye.xyz/giris"
+        }
+      },
+      {
+        "id": "hangi-parca",
+        "type": "match",
+        "title": "Hangi parça ne söyler?",
+        "hint": "Mesajın her parçasını, sana ne söylediğiyle eşleştir.",
+        "pairs": [
+          {
+            "left": "Görünen ad",
+            "icon": "user",
+            "right": "Gönderen istediği gibi yazar"
+          },
+          {
+            "left": "@ işaretinden sonrası",
+            "icon": "mail",
+            "right": "Mailin geldiği yer"
+          },
+          {
+            "left": "Düğmenin yazısı",
+            "icon": "pen",
+            "right": "Ne yazdığı, nereye gittiğini göstermez"
+          },
+          {
+            "left": "Basılı tutunca çıkan adres",
+            "icon": "eye",
+            "right": "Bağlantının gerçekten gittiği yer"
+          },
+          {
+            "left": "Kısaltılmış bağlantı",
+            "icon": "stop",
+            "right": "Gideceği yeri saklar"
+          },
+          {
+            "left": "QR kod",
+            "icon": "camera",
+            "right": "Okutunca adresi gösterir, açmadan oku"
+          }
+        ],
+        "explain": "Görünen ad ve düğmenin yazısı gönderenin sana göstermek istedikleridir. @ işaretinden sonrası ve basılı tutunca çıkan adres gerçeği söyler. Kısa bağlantı ve QR kod adresi saklar: önce açılacak adresi gör, sonra karar ver."
+      },
+      {
+        "id": "kutuphane-maili",
+        "type": "clickFind",
+        "title": "Bu maildeki 3 işareti bul",
+        "hint": "Mailde 3 şüpheli yer var. Önce kimden geldiğine, sonra bağlantıya bak.",
+        "mail": {
+          "sender": "Çınar Ortaokulu Kütüphanesi",
+          "address": "kutuphane@cinarortaokulu-k12.com",
+          "subject": "Kitap iade hatırlatması",
+          "time": "08:12",
+          "paragraphs": [
+            "Merhaba,",
+            "Kütüphanemizden ödünç aldığın kitabın süresi dün doldu.",
+            "Ceza yazılmaması için okul hesabınla giriş yapıp süreyi bugün uzatman gerekiyor.",
+            "İyi dersler dileriz."
+          ],
+          "button": "cinarortaokulu.k12.tr/kutuphane",
+          "footer": "Çınar Ortaokulu Kütüphanesi · Bu otomatik bir mesajdır."
+        },
+        "spots": [
+          {
+            "part": "address",
+            "text": "Okulun adresi cinarortaokulu.k12.tr ile biter. Bu mail ise cinarortaokulu-k12.com'dan gelmiş: tire ile kurulmuş, sonu .com olan başka bir adres.",
+            "hint": "Adı değil, @ işaretinden sonrasını oku."
+          },
+          {
+            "part": "button",
+            "text": "Düğmenin yazısı okulun adresine benziyor ama yazı her şey olabilir. Basmadan önce basılı tutup gerçek adresine bakmalısın.",
+            "hint": "Düğmenin yazısı ile gideceği yer aynı mı?"
+          },
+          {
+            "part": "p2",
+            "text": "Okul hesabının şifresini bir bağlantıdan istiyor ve \"bugün\" diye acele ettiriyor. Süreyi uzatmak istersen okulun sitesini kendin açarsın.",
+            "hint": "Senden ne istiyor, ne zamana kadar?"
+          }
+        ]
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Mesajın üstündeki adı gönderen kişi istediği gibi [yazabilir].",
+          "Mailin geldiği yeri [@] işaretinden sonrası söyler.",
+          "Alan adının sahibini bulmak için onu [sağdan] okurum.",
+          "Bağlantıya basmadan önce [basılı tutar] ya da üstüne gelirim.",
+          "Emin değilsem bağlantıyı kullanmam, siteyi [kendim] açarım."
+        ],
+        "extra": [
+          "soldan",
+          "#",
+          "hemen basar",
+          "kimse"
+        ],
+        "explain": "Ad değil adres, yazı değil bağlantı. Adresi sağdan okursun, bağlantının gerçek adresine basmadan bakarsın. Emin değilsen bağlantıyı bırakır, siteyi ya da uygulamayı kendin açarsın."
+      },
+      {
+        "id": "uc-bakis",
+        "type": "info",
+        "title": "Her mesajda üç bakış",
+        "layout": "steps",
+        "paragraphs": [
+          "Bu üç bakış, şehrin bütün mahallelerinde işine yarayacak: oltalama maillerinde, sahte mağazalarda, para isteyen mesajlarda."
+        ],
+        "points": [
+          {
+            "title": "Kimden?",
+            "icon": "user",
+            "text": "Görünen ada değil, adrese ya da numaraya bak."
+          },
+          {
+            "title": "Nereye?",
+            "icon": "globe",
+            "text": "Bağlantının yazısına değil, gerçek adresine bak."
+          },
+          {
+            "title": "Emin değil misin?",
+            "icon": "ask",
+            "text": "Bağlantıyı kullanma. Uygulamayı ya da siteyi kendin aç, bir büyüğüne sor."
+          }
+        ]
+      }
+    ]
+  }
+}

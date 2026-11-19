@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, Ellipsis, Globe, Info, KeyRound, Landmark, Lock, Mail, MessageCircle, Package, RotateCw, ShoppingBag, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Ellipsis, Globe, GraduationCap, Info, KeyRound, Landmark, Lock, Mail, MessageCircle, Package, RotateCw, ShoppingBag, TriangleAlert, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import type { ClientMission } from "@/lib/lab/client";
 import type { LinkPage, ShopSms } from "@/lib/lab/story";
 import { domainOf } from "@/lib/lab/content";
 import { format, getMessages, rich } from "@/lib/i18n";
+import { prefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { cardIconMap } from "../training/card-icons";
 import { MissionSms } from "../mission/MissionSms";
@@ -20,6 +21,8 @@ export type ShopActions = {
   /** null: işlem olmadı ya da hacklendi (oynatıcı alarmı açar). */
   onCode: (enter: boolean) => Promise<{ reply: string; done: boolean } | null>;
   onShip: (prepared: boolean) => Promise<{ reply: string; done: boolean } | null>;
+  /** Kayıt görevi: formu gönderir; formun "Kaydın alındı" cümlesi döner (null: işlem olmadı). */
+  onForm: () => Promise<string | null>;
 };
 
 // Adres çubuğunda gösterilen önek. Sahte sayfa "Güvenli değil" ile http, gerçek bağlantı https.
@@ -56,7 +59,18 @@ export function BrowserPage({
   const store = page.kind === "shop" ? page : null;
   const request = page.kind === "request" ? page : null;
   const order = page.kind === "order" ? page : null;
-  const site = trap ? trap.site : store ? store.shop.name : request ? request.bank : order ? order.sale.platform : domainOf(page.url);
+  const form = page.kind === "form" ? page : null;
+  const site = trap
+    ? trap.site
+    : store
+      ? store.shop.name
+      : request
+        ? request.bank
+        : order
+          ? order.sale.platform
+          : form
+            ? form.form.site
+            : domainOf(page.url);
   const tabTitle = trap
     ? [trap.site, trap.title || linkText].filter(Boolean).join(" · ")
     : store
@@ -65,7 +79,9 @@ export function BrowserPage({
         ? [request.bank, t.requestTab].join(" · ")
         : order
           ? [order.sale.platform, order.sale.product].join(" · ")
-          : domainOf(page.url);
+          : form
+            ? [form.form.site, form.form.title].join(" · ")
+            : domainOf(page.url);
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col bg-scene-white font-sans text-scene-ink [animation:fade-in_.15s_ease-out_both]">
@@ -132,13 +148,15 @@ export function BrowserPage({
           <RequestSite page={request} actions={shop} onClose={onClose} />
         ) : order && shop ? (
           <OrderSite page={order} actions={shop} onClose={onClose} />
+        ) : form && shop ? (
+          <FormSite page={form} actions={shop} onClose={onClose} />
         ) : (
           <PlainSite url={page.url} onClose={onClose} />
         )}
       </div>
 
       {/* Lab uyarısı: sayfanın dışında, pencerenin altında */}
-      {trap ? (
+      {trap && !trap.tapFill ? (
         <p className="flex flex-none items-start gap-2 border-t border-scene-amber-line bg-scene-amber-soft px-4 py-2 text-xs leading-normal text-scene-amber-ink">
           <Info className="mt-px size-3.5 flex-none" strokeWidth={2.2} aria-hidden="true" />
           {t.warning}
@@ -189,8 +207,29 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
   const fieldId = useId();
   const account = page.compromise === "account";
 
+  // Az kalsın odası: kutuya dokununca şifre noktalarla yazılır; öğrenci bir şey yazmaz.
+  const [filling, setFilling] = useState(false);
+  function tapFill() {
+    if (!page.tapFill || value || filling || busy) return;
+    const dots = "•".repeat(9);
+    if (prefersReducedMotion()) {
+      setValue(dots);
+      return;
+    }
+    setFilling(true);
+    let n = 0;
+    const timer = window.setInterval(() => {
+      n += 1;
+      setValue(dots.slice(0, n));
+      if (n >= dots.length) {
+        window.clearInterval(timer);
+        setFilling(false);
+      }
+    }, 70);
+  }
+
   function submit() {
-    if (!value.trim() || busy) return;
+    if (!value.trim() || busy || filling) return;
     // Yazılan metin hiçbir yere gitmez; kutu hemen boşaltılır.
     setValue("");
     onSubmit();
@@ -244,8 +283,15 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
             id={fieldId}
             type={account ? "password" : "text"}
             value={value}
+            readOnly={page.tapFill}
+            onClick={tapFill}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
+              if (page.tapFill && (e.key === " " || (e.key === "Enter" && !value))) {
+                e.preventDefault();
+                tapFill();
+                return;
+              }
               if (e.key === "Enter") submit();
             }}
             autoComplete="off"
@@ -254,13 +300,13 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
             spellCheck={false}
             data-1p-ignore=""
             data-lpignore="true"
-            placeholder={t.placeholder}
-            className="-mt-1.5 h-12 rounded-[10px] border border-scene-line-strong bg-scene-white px-3 text-base text-scene-ink outline-none focus:border-scene-orange"
+            placeholder={page.tapFill ? t.tapPlaceholder : t.placeholder}
+            className="-mt-1.5 h-12 cursor-text rounded-[10px] border border-scene-line-strong bg-scene-white px-3 text-base text-scene-ink outline-none focus:border-scene-orange"
           />
           <button
             type="button"
             onClick={submit}
-            disabled={!value.trim() || busy}
+            disabled={!value.trim() || busy || filling}
             className="h-12 cursor-pointer rounded-xl bg-scene-orange font-bold text-scene-white disabled:cursor-default disabled:opacity-50"
           >
             {account ? t.submit : t.submitOther}
@@ -565,6 +611,89 @@ function OrderSite({ page, actions, onClose }: { page: Extract<LinkPage, { kind:
             {busy ? t.shipping : t.ship}
           </button>
         )}
+      </div>
+    </>
+  );
+}
+
+/**
+ * Kayıt görevli odada görevdeki form (Şehir Kapısı "Bağlantı nereye gidiyor?"): okulun gerçek
+ * sitesi, şifre istemez. Kutulara yazılan bu bileşenden çıkmaz; "Gönder" yalnızca "form gönderildi"
+ * olayını yazar ve kutular boşalır. Kutular boş da gönderilebilir (öğrenci adını yazmak zorunda
+ * değil). Gönderince formun cümlesi ("Kaydın alındı") ve gelen kutusuna dönüş.
+ */
+function FormSite({ page, actions, onClose }: { page: Extract<LinkPage, { kind: "form" }>; actions: ShopActions; onClose: () => void }) {
+  const t = getMessages().lab.form;
+  const [values, setValues] = useState<string[]>(() => page.form.fields.map(() => ""));
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const baseId = useId();
+
+  async function send() {
+    if (busy || done !== null) return;
+    setBusy(true);
+    // Yazılanlar hiçbir yere gitmez; kutular hemen boşaltılır.
+    setValues((all) => all.map(() => ""));
+    const result = await actions.onForm();
+    setBusy(false);
+    if (result !== null) setDone(result);
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-2 bg-scene-green px-4 py-3 text-scene-white desk:px-6">
+        <GraduationCap className="size-5" strokeWidth={2.2} aria-hidden="true" />
+        <span className="text-[15px] font-extrabold tracking-[0.3px]">{page.form.site.toLocaleUpperCase("tr")}</span>
+      </div>
+      <div className="mx-auto flex max-w-[440px] flex-col gap-4 px-4 py-6 desk:py-8" data-testid="signup-form">
+        <div className="flex flex-col gap-3 rounded-2xl border border-scene-line bg-scene-white p-5 shadow-[0_8px_24px_var(--scene-shadow)]">
+          <h1 className="text-xl leading-tight font-bold">{page.form.title}</h1>
+          {done !== null ? (
+            <div className="flex flex-col items-start gap-2.5" aria-live="polite">
+              <span className="flex items-center gap-2 text-sm font-bold text-scene-green">
+                <Check className="size-4" strokeWidth={2.6} aria-hidden="true" />
+                {t.sentTitle}
+              </span>
+              {done ? <p className="text-[15px] leading-normal text-scene-ink-2">{done}</p> : null}
+              <button type="button" onClick={onClose} className="flex min-h-10 cursor-pointer items-center gap-2 rounded-[10px] bg-scene-blue px-3.5 text-[13.5px] font-bold text-scene-white">
+                <Mail className="size-4" strokeWidth={2.2} aria-hidden="true" />
+                {t.back}
+              </button>
+            </div>
+          ) : (
+            <>
+              {page.form.fields.map((label, i) => (
+                <label key={label} htmlFor={`${baseId}-${i}`} className="flex flex-col gap-1.5 text-[13px] font-bold">
+                  {label}
+                  <input
+                    id={`${baseId}-${i}`}
+                    value={values[i] ?? ""}
+                    onChange={(e) => setValues((all) => all.map((v, j) => (j === i ? e.target.value : v)))}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    data-1p-ignore=""
+                    data-lpignore="true"
+                    placeholder={t.placeholder}
+                    className="h-12 rounded-[10px] border border-scene-line-strong bg-scene-white px-3 text-base font-normal text-scene-ink outline-none focus:border-scene-green"
+                  />
+                </label>
+              ))}
+              <button
+                type="button"
+                onClick={() => void send()}
+                disabled={busy}
+                className="h-12 cursor-pointer rounded-xl bg-scene-green font-bold text-scene-white disabled:cursor-default disabled:opacity-60"
+              >
+                {busy ? t.sending : page.form.button}
+              </button>
+              <span className="flex items-start gap-1.5 text-xs text-scene-ink-muted">
+                <Info className="mt-px size-3 flex-none" strokeWidth={2.4} aria-hidden="true" />
+                {t.note}
+              </span>
+            </>
+          )}
+        </div>
       </div>
     </>
   );

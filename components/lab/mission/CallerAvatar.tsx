@@ -4,9 +4,10 @@ import { useEffect, useRef } from "react";
 import type { CallerLook } from "@/lib/lab/content";
 import { callerRig } from "./caller-rig";
 import { fatherRig } from "./father-rig";
+import { friendRig } from "./friend-rig";
 import { prefersReducedMotion } from "@/lib/motion";
 
-/** Annenin ve babanın parçaları aynı biçimde; babada bıyık (beard) da var. */
+/** Annenin, babanın ve arkadaşın parçaları aynı biçimde; babada bıyık (beard) da var. */
 type Rig = {
   viewBox: string;
   base: string;
@@ -18,7 +19,7 @@ type Rig = {
   eyes: Record<keyof typeof callerRig.eyes, string>;
   brows: Record<keyof typeof callerRig.brows, string>;
 };
-const rigs: Record<CallerLook, Rig> = { mother: callerRig, father: fatherRig };
+const rigs: Record<CallerLook, Rig> = { mother: callerRig, father: fatherRig, friend: friendRig };
 
 /** Görüntünün kırpması: yuvarlak gelen arama resmi (yüz), belden yukarı (bust) ve görüşmede telefon ekranı (call: baş ortada, omuzlar altta). */
 const crops = { face: "470 300 820 820", bust: "330 230 1084 1084", call: "170 150 1400 1400" } as const;

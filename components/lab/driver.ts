@@ -3,7 +3,7 @@
 // çalışan bir sürücüyle açar. Oynatıcı hiçbir zaman doğru cevabı bilmez: bağlantının ne
 // açacağını, hacklenip hacklenmediğini ve raporu hep sürücü söyler.
 
-import type { HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
+import type { AlmostStory, HackedStory, LinkPage, ShopSms } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
 import type { BadgeCode } from "@/lib/progress/badges";
@@ -19,7 +19,8 @@ export type LabDriver = {
   start(): Promise<{ ok: true; attemptId: string; version: number } | Fail>;
   send(attemptId: string, batch: QueuedEvent[]): Promise<{ ok: true } | Fail>;
   openLink(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; page: LinkPage } | Fail>;
-  submitTrap(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; hacked: HackedStory } | Fail>;
+  /** Sahte sayfaya bilgi girildi: hacklendi, ya da "Az kalsın" odasında Az kalsın ekranı (oda sürer). */
+  submitTrap(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; hacked: HackedStory } | { ok: true; almost: AlmostStory } | Fail>;
   sendReply(attemptId: string, seq: number, itemId: string, withSecret: boolean): Promise<{ ok: true; hacked: HackedStory | null } | Fail>;
   /** Görevli oda: mağazada "Öde". Velinin telefonuna gelen SMS döner. */
   payShop(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; sms: ShopSms } | Fail>;
@@ -39,6 +40,8 @@ export type LabDriver = {
    * gönderdiyse alıcının mesajı döner; done: iş doğru yapıldı (gerçek sipariş, hazırlanarak).
    */
   shipOrder(attemptId: string, seq: number, itemId: string, prepared: boolean): Promise<{ ok: true; reply: string; done: boolean } | Fail>;
+  /** Kayıt görevi: formu gönderir (yazılanlar gitmez); formun "Kaydın alındı" cümlesi döner. */
+  sendForm(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; done: string } | Fail>;
   /**
    * Labı bitirir; sonra rapor sayfasına gidilir (önizlemede rapor yerinde açılır). Görevli odada iş
    * doğru yerden yapıldıysa önce iyi bitiş araması gösterilir.

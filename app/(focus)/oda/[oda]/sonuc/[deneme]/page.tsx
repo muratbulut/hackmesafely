@@ -5,7 +5,7 @@ import { ReportScreen, type ReportScreenProps } from "@/components/lab/report/Re
 import { Loading } from "@/components/status/Loading";
 import { db } from "@/lib/db";
 import { format, getMessages } from "@/lib/i18n";
-import { parseScenario } from "@/lib/lab/content";
+import { missionMode, parseScenario } from "@/lib/lab/content";
 import { getCity, isFinished } from "@/lib/lab/data";
 import { reduceEvents, rowToEvent, taskProgress } from "@/lib/lab/events";
 import { buildReportView } from "@/lib/lab/report";
@@ -81,7 +81,7 @@ async function Report({ params }: Pick<PageProps<"/oda/[oda]/sonuc/[deneme]">, "
 
   const ended = attempt.endedAt ?? attempt.startedAt;
   const seconds = Math.max(0, Math.round((ended.getTime() - attempt.startedAt.getTime()) / 1000));
-  const tasks = taskProgress(content.tasks, reduceEvents(attempt.events.map(rowToEvent)));
+  const tasks = taskProgress(content.tasks, reduceEvents(attempt.events.map(rowToEvent)), missionMode(content));
   const facts = {
     duration: format(r.durationValue, { m: Math.floor(seconds / 60), s: seconds % 60 }),
     date: new Intl.DateTimeFormat("tr-TR", { timeZone: siteTimeZone, day: "numeric", month: "long" }).format(ended),

@@ -1804,3 +1804,21 @@
   from { transform: translateX(0) skewX(-12deg); }
   to { transform: translateX(400%) skewX(-12deg); }
 }
+/* "Az kalsın" penceresi (components/lab/almost/AlmostDialog.tsx): hacklendin gibi sarsıntı ve flaş
+   yok; el bir kez "dur" der gibi sallanır, halka bir kez yayılır, gerçek adresin sahibi fosforla
+   işaretlenir. Hareketi azalt açıksa (motion-safe) hiçbiri çalışmaz, son hâli görünür. */
+@keyframes almost-wave {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg); }
+  40% { transform: rotate(10deg); }
+  60% { transform: rotate(-6deg); }
+  80% { transform: rotate(3deg); }
+}
+@keyframes almost-ring {
+  from { transform: scale(0.8); opacity: 0.7; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+@keyframes almost-mark {
+  from { background-size: 0% 100%; }
+  to { background-size: 100% 100%; }
+}

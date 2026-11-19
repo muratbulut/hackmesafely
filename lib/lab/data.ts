@@ -11,7 +11,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { Difficulty, LabType, SceneTemplate } from "@/lib/generated/prisma/enums";
 import { paths } from "@/lib/navigation";
-import { parseScenario, parseTraining, type LabMeta, type ScenarioContent, type TrainingContent } from "./content";
+import { missionMode, parseScenario, parseTraining, type LabMeta, type ScenarioContent, type TrainingContent } from "./content";
 import { reduceEvents, taskProgress, type LabEventData } from "./events";
 import { gateOf, isBasicPath, routeOrder, trainingsOf } from "./gates";
 import { labHref, type CityView, type DistrictView, type LabView } from "./route";
@@ -395,7 +395,7 @@ export async function getAttemptTaskProgress(attempt: Pick<AttemptRow, "id" | "l
   ]);
   const tasks = content?.tasks ?? [];
   if (tasks.length === 0) return null;
-  const progress = taskProgress(tasks, reduceEvents(events.map(toEvent)), !!content?.mission?.sale);
+  const progress = taskProgress(tasks, reduceEvents(events.map(toEvent)), content ? missionMode(content) : null);
   return { current: Math.min(progress.current + 1, tasks.length), total: tasks.length, done: progress.done.filter(Boolean).length };
 }
 

@@ -19,9 +19,9 @@ describe("ziyaretçi menüsü", () => {
 });
 
 describe("tanıtım içeriği", () => {
-  it("beş mahalle var, slug'lar tekrarsız", () => {
-    expect(neighborhoods).toHaveLength(5);
-    expect(new Set(neighborhoods.map((n) => n.slug)).size).toBe(5);
+  it("altı mahalle var, slug'lar tekrarsız", () => {
+    expect(neighborhoods).toHaveLength(6);
+    expect(new Set(neighborhoods.map((n) => n.slug)).size).toBe(6);
   });
 });
 

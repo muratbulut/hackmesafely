@@ -66,6 +66,8 @@ export function SortView({
 
   const right = placed ? placed.result.slots.filter(Boolean).length : 0;
   const ghost = drag ? card.items[drag.item] : null;
+  // Uzun bilgi (ör. mail adresi) telefonda iki sütuna sığmaz; o zaman her bilgi kendi satırında durur.
+  const wide = card.items.some((item) => item.text.length > 16);
   const GhostIcon = ghost ? cardIconMap[ghost.icon] : Tag;
 
   return (
@@ -99,7 +101,8 @@ export function SortView({
                   onContextMenu={(e) => e.preventDefault()}
                   className={cn(
                     draggable,
-                    "flex min-h-[52px] min-w-0 grow basis-[calc(50%-4px)] items-center gap-2.5 rounded-[14px] border-2 bg-card py-1.5 pr-2.5 pl-1.5 text-left text-[15px] leading-tight font-bold transition-[transform,box-shadow,border-color,opacity] duration-150 lg:grow-0 lg:basis-auto",
+                    "flex min-h-[52px] min-w-0 grow items-center gap-2.5 rounded-[14px] border-2 bg-card py-1.5 pr-2.5 pl-1.5 text-left text-[15px] leading-tight font-bold transition-[transform,box-shadow,border-color,opacity] duration-150 lg:grow-0 lg:basis-auto",
+                    wide ? "basis-full" : "basis-[calc(50%-4px)]",
                     sel === i ? "-translate-y-0.5 border-accent bg-accent/12 shadow-floating" : "border-line hover:border-accent/60",
                     drag?.item === i && "opacity-40",
                   )}
@@ -107,7 +110,7 @@ export function SortView({
                   <span className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-accent/12 text-accent-fg">
                     <Icon className="size-5" strokeWidth={2.2} aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1">{item.text}</span>
+                  <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{item.text}</span>
                   <GripVertical className="size-4 flex-none text-fg-4" strokeWidth={2.2} aria-hidden="true" />
                 </button>
               );
@@ -180,7 +183,7 @@ export function SortView({
                         <span className="flex size-7 flex-none items-center justify-center rounded-lg bg-surface text-fg-2">
                           <Icon className="size-4" strokeWidth={2.2} aria-hidden="true" />
                         </span>
-                        <span className="min-w-0 flex-1">{item.text}</span>
+                        <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{item.text}</span>
                         {verdict === true ? <Check className={cn("size-4 flex-none", soft ? "text-warning-fg" : "text-success-fg")} strokeWidth={2.6} aria-hidden="true" /> : null}
                         {verdict === false ? <X className="size-4 flex-none text-danger-fg" strokeWidth={2.6} aria-hidden="true" /> : null}
                       </button>
@@ -237,7 +240,7 @@ export function SortView({
           <span className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-accent/12 text-accent-fg">
             <GhostIcon className="size-5" strokeWidth={2.2} />
           </span>
-          <span className="min-w-0 flex-1">{ghost.text}</span>
+          <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{ghost.text}</span>
         </DragGhost>
       ) : null}
       {help.open ? <HelpDialog kind="sort" demo={<SortDemo card={card} />} onClose={help.close} /> : null}

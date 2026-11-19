@@ -1257,6 +1257,8 @@ export const tr = {
       submit: "Giriş yap ve doğrula",
       submitOther: "Gönder ve devam et",
       placeholder: "Buraya yaz",
+      // "Az kalsın" odasında şifre kutusu: dokununca noktalar kendiliğinden yazılır.
+      tapPlaceholder: "Şifreni yazmak için dokun",
       timer: "Kalan süre:",
       secure: "Güvenli",
       more: "Diğer seçenekler",
@@ -1270,6 +1272,24 @@ export const tr = {
       siteNote: "Sekmeyi kapatıp odaya dönebilirsin.",
       linkStatus: "Bağlantının gittiği adres",
       requestTab: "Ödeme isteği",
+    },
+    // Kayıt görevli oda (Şehir Kapısı "Bağlantı nereye gidiyor?"): görevdeki form.
+    form: {
+      sending: "Gönderiliyor…",
+      note: "Bu odada yazdığın hiçbir yere gönderilmez ve kaydedilmez.",
+      placeholder: "İstersen boş bırakabilirsin",
+      sentTitle: "Gönderildi",
+      back: "Gelen kutusuna dön",
+    },
+    // "Az kalsın" ekranı (trap.almost): sahte sayfaya bilgi girince hacklendin yerine.
+    almost: {
+      kicker: "Az kalsın",
+      title: "Az kalsın!",
+      shown: "Düğmede yazan",
+      real: "Gerçek adres",
+      owner: "Sahibi: <b>{owner}</b>",
+      nextTime: "Bir dahaki sefere",
+      back: "Gelen kutusuna dön",
     },
 
     hacked: {
@@ -1429,6 +1449,8 @@ export const tr = {
       task: "{owner} görevi",
       taskNote: "Postam'daki bağlantıdan mağazaya git, ödemeyi {owner} kartıyla yap.",
       saleNote: "Siparişi {platform} bildirimindeki bağlantıdan aç, telefonu hazırlayıp kargoya ver.",
+      signupNote: "Postam'daki doğru bağlantıdan formu aç ve gönder. Basmadan önce gerçek adrese bak.",
+      signed: "Form gönderildi",
       ordered: "Sipariş verildi",
       listing: "İlanın · {platform}",
       shipped: "Kargoya verildi",
@@ -1588,6 +1610,16 @@ export const tr = {
         pick: "Bir şık seç",
         oneTl: "1 TL",
         qmark: "?",
+        // Sorunun üstündeki mail düğmesi: basmadan gerçek adrese bakmayı gösterir (LinkPeek).
+        link: {
+          preview: "BAĞLANTI ÖNİZLEMESİ",
+          watch: "İzle: basmadan önce bağlantının adresine bakılıyor.",
+          tryMouse: "Sıra sende: farenle düğmenin üstüne gel, basma.",
+          tryTouch: "Sıra sende: düğmeye parmağınla basılı tut.",
+          shown: "Gerçek adres {where} çıktı. Şimdi soruyu cevapla.",
+          whereMouse: "ekranın alt köşesinde",
+          whereTouch: "önizlemede",
+        },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.
       sort: {
@@ -1757,6 +1789,7 @@ export const tr = {
       outcomes: {
         INBOX: {
           hacked: "Linke tıkladın ve açılan sahte sayfaya bilgilerini yazdın.",
+          almost: "Linke tıkladın ve sahte sayfaya şifreni yazdın. Az kalsın: gerçek hayatta hesabın başkasının eline geçebilirdi.",
           stopped: "Sahte siteye kart bilgisini girdin, onay kodunu yazmadan son anda durdun. Kart bilgisi yine de gitti; kart hemen kapatılmalı.",
           reportedAfterEngaging: "Oltalama olarak bildirdin, ama önce linke tıkladın.",
           reported: "Oltalama olarak bildirdin.",
@@ -1769,6 +1802,7 @@ export const tr = {
         },
         MESSAGING: {
           hacked: "İstenen kodu sahte mesaja gönderdin.",
+          almost: "Bağlantıyı açtın ve sahte sayfaya bilgilerini yazdın. Az kalsın: gerçek hayatta hesabın başkasının eline geçebilirdi.",
           stopped: "Sahte sayfaya bilgi girdin, son anda durdun. Bilgi yine de gitti.",
           reportedAfterEngaging: "Bildirip engelledin, ama önce cevap yazdın.",
           reported: "Bildirip engelledin.",
