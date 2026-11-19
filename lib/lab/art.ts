@@ -12,6 +12,8 @@ export const roomArt = [
   "kart-ve-para-guvenligi",
   "kulaklik-icin-veli-karti",
   "eski-telefonunu-sat",
+  "mesaji-okumak",
+  "baglanti-nereye-gidiyor",
 ] as const;
 
 const known = new Set<string>(roomArt);
