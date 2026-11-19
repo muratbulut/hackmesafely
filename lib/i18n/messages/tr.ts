@@ -1493,6 +1493,8 @@ export const tr = {
         info: "BİLGİ",
         clickFind: "TIKLA-BUL",
         quiz: "MİNİ TEST",
+        // Kuraldan önce gelen soru: öğrenci önce tahmin eder, kuralı açıklamadan öğrenir.
+        guess: "ÖNCE TAHMİN",
         video: "VİDEO",
         videoDuration: "VİDEO · {duration}",
         match: "EŞLEŞTİRME",
@@ -1597,6 +1599,18 @@ export const tr = {
           shown: "Gerçek adres {where} çıktı. Şimdi soruyu cevapla.",
           whereMouse: "ekranın alt köşesinde",
           whereTouch: "önizlemede",
+        },
+        // "Önce tahmin" sorusu: kural henüz verilmedi, yanlış tahmin ayıp değil.
+        guess: {
+          pick: "Tahminini seç",
+          correct: "Tahminin doğru!",
+          wrong: "İyi tahmin, ama doğrusu {letter}.",
+        },
+        // Sorunun üstündeki telefon bildirimi: sorunun anlattığı SMS (SmsPeek).
+        sms: {
+          clock: "21:47",
+          app: "MESAJLAR",
+          now: "şimdi",
         },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.

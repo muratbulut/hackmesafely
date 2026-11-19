@@ -10,6 +10,7 @@ import { PostamLogo } from "../inbox/InboxScene";
 import { RichLine, SenderAvatar } from "../scene/parts";
 import { QuizArtView } from "./art";
 import { LinkPeek } from "./LinkPeek";
+import { SmsPeek } from "./SmsPeek";
 import { cardIconMap } from "./card-icons";
 import { CardTag, CardTitle, Mark } from "./common";
 import { BankCardInfo, ExploreInfo, StepsInfo } from "./InfoLayouts";
@@ -385,8 +386,9 @@ function Options({ options, answer, onAnswer, busy }: { options: string[]; answe
   );
 }
 
-function Feedback({ answer }: { answer: Answer }) {
+function Feedback({ answer, guess = false }: { answer: Answer; guess?: boolean }) {
   const t = getMessages().lab.training;
+  const words = guess ? t.quiz.guess : t;
   const { correct, answer: right, explain } = answer.result;
   return (
     <div
@@ -400,7 +402,7 @@ function Feedback({ answer }: { answer: Answer }) {
         <Lightbulb className="size-[18px]" strokeWidth={2.2} aria-hidden="true" />
       </Mark>
       <span className="flex flex-col gap-1">
-        <b className={correct ? "text-success-fg" : "text-danger-fg"}>{correct ? t.correct : format(t.wrong, { letter: letters[right] })}</b>
+        <b className={correct ? "text-success-fg" : "text-danger-fg"}>{correct ? words.correct : format(words.wrong, { letter: letters[right] })}</b>
         {explain ? <span className="text-[15px] leading-relaxed text-fg-2">{explain}</span> : null}
       </span>
     </div>
@@ -412,13 +414,13 @@ export function QuizView({ card, answer, busy, onAnswer }: { card: QuizCard; ans
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <CardTag>{t.tags.quiz}</CardTag>
-        {!answer ? <span className="text-[13px] font-bold text-fg-3">{t.quiz.pick}</span> : null}
+        <CardTag>{card.guess ? t.tags.guess : t.tags.quiz}</CardTag>
+        {!answer ? <span className="text-[13px] font-bold text-fg-3">{card.guess ? t.quiz.guess.pick : t.quiz.pick}</span> : null}
       </div>
-      {card.link ? <LinkPeek link={card.link} /> : card.art ? <QuizArtView art={card.art} /> : null}
+      {card.link ? <LinkPeek link={card.link} /> : card.sms ? <SmsPeek sms={card.sms} /> : card.art ? <QuizArtView art={card.art} /> : null}
       <CardTitle>{card.question}</CardTitle>
       <Options options={card.options} answer={answer} busy={busy} onAnswer={onAnswer} />
-      {answer ? <Feedback answer={answer} /> : null}
+      {answer ? <Feedback answer={answer} guess={card.guess} /> : null}
     </>
   );
 }
