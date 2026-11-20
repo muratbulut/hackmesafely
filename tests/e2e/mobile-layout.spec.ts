@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { isLive, signUp, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
-import { dismissLevelUps, pickUpPhone, signInDesktop } from "./support/lab";
+import { dismissLevelUps, openFakeKargo, pickUpPhone, signInDesktop, submitSavedPassword } from "./support/lab";
 import { layoutProblems, smallTargets } from "./support/layout";
 import { createSchool, makeCoordinator, makeTeacher } from "./support/teacher";
 
@@ -435,7 +435,41 @@ const studentScreens: Screen<StudentData>[] = [
   // M1 sahnesi (oda sahne şablonu): önce bilgisayarın kilit ekranı, "Oturum aç" deyince Postam penceresi.
   { name: "Masaüstü, kilit ekranı", open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
   { name: "Postam, gelen kutusu", open: (page) => signInDesktop(page) },
-  { name: "Postam, mail", open: (page) => page.getByTestId("scenario-player").getByRole("button", { name: /^Kargo Takip/ }).click() },
+  // T2 (18 Kasım yenilemesi): Ayça'nın sesli mesajı masadaki telefona düşer.
+  {
+    name: "Telefon, sesli mesaj",
+    open: async (page) => {
+      await expect(page.getByTestId("stage-phone-pick")).toContainText("Ayça");
+      await page.getByTestId("stage-phone-pick").click();
+      await page.getByTestId("voicemail").getByTestId("voice-play").click();
+      await expect(page.getByTestId("voicemail-card")).toBeVisible({ timeout: 20_000 });
+    },
+  },
+  {
+    name: "Telefon, görev kabul edildi",
+    open: (page) => page.getByTestId("voicemail-card").getByRole("button").click(),
+  },
+  {
+    name: "Yolda Kargo, gönderi bulundu",
+    open: async (page) => {
+      await page.locator('[data-testid="stage-phone-drop"]:visible').click();
+      const app = page.getByTestId("scenario-player");
+      await app.getByRole("button", { name: /^Yolda Kargo.*yola çıktı/ }).click();
+      await page.getByRole("button", { name: "Listeye dön" }).click();
+      await page.getByRole("group", { name: "Açık uygulamalar" }).getByRole("button", { name: "Yolda Kargo" }).click();
+      const tracker = page.getByTestId("parcel-tracker");
+      await tracker.getByTestId("parcel-number").first().click();
+      await tracker.getByTestId("parcel-query").click();
+      await expect(tracker.getByTestId("parcel-found")).toBeVisible();
+    },
+  },
+  {
+    name: "Postam, mail",
+    open: async (page) => {
+      await page.getByRole("group", { name: "Açık uygulamalar" }).getByRole("button", { name: "postam" }).click();
+      await openFakeKargo(page.getByTestId("scenario-player"));
+    },
+  },
   { name: "Görevler penceresi", open: (page) => page.getByRole("button", { name: /Görevleri aç/ }).click() },
   {
     name: "Odadan çıkma penceresi",
@@ -451,24 +485,38 @@ const studentScreens: Screen<StudentData>[] = [
     open: async (page) => {
       await page.getByTestId("restart-dialog").getByRole("button", { name: "Vazgeç" }).click();
       await page.getByRole("button", { name: "Adresi güncelle" }).click();
-      await expect(page.getByLabel(/Postam şifresi/)).toBeVisible();
+      // Kayıtlı şifre önerisi (trap.autofill).
+      await expect(page.getByTestId("trap-fill")).toBeVisible();
     },
   },
   {
     name: "Hacklendin, alarm",
     brief: true,
     open: async (page) => {
-      await page.getByLabel(/Postam şifresi/).fill("deneme-sifre");
-      await page.getByRole("button", { name: /Giriş yap ve doğrula/ }).click();
+      await submitSavedPassword(page);
       await expect(page.getByTestId("hacked-alarm")).toBeVisible();
+    },
+  },
+  {
+    name: "Hacklendin, Ayça'nın sesli mesajı",
+    open: async (page) => {
+      // Alarm birkaç saniye sonra kendisi geçer (19 ve 22. revize); sonra telefona sesli mesaj düşer.
+      const go = page.getByRole("button", { name: "Geç", exact: true });
+      if (await go.isVisible()) await go.click();
+      const voice = page.getByTestId("voicemail");
+      await expect(voice.locator('[data-note="bad"]')).toHaveCount(1, { timeout: 10_000 });
+      const inHand = page.locator('[data-testid="stage-phone"][data-hand="true"]');
+      const pick = page.getByRole("button", { name: /^Telefonu al: / });
+      await expect(inHand.or(pick).first()).toBeVisible();
+      if (!(await inHand.isVisible())) await pick.click();
+      await voice.locator('[data-note="bad"]').getByTestId("voice-play").click();
+      await expect(voice.getByTestId("voicemail-action")).toBeVisible({ timeout: 15_000 });
     },
   },
   {
     name: "Hacklendin, sonuç sahnesi",
     open: async (page) => {
-      // Alarm birkaç saniye sonra sahneye kendisi geçer (19 ve 22. revize).
-      const go = page.getByRole("button", { name: "Geç", exact: true });
-      if (await go.isVisible()) await go.click();
+      await page.getByTestId("voicemail-action").click();
       await expect(page.getByTestId("hacked-scene")).toBeVisible();
     },
   },

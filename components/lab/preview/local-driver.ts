@@ -3,10 +3,10 @@
 // gitmesidir. İçeriğin tamamı (doğru kararlar dahil) burada durur, çünkü onu zaten yazan
 // yönetim ekibi görüyor; öğrencinin tarayıcısına bu dosya hiç gitmez. Hiçbir şey kaydedilmez.
 
-import { opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "@/lib/lab/content";
+import { opensForm, opensOrder, opensRequest, opensShop, sameTracking, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "@/lib/lab/content";
 import { applyEvent, emptyState, type LabEventData } from "@/lib/lab/events";
 import { missionDone, scoreScenario, type ScenarioReport } from "@/lib/lab/scoring";
-import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply } from "@/lib/lab/story";
+import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, parcelResult, smsFor, talkReply } from "@/lib/lab/story";
 import { afterInstall, canInstallFile, fileAlmost, installApp, openHomework, opensFile, permissionStep } from "@/lib/lab/install";
 import { canCloseAd, canFinishSetup, connectWifi, installUpdate, openConnected } from "@/lib/lab/setup";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "@/lib/lab/training";
@@ -193,6 +193,15 @@ export function localDriver(content: ScenarioContent, template: ScenarioTemplate
       if (!canFinishSetup(content, state)) return fail("invalid");
       apply({ type: "setup_finished" });
       return { ok: true };
+    },
+    async trackParcel(_attemptId, _seq, itemId) {
+      if (ended) return fail("ended");
+      const track = content.mission?.track;
+      const item = itemOf(itemId);
+      if (!track || !item?.tracking || template !== "INBOX") return fail("invalid");
+      const found = sameTracking(item.tracking, track.number);
+      apply({ type: "parcel_tracked", item: item.id, found });
+      return { ok: true, result: parcelResult(track, found) };
     },
     async finish() {
       const done = missionDone(content, state);

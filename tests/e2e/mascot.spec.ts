@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
-import { finishTraining, signInDesktop } from "./support/lab";
+import { signInDesktop, withTempRoom } from "./support/lab";
+
+const oldKargo = JSON.parse(readFileSync("tests/fixtures/rooms/sahte-kargo-maili.json", "utf8")).content;
 
 // Maskot (components/mascot): menüdeki canlı logonun gözü (gözlü a) fareyi izler, 10 saniyede bir
 // a'nın içinde gezer; ana sayfada öbür a'ya kaçar, diğer sayfalarda a'nın içinde kalır; hesap
@@ -187,30 +190,32 @@ test.describe("odadaki maskot", () => {
     test.skip(isMobile, "üstüne gelme (hover) yalnızca fareyle");
     const email = uniqueEmail("maskot-oda");
     await signUpVerified(page, email);
-    await finishTraining(email);
-    await page.goto("/oda/sahte-kargo-maili/oyna");
-    await page.getByRole("button", { name: "Hazırım, başla" }).click();
-    await signInDesktop(page);
+    // Eski sahte kargo maili (gerçek ve sahte bağlantılı); yeni odada gerçek maillerin bağlantısı yok.
+    await withTempRoom(oldKargo, async (slug) => {
+      await page.goto(`/oda/${slug}/oyna`);
+      await page.getByRole("button", { name: "Hazırım, başla" }).click();
+      await signInDesktop(page);
 
-    const app = page.getByTestId("scenario-player");
-    const mascot = page.locator("svg[data-mood]").filter({ visible: true }).first();
-    await expect(mascot).toHaveAttribute("data-mood", "idle");
-
-    /** Bağlantının üstüne gelir; maskotun o anki hâlini (ruh hâli ve sınıfları) döndürür. */
-    async function lookAt(open: RegExp, link: string) {
-      await app.getByRole("button", { name: open }).click();
-      await app.getByText(link, { exact: true }).hover();
-      await expect(mascot).toHaveAttribute("data-mood", "look");
-      const state = { mood: await mascot.getAttribute("data-mood"), classes: await classes(mascot) };
-      // Bağlantıdan çıkınca bakmayı bırakır.
-      await page.mouse.move(5, 5);
+      const app = page.getByTestId("scenario-player");
+      const mascot = page.locator("svg[data-mood]").filter({ visible: true }).first();
       await expect(mascot).toHaveAttribute("data-mood", "idle");
-      return state;
-    }
 
-    // Kargo maili tuzak, market maili güvenli: maskot ikisine de aynı bakar.
-    const trap = await lookAt(/^Kargo Takip/, "Adresi güncelle");
-    const safe = await lookAt(/^Market Puan/, "Siparişlerim");
-    expect(trap).toEqual(safe);
+      /** Bağlantının üstüne gelir; maskotun o anki hâlini (ruh hâli ve sınıfları) döndürür. */
+      async function lookAt(open: RegExp, link: string) {
+        await app.getByRole("button", { name: open }).click();
+        await app.getByText(link, { exact: true }).hover();
+        await expect(mascot).toHaveAttribute("data-mood", "look");
+        const state = { mood: await mascot.getAttribute("data-mood"), classes: await classes(mascot) };
+        // Bağlantıdan çıkınca bakmayı bırakır.
+        await page.mouse.move(5, 5);
+        await expect(mascot).toHaveAttribute("data-mood", "idle");
+        return state;
+      }
+
+      // Kargo maili tuzak, market maili güvenli: maskot ikisine de aynı bakar.
+      const trap = await lookAt(/^Kargo Takip/, "Adresi güncelle");
+      const safe = await lookAt(/^Market Puan/, "Siparişlerim");
+      expect(trap).toEqual(safe);
+    });
   });
 });

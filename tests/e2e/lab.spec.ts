@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signOutHere, signUp, signUpVerified, uniqueEmail } from "./support/account";
-import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep, signInDesktop } from "./support/lab";
+import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, openFakeKargo, passVoiceNote, reportStep, signInDesktop, submitSavedPassword } from "./support/lab";
+
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // Faz 3 bitti ölçütünün öğrenci tarafı: eğitim labı, sahte kargo maili (hacklenme ve güvende
 // kalma yolları), sunucuda hesaplanan puan ve rapor. Doğru cevaplar örnek labdan okunur
@@ -66,6 +68,8 @@ test.describe("lab", () => {
   });
 
   test("sahte sayfaya şifre yazan hacklenir; yazdığı kaydedilmez, rapor yalnızca ona açılır", async ({ page, context, isMobile }) => {
+    // Sesli mesaj dinlenir, iki hesap açılır: uzun bir akış.
+    test.slow();
     const email = uniqueEmail("hacklen");
     await signUpVerified(page, email);
     await finishTraining(email);
@@ -76,17 +80,19 @@ test.describe("lab", () => {
     await expect(page.getByRole("banner")).toHaveCount(0);
     await page.getByRole("button", { name: "Hazırım, başla" }).click();
     await signInDesktop(page);
-    await page.getByRole("button", { name: /^Kargo Takip/ }).click();
+    await openFakeKargo(page);
     await page.getByRole("button", { name: "Adresi güncelle" }).click();
-    const secret = "gizli-sifre-123";
-    await page.getByLabel(/Postam şifresi/).fill(secret);
-    await page.getByRole("button", { name: /Giriş yap ve doğrula/ }).click();
+    // Şifre yazılmaz: tarayıcının kayıtlı şifre önerisinde "Doldur" (kutu salt okunur).
+    await expect(page.getByLabel(/Postam şifresi/)).toHaveAttribute("readonly", "");
+    await submitSavedPassword(page);
 
     await expect(page.getByTestId("hacked-alarm")).toBeVisible();
     // "Hangi hesap?" boş: Postam hesabı, bildirimler mail der.
     await expect(page.getByTestId("hacked-alarm").getByText("Postam hesabın ele geçirildi.")).toBeVisible();
     await page.getByRole("button", { name: "Geç", exact: true }).click();
-    // Alarmdan sonra hesap sahnesi; "Adım adım ne oldu" ekranı yok (19 ve 22. revize).
+    // Alarmdan sonra Ayça'nın sesli mesajı (arkadaşlarına da gitmiş), sonra hesap sahnesi;
+    // "Adım adım ne oldu" ekranı yok (19 ve 22. revize).
+    await passVoiceNote(page, "Devam");
     await continueFromScene(page, "account");
     // İlk senaryo odası seviye atlatır: rapor önce kutlamayla açılır (29+).
     await closeLevelUp(page, 2);
@@ -98,8 +104,8 @@ test.describe("lab", () => {
     await expect(report.getByRole("heading", { name: "Kaçırdığın işaretler" })).toHaveCount(0);
     // Raporda masaüstünde üst menü geri gelir.
     if (!isMobile) await expect(page.getByRole("navigation", { name: "Ana menü" })).toBeVisible();
-    // Cevaplanmayan iki soru "yanlış" sayılmaz, ayrı yazılır.
-    await expect(report.getByText(/3 doğru · 0 kısmen · 1 yanlış · 2 cevaplanmadı/).filter({ visible: true })).toBeVisible();
+    // Cevaplanmayan iki soru "yanlış" sayılmaz, ayrı yazılır (yapılmayan görev yanlış).
+    await expect(report.getByText(/3 doğru · 0 kısmen · 2 yanlış · 2 cevaplanmadı/).filter({ visible: true })).toBeVisible();
     await reportStep(page, "signs");
     await expect(report.getByRole("heading", { name: "Kaçırdığın işaretler" })).toBeVisible();
     await reportStep(page, "tips");
@@ -109,11 +115,11 @@ test.describe("lab", () => {
     await expect(page.getByTestId("badge-toast")).toContainText("İlk rapor");
     const reportUrl = page.url();
 
-    // Sunucu: deneme hacklendi olarak kapandı, puanı 3; yazılan şifre hiçbir olayda yok.
+    // Sunucu: deneme hacklendi olarak kapandı, puanı 3; kutudaki noktalar hiçbir olayda yok.
     const [attempt] = await attemptsOf(email, "sahte-kargo-maili");
     expect(attempt).toMatchObject({ status: "HACKED", reportScore: 30 });
     expect(attempt.events).toContain("info_entered");
-    expect(attempt.events).not.toContain(secret);
+    expect(attempt.events).not.toContain("•");
 
     // Biten deneme kapanmıştır: oyna sayfası yeni bir deneme için başlangıç penceresini açar.
     await page.goto(playPath);
@@ -128,6 +134,8 @@ test.describe("lab", () => {
   });
 
   test("sahte maili bildirip görevleri bitiren 100/100 alır; yarım kalan lab kaldığı yerden açılır", async ({ page, isMobile }) => {
+    // Sesli mesaj, takip ve saat geçişiyle uzun bir akış.
+    test.slow();
     const email = uniqueEmail("guvende");
     await signUpVerified(page, email);
     await finishTraining(email);
@@ -138,8 +146,18 @@ test.describe("lab", () => {
 
     const app = page.getByTestId("scenario-player");
     const back = page.getByRole("button", { name: "Listeye dön" });
+    // Ayça'nın sesli mesajı masadaki telefona düşer: telefon alınır, mesaj dinlenir, görev kabul edilir.
+    await expect(page.getByTestId("stage-phone-pick")).toContainText(kargo.mission.caller);
+    await page.getByTestId("stage-phone-pick").click();
+    const voice = page.getByTestId("voicemail");
+    await voice.getByTestId("voice-play").click();
+    await expect(voice.getByTestId("voice-transcript")).toContainText(kargo.mission.lines[0].slice(0, 12));
+    await voice.getByTestId("voicemail-card").getByRole("button", { name: kargo.mission.accept }).click();
+    await expect(voice.getByText(kargo.mission.voicemail.reply)).toBeVisible();
+    await page.locator('[data-testid="stage-phone-drop"]:visible').click();
+
     for (const item of kargo.items) {
-      await app.getByRole("button", { name: new RegExp(`^${item.sender}`) }).click();
+      await app.getByRole("button", { name: new RegExp(`^${item.sender}.*${escapeRegExp(item.subject)}`) }).click();
       await expect(app.getByRole("heading", { name: item.subject })).toBeVisible();
       if (isMobile) await back.click();
     }
@@ -152,7 +170,21 @@ test.describe("lab", () => {
     await expect(app).toBeVisible();
     await expect(page.getByRole("button", { name: "Hazırım, başla" })).toHaveCount(0);
 
-    await app.getByRole("button", { name: /^Kargo Takip/ }).click();
+    // Yolda Kargo uygulaması (görev çubuğunda): sahte mailin numarası bulunamaz, gerçek gönderi bulunur.
+    // Hangi numaranın gerçek olduğunu sunucu söyler; sorgu "parcel_tracked" olarak kaydedilir.
+    const taskbar = page.getByRole("group", { name: "Açık uygulamalar" });
+    await taskbar.getByRole("button", { name: kargo.mission.track.app }).click();
+    const tracker = page.getByTestId("parcel-tracker");
+    const fakeItem = kargo.items.find((i: { kind: string; tracking?: string }) => i.kind === "fake" && i.tracking);
+    await tracker.getByTestId("parcel-number").filter({ hasText: fakeItem.tracking }).click();
+    await tracker.getByTestId("parcel-query").click();
+    await expect(tracker.getByTestId("parcel-missing")).toContainText(kargo.mission.track.missing.title);
+    await tracker.getByTestId("parcel-number").filter({ hasText: kargo.mission.track.number }).click();
+    await tracker.getByTestId("parcel-query").click();
+    await expect(tracker.getByTestId("parcel-found")).toContainText(kargo.mission.track.found.title);
+    await taskbar.getByRole("button", { name: "postam" }).click();
+
+    await openFakeKargo(app);
     await app.getByRole("button", { name: isMobile ? "Bildir" : "Oltalama olarak bildir", exact: true }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "Bildir", exact: true }).click();
     await expect(toast(page, "Mail bildirildi")).toBeVisible();
@@ -167,6 +199,9 @@ test.describe("lab", () => {
       await tasks.getByRole("button", { name: "Cevabı gönder" }).click();
     }
     await tasks.getByRole("button", { name: "Odayı bitir, raporu gör" }).click();
+    // Saat ilerler, Ayça'nın teşekkür sesli mesajı telefona düşer; "Raporu gör" ile rapor açılır.
+    await expect(page.getByTestId("voicemail-later")).toContainText(kargo.mission.voicemail.later.title);
+    await passVoiceNote(page, "Raporu gör");
 
     await closeLevelUp(page, 2);
     const report = page.getByTestId("lab-report");
@@ -176,5 +211,6 @@ test.describe("lab", () => {
     await expect(report.getByRole("heading", { name: "Yakaladığın sahte maildeki işaretler" })).toBeVisible();
     const [attempt] = await attemptsOf(email, "sahte-kargo-maili");
     expect(attempt).toMatchObject({ status: "COMPLETED", reportScore: 100 });
+    expect(attempt.events).toContain("parcel_tracked");
   });
 });

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { callAction } from "./support/actions";
 import { withDb } from "./support/db";
-import { attemptsOf, finishTraining, signInDesktop } from "./support/lab";
+import { attemptsOf, finishTraining, openFakeKargo, signInDesktop } from "./support/lab";
 
 // "Baştan başla" (19 Kasım, Murat): senaryo odasında yarım deneme silinmez, ABANDONED olur ve yeni
 // deneme ilk sahneden başlar; eğitim odasında ilk karta dönülür. Bitmiş eğitim bitmiş kalır.
@@ -28,7 +28,7 @@ async function startAndOpenMail(page: Page) {
   await page.goto(playPath);
   await page.getByRole("button", { name: "Hazırım, başla" }).click();
   await signInDesktop(page);
-  await page.getByTestId("scenario-player").getByRole("button", { name: /^Kargo Takip/ }).click();
+  await openFakeKargo(page.getByTestId("scenario-player"));
 }
 
 const dialog = (page: Page) => page.getByTestId("restart-dialog");

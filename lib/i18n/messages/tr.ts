@@ -1280,6 +1280,11 @@ export const tr = {
       placeholder: "Buraya yaz",
       // "Az kalsın" odasında şifre kutusu: dokununca noktalar kendiliğinden yazılır.
       tapPlaceholder: "Şifreni yazmak için dokun",
+      // Tarayıcının kayıtlı şifre önerisi (trap.autofill): öğrenci şifre yazmaz.
+      saved: "Kayıtlı şifreyi kullan",
+      savedLine: "{account} · ••••••••",
+      fill: "Doldur",
+      savedPlaceholder: "Kayıtlı şifreyle doldurulabilir",
       timer: "Kalan süre:",
       secure: "Güvenli",
       more: "Diğer seçenekler",
@@ -1620,6 +1625,32 @@ export const tr = {
       ordered: "Sipariş verildi",
       listing: "İlanın · {platform}",
       shipped: "Kargoya verildi",
+      trackNote: "Takip numarasını Postam'daki maillerde bul, {app} uygulamasında sorgula.",
+    },
+    // Takip görevi (Oltalama Limanı "Sahte kargo maili"): masaüstündeki kargo uygulaması.
+    // Uygulamanın adı ve sonuçlar oda dosyasından gelir.
+    track: {
+      found: "Maillerinde bulduğun numaralar",
+      none: "Henüz takip numarası olan bir mail açmadın. Postam'a bak.",
+      from: "\"{subject}\" maili",
+      query: "Sorgula",
+      querying: "Sorgulanıyor…",
+      pick: "Sorgulamak için bir numara seç.",
+    },
+    // Sesli mesajla açılan görev (T2): telefonda Mesajlar'daki konuşma.
+    voicemail: {
+      seen: "son görülme {time}",
+      note: "Sesli mesaj ({length})",
+      noteShort: "🎤 Sesli mesaj ({length})",
+      play: "Sesli mesajı dinle",
+      pause: "Durdur",
+      transcript: "Yazıya dök",
+      hide: "Yazıyı gizle",
+      kicker: "{owner} isteği",
+      dropHint: "Görevi aldın. Telefonu masaya bırakıp bilgisayardan devam edebilirsin.",
+      continue: "Devam",
+      report: "Raporu gör",
+      later: "Saat ilerliyor",
     },
     // Giriş görevli oda (Şehir Kapısı "Okul bilgisayarında giriş yap ve çık"): ortak bilgisayar, okulun portalı.
     // Odaya özel adlar (portal, okul, numara, not, ödev, zil) oda dosyasından gelir.

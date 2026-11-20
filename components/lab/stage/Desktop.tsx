@@ -9,7 +9,10 @@ import { cn } from "@/lib/utils";
 import { Taskbar, WindowBar } from "@/components/device/Computer";
 import { AppIcon, OwnerAvatar, StageWall, useClock, useOwner, type StageApp } from "./common";
 
-type WinId = "main" | "browser";
+type WinId = "main" | "browser" | "extra";
+
+/** Masaüstündeki ikinci uygulama (takip görevinde kargo firmasının uygulaması): kendi penceresinde. */
+export type ExtraApp = { app: StageApp; title: string; node: ReactNode };
 type Win = {
   open: boolean;
   min: boolean;
@@ -25,10 +28,32 @@ type Win = {
 const firstRect: Record<WinId, Pick<Win, "x" | "y" | "w" | "h">> = {
   main: { x: 3, y: 3, w: 86, h: 88 },
   browser: { x: 9, y: 6, w: 86, h: 86 },
+  extra: { x: 48, y: 4, w: 49, h: 88 },
 };
 
-/** Bu genişlikten dar masaüstünde pencereler hep tam boy açılır (telefon, T2'deki küçük ekran). */
-const NARROW_PX = 760;
+/**
+ * Bu genişlikten dar masaüstünde pencereler hep tam boy açılır (telefon). T2'deki masa monitörü
+ * dizüstü ekranında da bundan geniştir: orada da pencere taşınır, kenarından büyür, tam boy olur
+ * (okul bilgisayarı gibi; Murat 20 Kasım).
+ */
+const NARROW_PX = 440;
+/** Bundan dar masaüstünde pencereler ilk açılışta tam boy açılır (sonra küçültülebilir). */
+const ROOMY_PX = 900;
+const MIN_W = 24;
+const MIN_H = 26;
+
+const resizeDirs = ["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const;
+type Dir = (typeof resizeDirs)[number];
+const dirClass: Record<Dir, string> = {
+  n: "top-0 inset-x-2 h-1.5 cursor-ns-resize",
+  s: "bottom-0 inset-x-2 h-1.5 cursor-ns-resize",
+  e: "right-0 inset-y-2 w-1.5 cursor-ew-resize",
+  w: "left-0 inset-y-2 w-1.5 cursor-ew-resize",
+  ne: "top-0 right-0 size-3 cursor-nesw-resize",
+  nw: "top-0 left-0 size-3 cursor-nwse-resize",
+  se: "bottom-0 right-0 size-3 cursor-nwse-resize",
+  sw: "bottom-0 left-0 size-3 cursor-nesw-resize",
+};
 
 export type DesktopProps = {
   owner: string;
@@ -41,6 +66,8 @@ export type DesktopProps = {
   onCloseBrowser: () => void;
   /** Yarım kalan denemeye dönülünce oturum açık başlar. */
   startUnlocked?: boolean;
+  /** Odanın ikinci uygulaması (isteğe bağlı): simgesi, görev çubuğu düğmesi ve penceresi olur. */
+  extra?: ExtraApp | null;
   className?: string;
 };
 
@@ -49,13 +76,14 @@ export type DesktopProps = {
  * simgeleri, altta görev çubuğu (başlat düğmesi gözlü a, açık uygulamalar, gerçek saat), başlat
  * menüsünde "Oturumu kapat" (küçük sürpriz: kilit ekranına döner). Temel eğitimin odalarında
  * kilit ekranında yalnızca "Oturum aç" var; ileri eğitimde şifre sorulur, yazılan şifre hiçbir
- * yere gönderilmez. Uygulamalar ayrı pencerelerdir: taşınır, küçülür, büyür, kapanır.
+ * yere gönderilmez. Uygulamalar ayrı pencerelerdir: taşınır, kenarından büyür, küçülür, tam boy olur, kapanır.
  */
-export function Desktop({ owner, password, app, appNode, browserNode, onCloseBrowser, startUnlocked = false, className }: DesktopProps) {
+export function Desktop({ owner, password, app, appNode, browserNode, onCloseBrowser, startUnlocked = false, extra = null, className }: DesktopProps) {
   const t = getMessages().lab.stage;
   const name = useOwner(owner);
   const clock = useClock();
   const layer = useRef<HTMLDivElement>(null);
+  const sized = useRef(false);
   const [narrow, setNarrow] = useState(false);
   const [unlocked, setUnlocked] = useState(startUnlocked);
   const [menu, setMenu] = useState(false);
@@ -76,14 +104,33 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
       max: false,
       z: 0,
     },
+    extra: {
+      ...firstRect.extra,
+      open: false,
+      min: false,
+      max: false,
+      z: 0,
+    },
   }));
 
-  const appTitle = (id: WinId) => (id === "main" ? appName(app) : browserNode ? t.browser : `${t.newTab} · ${t.browser}`);
+  const appTitle = (id: WinId) =>
+    id === "main" ? appName(app) : id === "extra" ? (extra?.title ?? "") : browserNode ? t.browser : `${t.newTab} · ${t.browser}`;
+  const appOf = (id: WinId): StageApp => (id === "main" ? app : id === "extra" ? (extra?.app ?? app) : "browser");
+  const nameOf = (id: WinId) => (id === "main" ? appName(app) : id === "extra" ? (extra?.title ?? "") : t.browser);
 
   useEffect(() => {
     const el = layer.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setNarrow(entry.contentRect.width < NARROW_PX));
+    const observer = new ResizeObserver(([entry]) => {
+      const width = entry.contentRect.width;
+      setNarrow(width < NARROW_PX);
+      // Küçük masa monitöründe (T2, dizüstü ekranı) pencereler ilk açılışta tam boy gelir: Postam'ın
+      // sütunları sıkışmasın. Büyüt / geri al ve kenardan boyutlandırma yine çalışır.
+      if (!sized.current && width > 0) {
+        sized.current = true;
+        if (width < ROOMY_PX) setWins((all) => ({ main: { ...all.main, max: true }, browser: { ...all.browser, max: true }, extra: { ...all.extra, max: true } }));
+      }
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -96,9 +143,10 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
     setFocus(id);
   }
 
+  /** Kapanan ya da küçülen pencereden sonra öne gelecek: açık pencerelerden en üstteki. */
   function topOpen(all: Record<WinId, Win>, except: WinId) {
-    const other: WinId = except === "main" ? "browser" : "main";
-    return all[other].open && !all[other].min ? other : null;
+    const open = (Object.keys(all) as WinId[]).filter((id) => id !== except && all[id].open && !all[id].min);
+    return open.sort((a, b) => all[b].z - all[a].z)[0] ?? null;
   }
 
   // Bağlantı bir sayfa açınca tarayıcı penceresi öne gelir.
@@ -164,37 +212,56 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
     setWins((all) => ({
       main: { ...all.main, open: false, min: false },
       browser: { ...all.browser, open: false, min: false },
+      extra: { ...all.extra, open: false, min: false },
     }));
     if (browserNode) onCloseBrowser();
   }
 
-  // Pencereyi başlığından sürükleme (geniş masaüstünde, tam boy değilken).
-  function drag(id: WinId, e: ReactPointerEvent<HTMLElement>) {
-    if ((e.target as HTMLElement).closest("button") || narrow || wins[id].max || !layer.current) return;
+  // Başlıktan sürükleme ve kenardan büyütme (geniş masaüstünde, tam boy değilken; okul bilgisayarıyla aynı).
+  function drag(id: WinId, e: ReactPointerEvent<HTMLElement>, dir: Dir | null = null) {
+    if ((!dir && (e.target as HTMLElement).closest("button")) || narrow || wins[id].max || !layer.current) return;
+    e.preventDefault();
     const box = layer.current.getBoundingClientRect();
-    const start = {
-      x: e.clientX,
-      y: e.clientY,
-      wx: wins[id].x,
-      wy: wins[id].y,
-    };
-    const bar = e.currentTarget;
-    bar.setPointerCapture(e.pointerId);
+    const r0 = { x: wins[id].x, y: wins[id].y, w: wins[id].w, h: wins[id].h };
+    const sx = e.clientX;
+    const sy = e.clientY;
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    if (focus !== id) raise(id);
     const move = (ev: PointerEvent) => {
-      const w = wins[id].w;
-      const x = Math.max(-w + 12, Math.min(88, start.wx + ((ev.clientX - start.x) / box.width) * 100));
-      const y = Math.max(0, Math.min(90, start.wy + ((ev.clientY - start.y) / box.height) * 100));
-      setWins((all) => ({ ...all, [id]: { ...all[id], x, y } }));
+      const dx = ((ev.clientX - sx) / box.width) * 100;
+      const dy = ((ev.clientY - sy) / box.height) * 100;
+      const r = { ...r0 };
+      if (!dir) {
+        r.x = Math.max(-r0.w + 12, Math.min(88, r0.x + dx));
+        r.y = Math.max(0, Math.min(90, r0.y + dy));
+      } else {
+        if (dir.includes("e")) r.w = Math.max(MIN_W, Math.min(100 - r0.x, r0.w + dx));
+        if (dir.includes("s")) r.h = Math.max(MIN_H, Math.min(100 - r0.y, r0.h + dy));
+        if (dir.includes("w")) {
+          const nx = Math.max(0, Math.min(r0.x + r0.w - MIN_W, r0.x + dx));
+          r.w = r0.w + (r0.x - nx);
+          r.x = nx;
+        }
+        if (dir.includes("n")) {
+          const ny = Math.max(0, Math.min(r0.y + r0.h - MIN_H, r0.y + dy));
+          r.h = r0.h + (r0.y - ny);
+          r.y = ny;
+        }
+      }
+      setWins((all) => ({ ...all, [id]: { ...all[id], ...r } }));
     };
     const up = () => {
-      bar.removeEventListener("pointermove", move);
-      bar.removeEventListener("pointerup", up);
+      target.removeEventListener("pointermove", move);
+      target.removeEventListener("pointerup", up);
+      target.removeEventListener("pointercancel", up);
     };
-    bar.addEventListener("pointermove", move);
-    bar.addEventListener("pointerup", up);
+    target.addEventListener("pointermove", move);
+    target.addEventListener("pointerup", up);
+    target.addEventListener("pointercancel", up);
   }
 
-  const ids: WinId[] = ["main", "browser"];
+  const ids: WinId[] = extra ? ["main", "browser", "extra"] : ["main", "browser"];
 
   return (
     <div
@@ -217,8 +284,8 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
             onClick={() => openWin(id)}
             className="flex w-[86px] cursor-pointer flex-col items-center gap-1.5 rounded-[10px] px-1 py-2 text-[12.5px] [text-shadow:0_1px_3px_var(--stage-shadow)] hover:bg-stage-os-hover"
           >
-            <AppIcon app={id === "main" ? app : "browser"} className="size-[46px]" />
-            <span>{id === "main" ? appName(app) : t.browser}</span>
+            <AppIcon app={appOf(id)} className="size-[46px]" />
+            <span>{nameOf(id)}</span>
           </button>
         ))}
       </nav>
@@ -234,7 +301,7 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
               key={id}
               hidden={!w.open || w.min}
               aria-label={appTitle(id)}
-              data-testid={id === "main" ? "stage-window-app" : "stage-window-browser"}
+              data-testid={id === "main" ? "stage-window-app" : id === "extra" ? "stage-window-extra" : "stage-window-browser"}
               onPointerDownCapture={() => focus !== id && raise(id)}
               className={cn(
                 "pointer-events-auto absolute flex flex-col overflow-hidden bg-scene-white text-scene-ink",
@@ -253,8 +320,13 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                     }
               }
             >
+              {max
+                ? null
+                : resizeDirs.map((dir) => (
+                    <span key={dir} aria-hidden="true" onPointerDown={(e) => drag(id, e, dir)} className={cn("absolute z-[3] touch-none", dirClass[dir])} />
+                  ))}
               <WindowBar
-                app={id === "main" ? app : "browser"}
+                app={appOf(id)}
                 title={appTitle(id)}
                 active={active}
                 onPointerDown={(e) => drag(id, e)}
@@ -291,7 +363,7 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                 </span>
               </WindowBar>
               <div inert={!w.open || w.min} className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-scene-white">
-                {id === "main" ? appNode : (browserNode ?? <NewTab />)}
+                {id === "main" ? appNode : id === "extra" ? extra?.node : (browserNode ?? <NewTab />)}
               </div>
             </section>
           );
@@ -316,8 +388,8 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
               onClick={() => openWin(id)}
               className="flex min-h-[42px] cursor-pointer items-center gap-2.5 rounded-[9px] px-2 text-left text-sm hover:bg-stage-os-hover"
             >
-              <AppIcon app={id === "main" ? app : "browser"} className="size-[26px]" />
-              {id === "main" ? appName(app) : t.browser}
+              <AppIcon app={appOf(id)} className="size-[26px]" />
+              {nameOf(id)}
             </button>
           ))}
           <button
@@ -358,13 +430,15 @@ export function Desktop({ owner, password, app, appNode, browserNode, onCloseBro
                 type="button"
                 disabled={!unlocked}
                 aria-pressed={isActive}
+                // Telefon genişliğinde ad gizli; düğmenin adı yine okunur.
+                aria-label={nameOf(id)}
                 data-open={w.open}
                 data-active={isActive}
                 onClick={() => taskbarClick(id)}
                 className="dv-pc-task cursor-pointer hover:bg-stage-os-hover"
               >
-                <AppIcon app={id === "main" ? app : "browser"} className="dv-pc-icon" />
-                <span className="max-sm:hidden">{id === "main" ? appName(app) : t.browser}</span>
+                <AppIcon app={appOf(id)} className="dv-pc-icon" />
+                <span className="max-sm:hidden">{nameOf(id)}</span>
               </button>
             );
           })}

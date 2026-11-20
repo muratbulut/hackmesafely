@@ -4,7 +4,7 @@
 // açacağını, hacklenip hacklenmediğini ve raporu hep sürücü söyler.
 
 import type { WifiResult } from "@/lib/lab/setup";
-import type { AlmostStory, EndingTalk, HackedStory, InstallAfter, InstallPrompt, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
+import type { AlmostStory, EndingTalk, HackedStory, InstallAfter, InstallPrompt, LeaveStory, LinkPage, ParcelResult, ShopSms, TalkLine } from "@/lib/lab/story";
 import type { BatchEvent } from "@/lib/lab/events";
 import type { PlacementResult } from "@/lib/lab/training";
 import type { BadgeCode } from "@/lib/progress/badges";
@@ -76,6 +76,8 @@ export type LabDriver = {
   closeAd(attemptId: string, seq: number, itemId: string): Promise<{ ok: true } | Fail>;
   /** Telefon kurulumu: arayanın bildirimine "Kurdum!"; görev biter. */
   finishSetup(attemptId: string, seq: number): Promise<{ ok: true } | Fail>;
+  /** Takip görevi: maildeki takip numarasını kargo uygulamasında sorgular; sonucu sürücü söyler. */
+  trackParcel(attemptId: string, seq: number, itemId: string): Promise<{ ok: true; result: ParcelResult } | Fail>;
   /**
    * Labı bitirir; sonra rapor sayfasına gidilir (önizlemede rapor yerinde açılır). Görevli odada iş
    * doğru yerden yapıldıysa önce iyi bitiş araması, yüz yüze sorunun son sözleri yazılmışsa son konuşma.
@@ -84,7 +86,7 @@ export type LabDriver = {
 };
 
 /** Görevli odanın iyi bitiş araması (lib/lab/story.ts goodCall). */
-export type EndingCall = { caller: string; lines: string[]; voice: (string | null)[]; title: string };
+export type EndingCall = { caller: string; lines: string[]; voice: (string | null)[]; title: string; missed?: boolean };
 
 /** Eğitim labının sürücüsü: tıkla-bul ve soruların doğrusu ile ilerlemenin kaydı. */
 export type TrainingDriver = {

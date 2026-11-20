@@ -4,14 +4,26 @@
 
 import { getMessages } from "@/lib/i18n";
 import { siteTimeZone } from "@/lib/site";
-import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CallerLook, type CardIcon, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate, type StoreApp, type Task, type TalkPlace } from "./content";
+import { domainOf, opensForm, opensOrder, opensRequest, opensShop, usesTrapPage, voicedLines, type CallerLook, type CardIcon, type CompromiseKind, type HackedScene, type Item, type Mission, type ScenarioContent, type ScenarioTemplate, type StoreApp, type Task, type TalkPlace, type Track } from "./content";
 
 export type LinkPage =
   /**
    * tapFill: "Az kalsın" odasında öğrenci şifre yazmaz, kutuya dokununca şifre noktalarla kendiliğinden
    * yazılır (Murat 18 Kasım); "gerçek şifreni yazma" uyarısı da çıkmaz.
    */
-  | { kind: "trap"; url: string; site: string; title: string; text: string; ask: string; compromise: CompromiseKind; account: CompromisedAccount; tapFill: boolean }
+  | {
+      kind: "trap";
+      url: string;
+      site: string;
+      title: string;
+      text: string;
+      ask: string;
+      compromise: CompromiseKind;
+      account: CompromisedAccount;
+      tapFill: boolean;
+      /** Tarayıcının "Kayıtlı şifreyi kullan" önerisi (trap.autofill): öğrenci şifre yazmaz. */
+      autofill: boolean;
+    }
   | { kind: "site"; url: string }
   /**
    * Görevli odada mağaza sayfası. Gerçek ve sahte bağlantıda aynıdır (fark adres çubuğunda);
@@ -199,6 +211,7 @@ export function linkPageFor(content: ScenarioContent, template: ScenarioTemplate
         compromise: trap.kind,
         account: compromisedAccount(trap.account),
         tapFill: trap.almost,
+        autofill: trap.autofill && trap.kind === "account",
       }
     : { kind: "site", url: item.link.url };
 }
@@ -218,7 +231,8 @@ export function hackedStory(
   reportPath: string,
 ): HackedStory {
   const account = compromisedAccount(content.trap.account);
-  const mission = via === "code" || via === "request" ? content.mission : undefined;
+  // Sesli mesajlı görevde (takip) bağlantıyla ele geçirilince de görevi verenin kötü mesajı gelir.
+  const mission = via === "code" || via === "request" || (via === "link" && content.mission?.voicemail) ? content.mission : undefined;
   const amount = mission ? (item.payment?.amount ?? item.request?.amount ?? "") : "";
   return {
     kind: content.trap.kind,
@@ -319,7 +333,12 @@ export function smsFor(content: ScenarioContent, item: Item): ShopSms | null {
  */
 export function goodCall(content: ScenarioContent, done: boolean, reportedFake: boolean, flags: { almost?: boolean; openWifi?: boolean } = {}) {
   const mission = content.mission;
-  if (!mission || !done) return null;
+  if (!mission) return null;
+  // Sesli mesajlı görevde iş yapılmadıysa görevi verenin "kaçırdın" mesajı (yazılmışsa).
+  if (!done) {
+    if (!mission.voicemail || !mission.missed.some((l) => l.trim())) return null;
+    return { caller: mission.caller, ...voicedLines(mission.missed, mission.voice?.missed), title: "", missed: true };
+  }
   const voice = mission.voice;
   // Telefon kurulumunda temizleyiciyi kurduysa ve açık ağa bağlandıysa arayan birer satır ekler.
   const setup = mission.install?.setup;
@@ -333,5 +352,16 @@ export function goodCall(content: ScenarioContent, done: boolean, reportedFake: 
     [...mission.good, ...(reportedFake ? [mission.goodReported] : []), ...extra.map((e) => e[0])],
     [...mission.good.map((_, i) => voice?.good[i] ?? ""), ...(reportedFake ? [voice?.goodReported ?? ""] : []), ...extra.map((e) => e[1])],
   );
-  return { caller: mission.caller, ...call, title: mission.goodTitle };
+  return { caller: mission.caller, ...call, title: mission.goodTitle, missed: false };
+}
+
+/** Takip görevinde sorgunun sonucu: gerçek gönderi bulundu (durum ve adımlar) ya da bulunamadı. */
+export type ParcelResult =
+  | { found: true; title: string; text: string; steps: { title: string; note: string }[] }
+  | { found: false; title: string; text: string };
+
+export function parcelResult(track: Track, found: boolean): ParcelResult {
+  return found
+    ? { found: true, title: track.found.title, text: track.found.text, steps: track.found.steps.filter((s) => s.title.trim()) }
+    : { found: false, title: track.missing.title, text: track.missing.text };
 }
