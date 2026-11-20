@@ -43,6 +43,9 @@ Doküman ve tasarım notları Türkçe terimleri kullanır; bu dosya ikisini eş
 | İzin penceresi, puanlanan izin, rapordaki kurulum satırı | `installPermissionSchema` (`choices`, `right`, `almost`), olay `permission_answered` (`permissionKey`), `installChecks`, rapor satırı türü `check` |
 | Mesajdaki dosya (.apk), indirme uyarısı, bilinmeyen kaynak | `item.attachment`, `opensFile`, olaylar `file_opened`, `info_entered`; sunucu eylemleri `openFile`, `installFile`; Az kalsın karşılaştırması `install.fileCompare` |
 | Oyunun ödev ekranı, ödevi aç | `install.game`, olay `homework_opened`, sunucu eylemi `openHomework` |
+| Telefon kurulumu, Wi‑Fi listesi, evin ağı, açık ağın notu, defterdeki şifre | setup (`mission.install.setup`, `setupSchema`; `lib/lab/setup.ts`, `components/lab/install/SetupPhone.tsx`), olay `wifi_connected`, sunucu eylemi `connectWifi`, ipucu koşulu `openWifi` |
+| Sistem güncellemesi, bildirim çubuğu | `setup.update`, olay `update_installed`, sunucu eylemi `installUpdate`; bildirim çubuğu `Shade` |
+| Uygulamadaki sahte uyarı (reklam), temizleyici, "Kurdum!" | `setup.ad` (sahte öğe), olay `ad_closed`, sonuçlar `closed`, `backedOut`; `setup.finish`, olay `setup_finished`, sunucu eylemleri `closeAd`, `finishSetup` |
 | Sitenin tek bilgisayarı (monitör, masaüstü, pencere, görev çubuğu), eğitim kartındaki mail | `Computer`, `ComputerDesktop`, `ComputerWindow`, `WindowBar`, `Taskbar` (`components/device/Computer.tsx`, `computer.css`, `--pc-k`); `MailComputer` |
 | Sitenin tek telefonu, durum çubuğu, kilit ekranı | `Phone`, `PhoneStatus`, `PhoneLock` (`components/device/Phone.tsx`, `phone.css`, `--dv-h`); sürükleyerek kaydırma `useDragScroll` |
 | Ödeme isteği (bankanın ekranı) | request (mesajda `request`; `opensRequest`, `RequestSite`; hacklenme yolu `request`) |

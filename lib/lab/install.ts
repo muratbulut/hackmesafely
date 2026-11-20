@@ -5,6 +5,7 @@
 
 import type { Item, ScenarioContent, StoreApp } from "./content";
 import { permissionKey, type SceneState } from "./events";
+import { homeConnected } from "./setup";
 import { copyAlmostStory, fileAlmostStory, installAfter, installPrompts, type AlmostStory, type InstallAfter, type InstallPrompt } from "./story";
 
 const appOf = (content: ScenarioContent, appId: string) => content.mission?.install?.apps.find((a) => a.id === appId) ?? null;
@@ -27,6 +28,8 @@ export function fileAlmost(content: ScenarioContent): AlmostStory {
 export function installApp(content: ScenarioContent, state: SceneState, appId: string): InstallPrompt[] | null {
   const app = appOf(content, appId);
   if (!app || (state.installed ?? []).includes(app.id)) return null;
+  // Telefon kurulumunda mağaza evin ağına bağlanmadan açılmaz.
+  if (content.mission?.install?.setup && !homeConnected(content, state)) return null;
   return installPrompts(app);
 }
 

@@ -1,0 +1,289 @@
+{
+  "slug": "yeni-telefonunu-kur",
+  "neighborhood": "sehir-kapisi",
+  "type": "SCENARIO",
+  "template": "MESSAGING",
+  "sortOrder": 3,
+  "status": "PUBLISHED",
+  "unlockedBy": "telefonun-ve-internet",
+  "content": {
+    "meta": {
+      "name": "Yeni telefonunu kur",
+      "title": "Kutudan çıktı, sıra sende",
+      "summary": "Ablan Ayça eski telefonunu sıfırlayıp sana verdi. Evin ağına bağlan, güncelle, iki uygulama kur.",
+      "story": "Ayça yeni telefon aldı, eskisini sıfırlayıp sana verdi. Telefon bomboş, kurulum ekranı seni bekliyor. Evin ağına bağlan, telefonu güncelle, Harita ve El Feneri'ni kur. Yolda telefonun kendi soruları da gelecek, başka yerlerden gelen \"uyarılar\" da.",
+      "learn": [
+        {
+          "title": "Ağın sahibini bil",
+          "text": "Kilitli ağın şifresi sahibinden alınır. Şifresiz ağı kimin kurduğunu bilemezsin."
+        },
+        {
+          "title": "Güncelleme Ayarlar'dan gelir",
+          "text": "Telefonun gerçek uyarıları bildirim çubuğunda ve Ayarlar'da görünür, sakindir."
+        },
+        {
+          "title": "Reklam telefonun değil",
+          "text": "Geri sayımlı, korkutan \"virüs bulundu\" ekranı bir reklamdır. Kapat geç."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 6
+    },
+    "reminders": [
+      "Bu ağ kimin?: Şifresini kimden alacağını düşün.",
+      "Bu uyarı nereden geliyor?: Telefonun kendisi mi, bir reklam mı?",
+      "Ne istiyor?: İzni yalnızca işine yarayan uygulamaya ver."
+    ],
+    "items": [
+      {
+        "id": "temizleyici",
+        "kind": "fake",
+        "sender": "El Feneri'ndeki reklam",
+        "address": "telefon-temizle.xyz",
+        "subject": "",
+        "time": "",
+        "body": "UYARI! Telefonunda 3 virüs bulundu. Hemen temizlemezsen fotoğrafların silinecek.",
+        "footer": "",
+        "link": null,
+        "attachment": {
+          "name": "Temizleyici.apk",
+          "size": "12 MB"
+        },
+        "signs": [
+          {
+            "at": "sender",
+            "text": "Uyarı telefonun Ayarlar'ından değil, El Feneri'nin içindeki bir reklamdan geldi. Bir el feneri telefonunu tarayamaz.",
+            "quote": "UYARI!"
+          },
+          {
+            "at": "ask",
+            "text": "Geri sayım ve \"fotoğrafların silinecek\" korkusu düşünmeden basman için. Telefonun gerçek uyarısı acele ettirmez.",
+            "quote": "fotoğrafların silinecek"
+          },
+          {
+            "at": "text",
+            "text": "TEMİZLE düğmesi mağazadan değil, bir siteden .apk indiriyordu. Telefon da \"bilinmeyen kaynak\" diye uyardı.",
+            "quote": "3 virüs bulundu"
+          }
+        ],
+        "why": "Bu ekran telefonundan değil, El Feneri'ndeki bir reklamdan geliyordu. Ayarlar'daki Pil ve cihaz bakımı \"Sorun bulunmadı\" diyordu. TEMİZLE'ye basınca mağazada olmayan bir uygulama iniyordu."
+      }
+    ],
+    "trap": {
+      "url": "",
+      "title": "",
+      "text": "",
+      "ask": "Reklamdaki \"temizleyici\"yi kurmak",
+      "secret": "",
+      "kind": "ransom",
+      "account": "",
+      "scene": "",
+      "realLife": "O uyarı telefonundan değil, El Feneri'ndeki bir reklamdan geliyordu. Kurduğun \"temizleyici\" gerçek hayatta mesajlarını okuyabilir, hesaplarına girmeye çalışabilirdi.",
+      "actions": [
+        "Telefonunun gerçek uyarıları bildirim çubuğunda ve Ayarlar'da görünür.",
+        "Geri sayım ve korkutma görünce pencereyi kapat.",
+        "\"Bilinmeyen kaynağa izin ver\" sorusuna hayır de. Kurduysan bir büyüğüne söyle."
+      ],
+      "almost": true
+    },
+    "tasks": [
+      {
+        "id": "al",
+        "type": "action",
+        "text": "Telefonu al, evin ağına bağlan",
+        "options": [],
+        "right": "",
+        "why": ""
+      },
+      {
+        "id": "kur",
+        "type": "mission",
+        "text": "Telefonu kur, Ayça'ya haber ver",
+        "options": [],
+        "right": "Ev_Wifi'ya defterdeki şifreyle bağlanmak, güncellemeyi Ayarlar'dan yüklemek, Harita ve El Feneri'ni kurmak, Ayça'ya \"Kurdum!\" yazmak.",
+        "why": "Evin ağı da güncelleme de telefonun kendi ekranlarından gelir. Reklamın içindeki uyarı telefonun değildir."
+      },
+      {
+        "id": "guncelleme",
+        "type": "question",
+        "text": "Telefonunun gerçek güncellemesi nereden gelir?",
+        "options": [
+          { "text": "Ayarlar'dan ve bildirim çubuğundan", "points": 1 },
+          { "text": "Bir sitedeki ya da reklamdaki uyarıdan", "points": 0 },
+          { "text": "Mesajla gelen dosyadan", "points": 0 }
+        ],
+        "right": "Ayarlar'dan ve bildirim çubuğundan.",
+        "why": "Telefonun kendi güncellemesi bildirim çubuğunda haber verir, Ayarlar'dan yüklenir. Sitedeki ya da reklamdaki \"güncelle\" düğmesi telefonun değildir."
+      },
+      {
+        "id": "qr",
+        "type": "question",
+        "text": "Okulun kapısındaki afişte bir QR var. Okutunca cinarortaokulu-menu.xyz çıktı. Ne yaparsın?",
+        "options": [
+          { "text": "Açmam; okulun adresi bu değil, öğretmenime sorarım", "points": 1 },
+          { "text": "Açarım, okulun afişinde duruyor", "points": 0 },
+          { "text": "Açarım ama bir şey yazmam", "points": 0 }
+        ],
+        "right": "Açmamak, öğretmene sormak.",
+        "why": "QR kod bir bağlantıdır; afişin üstüne başka bir QR yapıştırılmış olabilir. Okulun adresi k12.tr ile biter, .xyz değil."
+      }
+    ],
+    "tips": [
+      {
+        "text": "Telefonunun sesi Ayarlar'dadır, reklamın içinde değil. Geri sayımlı uyarıyı × ile kapat.",
+        "when": "engaged"
+      },
+      {
+        "text": "Gerçek hayatta reklamdan bir uygulama kurduysan hemen sil ve bir büyüğüne söyle.",
+        "when": "hacked"
+      },
+      {
+        "text": "Bağlanmadan önce sor: bu ağ kimin?",
+        "when": "openWifi"
+      },
+      {
+        "text": "İzni ihtiyaca göre ver: el fenerinin konumuna ihtiyacı yok.",
+        "when": "extraPermission"
+      },
+      {
+        "text": "Ağın sahibini bil, güncellemeyi Ayarlar'dan yükle, reklamı kapat.",
+        "when": "always"
+      }
+    ],
+    "mission": {
+      "caller": "Ayça",
+      "look": "friend",
+      "owner": "Ayça'nın",
+      "lines": [
+        "Yeni telefonum geldi! Eskisi artık senin. Sıfırladım, içi bomboş.",
+        "Wi‑Fi şifresi annemin defterinde yazıyor, masanın üstünde duruyor.",
+        "Kurunca bana yaz, bakalım becerebilecek misin!"
+      ],
+      "title": "Telefonunu kur",
+      "points": [
+        "Evin **Wi‑Fi**'ına bağlan, şifre **defterde**",
+        "Telefonu **güncelle**",
+        "**Harita** ve **El Feneri**'ni kur",
+        "Bitince **Ayça'ya** haber ver"
+      ],
+      "pointIcons": ["wifi", "download", "pin", "message"],
+      "accept": "Tamam, kuruyorum",
+      "install": {
+        "store": "Mağaza",
+        "query": "Harita",
+        "apps": [
+          {
+            "id": "harita",
+            "name": "Harita",
+            "publisher": "Yol Bilgi Atölyesi",
+            "rating": "4,5",
+            "downloads": "10 Mn+",
+            "category": "Ulaşım",
+            "text": "Yol tarifi, otobüs saatleri ve yakındaki yerler. Okula en kısa yolu gösterir.",
+            "icon": "map",
+            "permissions": [
+              {
+                "text": "konumuna erişmek istiyor.",
+                "note": "Yol tarifi için",
+                "icon": "pin",
+                "choices": ["Uygulamayı kullanırken", "Her zaman", "İzin verme"],
+                "right": 0,
+                "report": {
+                  "title": "Harita'nın konum izni",
+                  "ok": "\"Uygulamayı kullanırken\" dedin; harita yolunu gösterebildi.",
+                  "bad": "Haritaya ya her zaman izin verdin ya da hiç vermedin.",
+                  "right": "\"Uygulamayı kullanırken\" demek.",
+                  "why": "Harita yol tarifi için konumuna gerçekten ihtiyaç duyar. Ama yalnızca açıkken; \"Her zaman\" deyince sen kullanmazken de nerede olduğunu bilir."
+                }
+              }
+            ]
+          },
+          {
+            "id": "el-feneri",
+            "name": "El Feneri",
+            "publisher": "Parlak Araçlar",
+            "rating": "4,1",
+            "downloads": "5 Mn+",
+            "category": "Araçlar",
+            "text": "Tek dokunuşla telefonunun ışığını yakar. Ücretsiz, reklamlı.",
+            "icon": "flashlight",
+            "permissions": [
+              {
+                "text": "konumuna erişmek istiyor.",
+                "note": "",
+                "icon": "pin",
+                "choices": ["Uygulamayı kullanırken", "Her zaman", "İzin verme"],
+                "right": 2,
+                "report": {
+                  "title": "El Feneri'nin konum izni",
+                  "ok": "\"İzin verme\" dedin; fener yine yandı.",
+                  "bad": "El Feneri'ne konumuna izin verdin. Fenerin buna ihtiyacı yoktu.",
+                  "right": "\"İzin verme\" demek.",
+                  "why": "Işığı yakmak için nerede olduğunu bilmek gerekmez. İşine yaramayan izni reddedince uygulama yine çalışır."
+                }
+              }
+            ]
+          }
+        ],
+        "fileCompare": {
+          "left": { "label": "Kurmak üzere olduğun", "value": "Temizleyici.apk", "note": "reklamdan · telefon-temizle.xyz" },
+          "right": { "label": "Telefonunun uyarısı", "value": "Ayarlar", "note": "Pil ve cihaz bakımı · Sorun bulunmadı" }
+        },
+        "setup": {
+          "wifi": {
+            "networks": [
+              { "name": "Ev_Wifi", "locked": true, "home": true },
+              { "name": "Bedava_Internet", "locked": false },
+              { "name": "Komsu_5G", "locked": true }
+            ],
+            "password": "mavi-kapi-42",
+            "notebook": { "title": "Ev_Wifi şifresi", "from": "Annen" },
+            "openNote": {
+              "title": "Bu ağ kimin?",
+              "text": "Şifresiz ağı kimin kurduğunu bilemezsin. Biri, bağlananların ne yaptığını görmek için kurmuş olabilir. Evdesin, evin ağı var.",
+              "button": "Ağı unut, Ev_Wifi'ya geç"
+            },
+            "unknown": "Bu ağın şifresini bilmiyorsun. Defterde yalnızca Ev_Wifi yazıyor.",
+            "report": {
+              "title": "Bağlandığın ağ",
+              "ok": "Evin ağına, defterdeki şifreyle bağlandın.",
+              "bad": "Önce şifresiz Bedava_Internet'e bağlandın.",
+              "right": "Ev_Wifi'ya defterdeki şifreyle bağlanmak.",
+              "why": "Kilitli ağın şifresi sahibinden alınır. Şifresiz ağı kimin kurduğunu bilemezsin; evde evin ağı varken ona gerek yok."
+            }
+          },
+          "update": {
+            "title": "Sistem güncellemesi hazır",
+            "text": "Güvenlik açıkları kapatıldı, telefonun daha hızlı çalışacak.",
+            "version": "Sürüm 14.2",
+            "size": "320 MB",
+            "done": "Güncelleme yüklendi. Telefonun güncel."
+          },
+          "ad": {
+            "item": "temizleyici",
+            "app": "el-feneri",
+            "title": "UYARI! Telefonunda 3 virüs bulundu",
+            "text": "Pilin %87 hasarlı. Hemen temizlemezsen fotoğrafların silinecek.",
+            "button": "TEMİZLE",
+            "source": "telefon-temizle.xyz"
+          },
+          "finish": {
+            "text": "Kurabildin mi? 😄",
+            "reply": "Kurdum!"
+          },
+          "good": {
+            "almost": "O temizleyici reklamını ben de gördüm. Bir dahakine kapat geç, telefonun gerçek uyarısı Ayarlar'da olur.",
+            "openWifi": "Bu arada şifresiz ağlara bağlanma, annem duyarsa kızar."
+          }
+        }
+      },
+      "good": [
+        "Süper, telefon tıkır tıkır çalışıyor! El Feneri senden de konum istedi mi? Ben hiç vermedim."
+      ],
+      "goodReported": "",
+      "goodTitle": "Telefon kuruldu",
+      "done": "Telefonu evin ağıyla kurdun, güncelledin, iki uygulamayı kurdun."
+    },
+    "stage": { "type": "PHONE" }
+  }
+}

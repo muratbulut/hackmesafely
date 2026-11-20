@@ -87,7 +87,7 @@ export const cardIcons = [
   "globe", "users", "lock", "eye", "shield", "ban",
   "gamepad", "school", "camera", "house", "key", "phone", "card", "mail", "user", "id", "pin", "calendar", "message", "image", "heart", "tag",
   "call", "flip", "stop", "ask", "search", "flag", "gift", "pen",
-  "headphones", "file", "cog", "download", "wifi", "bell", "qr",
+  "headphones", "file", "cog", "download", "flashlight", "map", "wifi", "bell", "qr",
 ] as const;
 export type CardIcon = (typeof cardIcons)[number];
 
@@ -453,9 +453,10 @@ export type Task = z.infer<typeof taskSchema>;
  * (mission.login): leftOpen: çıkış yapmadan kalktıysa, remembered: "Beni hatırla"yı işaretli
  * bıraktıysa, savedPassword: şifreyi tarayıcıya kaydettirdiyse, wrongAnswer: bir soruda tam puan
  * almadıysa. Kurulum görevinde (mission.install): wrongApp: mağazadaki kopya uygulamayı kurduysa,
- * extraPermission: puanlanan izinde yanlış seçtiyse.
+ * extraPermission: puanlanan izinde yanlış seçtiyse. Telefon kurulumunda (install.setup): openWifi:
+ * şifresiz (açık) ağa bağlandıysa.
  */
-export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always", "leftOpen", "remembered", "savedPassword", "wrongAnswer", "wrongApp", "extraPermission"] as const;
+export const tipConditions = ["engaged", "hacked", "missedFake", "reportedReal", "always", "leftOpen", "remembered", "savedPassword", "wrongAnswer", "wrongApp", "extraPermission", "openWifi"] as const;
 export type TipCondition = (typeof tipConditions)[number];
 
 /** Görevli odanın görev puanı: doğru yerden alınca 1. */
@@ -520,6 +521,48 @@ export const storeAppSchema = z.object({
   almost: z.object({ realLife: line(500), steps: z.array(line(200)).max(3).default([]), compare: compareSchema }).optional(),
 });
 export type StoreApp = z.infer<typeof storeAppSchema>;
+
+/**
+ * Telefon kurulumu (Şehir Kapısı "Yeni telefonunu kur", kurulum görevinin bir türü): telefon
+ * sıfırlanmış gelir. Önce kurulum ekranında Wi‑Fi seçilir (evin ağının şifresi masadaki defterde),
+ * sonra ana ekranda bildirim çubuğu ve Ayarlar'dan güncelleme yüklenir, mağazadan uygulamalar
+ * kurulur, izinlere cevap verilir. Bir uygulamanın içindeki tam ekran reklam (`ad`, sahte öğe)
+ * "virüs" diye korkutur; TEMİZLE dosyayı indirir ve telefonun uyarıları (.apk ile aynı) gelir.
+ * Her şey kurulunca arayanın bildirimine "Kurdum!" diye cevap verilir ve görev biter.
+ *
+ * Tarayıcıya ağların yalnızca adı ve kilidi, defterdeki şifre, güncellemenin ekranı ve reklamın
+ * görünüşü gider. Hangi ağın evin ağı olduğu (`home`), açık ağın notu, bilinmeyen şifre cümlesi,
+ * güncellemenin "yüklendi" cümlesi ve rapor satırları gitmez; seçince sunucu söyler.
+ */
+export const setupNetworkSchema = z.object({ name: line(32), locked: z.boolean().default(false), home: z.boolean().default(false) });
+
+export const setupSchema = z.object({
+  wifi: z.object({
+    networks: z.array(setupNetworkSchema).min(2).max(4),
+    /** Evin ağının şifresi; defterde yazılı, şifre kutusu deftere dokununca dolar (yazılan gitmez). */
+    password: line(40),
+    /** Defterin sayfası: başlık ("Ev_Wifi şifresi") ve altındaki imza ("Annen"). */
+    notebook: z.object({ title: line(60), from: line(40).default("") }),
+    /** Açık ağa bağlanınca gelen küçük not (Az kalsın değil): başlık, metin, "Ağı unut" düğmesi. */
+    openNote: z.object({ title: line(60), text: line(300), button: line(40) }),
+    /** Şifresini bilmediği kilitli ağ: "Bu ağın şifresini bilmiyorsun." */
+    unknown: line(160),
+    report: checkReportSchema,
+  }),
+  /** Sistem güncellemesi: bildirim, Ayarlar'daki sayfa ve bitince yazan cümle (`done` tarayıcıya gitmez). */
+  update: z.object({ title: line(60), text: line(160), version: line(40), size: line(20).default(""), done: line(120) }),
+  /** Uygulamanın içindeki tam ekran reklam: hangi sahte öğe, hangi uygulamada, ekranı. */
+  ad: z.object({ item: id, app: id, title: line(80), text: line(200), button: line(30), source: fakeUrl }),
+  /** Görevi bitiren bildirim: arayanın sorusu ve hazır cevap ("Kurdum!"). */
+  finish: z.object({ text: line(120), reply: line(40) }),
+  /**
+   * İyi bitiş aramasına eklenen satırlar (mission.good'dan sonra): temizleyiciyi kurduysa (Az
+   * kalsın) ve açık ağa bağlandıysa; sesleri aynı adlarla. Boşsa eklenmez.
+   */
+  good: z.object({ almost: line(160).default(""), openWifi: line(160).default("") }).default({ almost: "", openWifi: "" }),
+  voice: z.object({ almost: voiceSrc.default(""), openWifi: voiceSrc.default("") }).optional(),
+});
+export type Setup = z.infer<typeof setupSchema>;
 
 export const missionSchema = z.object({
   /** Arayanın telefondaki adı: "Annem". */
@@ -633,8 +676,10 @@ export const missionSchema = z.object({
       store: line(30),
       query: line(40),
       apps: z.array(storeAppSchema).max(3).default([]),
-      game: z.object({ title: line(60), homework: line(80), open: line(30), done: line(120) }),
+      /** Oyunun ödev ekranı; telefon kurulumunda (setup) yazılmaz. */
+      game: z.object({ title: line(60), homework: line(80), open: line(30), done: line(120) }).optional(),
       fileCompare: compareSchema,
+      setup: setupSchema.optional(),
     })
     .optional(),
   /** SMS'teki onay kodu: "481 920". Giriş görevinde telefona gelen giriş kodu. */
@@ -768,15 +813,22 @@ export function missionMode(content: { mission?: { sale?: unknown; signup?: unkn
  * Kurulum görevinin rapordaki ayrı kararları (her biri 1 puan): mağazadaki her kopya uygulama
  * (kurmamak doğru) ve gerçek uygulamaların puanlanan izinleri (doğru seçenek).
  */
-export type InstallCheck = { key: string; app: string; kind: "copy" | "permission"; index: number };
+export type InstallCheck = { key: string; app: string; kind: "copy" | "permission" | "wifi"; index: number };
 
 export function installChecks(content: { mission?: Mission | null }): InstallCheck[] {
   const apps = content.mission?.install?.apps ?? [];
-  return apps.flatMap((app): InstallCheck[] =>
+  // Telefon kurulumunda ilk denetim ağdır: açık ağa hiç bağlanmadan evin ağına bağlanmak.
+  const wifi: InstallCheck[] = content.mission?.install?.setup ? [{ key: "wifi", app: "", kind: "wifi", index: -1 }] : [];
+  return wifi.concat(apps.flatMap((app): InstallCheck[] =>
     app.copy
       ? [{ key: `copy-${app.id}`, app: app.id, kind: "copy", index: -1 }]
       : app.permissions.flatMap((p, index) => (p.right !== null ? [{ key: `perm-${app.id}-${index}`, app: app.id, kind: "permission" as const, index }] : [])),
-  );
+  ));
+}
+
+/** Telefon kurulumu mu (kurulum görevinin türü, install.setup)? */
+export function setupOf(content: { mission?: Mission | null }): Setup | null {
+  return content.mission?.install?.setup ?? null;
 }
 
 /** Satış görevli odada bu öğenin bağlantısı bankanın ödeme isteğini açar mı? */

@@ -59,7 +59,11 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
   const requestOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesRequest };
   // Kurulum görevinde sahte mesajın eki .apk'dır: satırı dosyadan söz eder.
   const fileOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesFile };
-  const fakeRight = content.mission?.install
+  // Telefon kurulumunda sahte öğe mesaj değil, uygulamanın içindeki reklamdır.
+  const adOutcomes = { ...t.outcomes.MESSAGING, ...t.outcomesAd };
+  const fakeRight = content.mission?.install?.setup
+    ? t.defaultsAd.fakeRight
+    : content.mission?.install
     ? t.defaultsFile.fakeRight
     : content.mission?.sale
     ? t.defaultsRequest.fakeRight
@@ -68,7 +72,7 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
       : t.defaults[template].fakeRight;
 
   // Giriş görevinde başlık, ipuçları ve rapor dili kapıya göredir (mail ya da mesaj yok).
-  const voice = content.mission?.login ? "login" : template;
+  const voice = content.mission?.login ? "login" : content.mission?.install?.setup ? "setup" : template;
 
   const rows: ReportRowView[] = report.rows.flatMap((row): ReportRowView[] => {
     if (row.type === "login") {
@@ -109,7 +113,8 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
     if (row.type === "check") {
       const check = installChecks(content).find((c) => c.key === row.check);
       const app = check ? content.mission?.install?.apps.find((a) => a.id === check.app) : undefined;
-      const text = check?.kind === "copy" ? app?.report : app?.permissions[check?.index ?? -1]?.report;
+      const text =
+        check?.kind === "wifi" ? content.mission?.install?.setup?.wifi.report : check?.kind === "copy" ? app?.report : app?.permissions[check?.index ?? -1]?.report;
       if (!text) return [];
       return [
         {
@@ -151,20 +156,22 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
       {
         key: `i-${row.item}`,
         kind: row.type,
-        title: format(t.rowTitle[template], { sender: item.sender }),
-        tag: t.tags[template][row.type],
+        title: row.type === "fake" && row.by === "ad" ? format(t.rowTitleAd, { sender: item.sender }) : format(t.rowTitle[template], { sender: item.sender }),
+        tag: row.type === "fake" && row.by === "ad" ? t.tags.ad : t.tags[template][row.type],
         state: row.state,
         points: scaled(row.points),
         max: scaled(row.max),
         did:
           row.type === "fake"
-            ? (template === "MESSAGING" && row.by === "file"
+            ? ((row.by === "ad"
+                ? adOutcomes
+                : template === "MESSAGING" && row.by === "file"
                 ? fileOutcomes
                 : template === "MESSAGING" && row.by === "request"
                 ? requestOutcomes
                 : template === "MESSAGING" && row.by === "link"
                   ? linkOutcomes
-                  : t.outcomes[template])[row.outcome]
+                  : t.outcomes[template]) as Record<string, string>)[row.outcome] ?? t.skipped
             : t.outcomes[template][realKey[row.outcome]],
         right: row.type === "fake" ? fakeRight : t.defaults[template].realRight,
         why: item.why,
@@ -175,7 +182,7 @@ export function buildReportView(content: ScenarioContent, template: ScenarioTemp
   const fake = content.items.find((i) => i.kind === "fake" && i.signs.some((s) => s.text.trim())) ?? null;
   const signs = fake
     ? {
-        heading: report.caught ? t.signsCaught[template] : t.signsMissed,
+        heading: report.caught ? (content.mission?.install?.setup ? t.signsCaughtAd : t.signsCaught[template]) : t.signsMissed,
         item: {
           sender: fake.sender,
           address: fake.address,

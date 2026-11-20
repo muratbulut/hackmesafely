@@ -7,6 +7,7 @@
 
 import { installChecks, loginPoints, maxScore, missionMode, missionPoints, reportScale, type CompromiseKind, type LoginChoice, type ScenarioContent } from "./content";
 import { codeDecided, folderOf, permissionKey, type SceneState } from "./events";
+import { homeConnected, openConnected } from "./setup";
 
 export type RowState = "ok" | "part" | "bad" | "skip";
 
@@ -14,9 +15,11 @@ export type RowState = "ok" | "part" | "bad" | "skip";
  * Sahte öğe: hacklendi, önce tıklayıp sonra bildirdi, bildirdi, sildi, tıklayıp bıraktı, dokunmadı.
  * stopped: görevli odada sahte mağazaya kartla ödedi ama onay kodunu yazmadı (son anda durdu;
  * hacklenmiş sayılmaz ama kart bilgisi gitti, 0 puan). almost: "Az kalsın" odasında (trap.almost)
- * sahte sayfaya bilgi girdi; oda bitmedi, hacklenmiş sayılmaz ama 0 puan.
+ * sahte sayfaya bilgi girdi; oda bitmedi, hacklenmiş sayılmaz ama 0 puan. Telefon kurulumundaki
+ * reklamda (install.setup.ad) bildirmek yoktur: closed × ile kapattı (4), backedOut TEMİZLE'ye bastı
+ * ama telefonun uyarısında vazgeçti (2), almost temizleyiciyi kurdu (0), ignored reklamı hiç görmedi.
  */
-export type FakeOutcome = "hacked" | "almost" | "stopped" | "reportedAfterEngaging" | "reported" | "deleted" | "engagedLeft" | "ignored";
+export type FakeOutcome = "hacked" | "almost" | "stopped" | "reportedAfterEngaging" | "reported" | "deleted" | "engagedLeft" | "ignored" | "closed" | "backedOut";
 export type RealOutcome = "reported" | "deleted" | "kept";
 
 /**
@@ -25,7 +28,7 @@ export type RealOutcome = "reported" | "deleted" | "kept";
  * Mesajlaşmada raporun cümlesini seçer; eski raporlarda yoktur. file: kurulum görevinde mesajdaki
  * dosyayı (.apk) indirerek (ve kurmaya çalışarak).
  */
-export type EngagedBy = "link" | "reply" | "request" | "file";
+export type EngagedBy = "link" | "reply" | "request" | "file" | "ad";
 
 export type ReportRow =
   | { type: "fake"; item: string; outcome: FakeOutcome; by?: EngagedBy; state: RowState; points: number; max: number }
@@ -71,7 +74,12 @@ const fakeScores: Record<FakeOutcome, [RowState, number]> = {
   deleted: ["part", 2],
   engagedLeft: ["bad", 0],
   ignored: ["part", 1],
+  closed: ["ok", 4],
+  backedOut: ["part", 2],
 };
+
+/** Sahte öğe sonucunun puanı ("Öğrenci gibi dene" düğmelerindeki "+4"). */
+export const fakeOutcomePoints = (outcome: FakeOutcome) => fakeScores[outcome][1];
 
 const realScores: Record<RealOutcome, [RowState, number]> = {
   reported: ["bad", 0],
@@ -97,6 +105,14 @@ export function fakeOutcome(state: SceneState, item: string, mission = false, al
   return engaged ? "engagedLeft" : "ignored";
 }
 
+/** Telefon kurulumundaki reklam: kurduysa az kalsın, TEMİZLE'den sonra vazgeçtiyse yarım, kapattıysa tam. */
+export function adOutcome(state: SceneState, item: string): FakeOutcome {
+  if (state.infoEntered.includes(item)) return "almost";
+  if ((state.filesOpened ?? []).includes(item)) return "backedOut";
+  if ((state.adsClosed ?? []).includes(item)) return "closed";
+  return "ignored";
+}
+
 export function engagedBy(state: SceneState, item: string): EngagedBy | undefined {
   if ((state.filesOpened ?? []).includes(item)) return "file";
   if (state.infoEntered.includes(item)) return "link";
@@ -120,6 +136,7 @@ export function missionDone(content: Pick<ScenarioContent, "items" | "mission">,
     const sent = state.formSent ?? [];
     return content.items.some((i) => i.kind === "real" && i.form && sent.includes(i.id));
   }
+  if (content.mission?.install?.setup) return !!state.setupFinished;
   if (content.mission?.install) {
     const apps = content.mission.install.apps;
     return (state.homework ?? []).some((id) => apps.some((a) => a.id === id && !a.copy));
@@ -155,7 +172,14 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
   const mode = missionMode(content);
   const mission = mode === "shop" || mode === "sale";
 
+  const adItem = content.mission?.install?.setup?.ad.item ?? null;
   for (const item of content.items) {
+    if (item.kind === "fake" && item.id === adItem) {
+      const outcome = adOutcome(state, item.id);
+      const [rowState, points] = fakeScores[outcome];
+      rows.push({ type: "fake", item: item.id, outcome, by: "ad", state: rowState, points, max: 4 });
+      continue;
+    }
     if (item.kind === "fake") {
       const outcome = fakeOutcome(state, item.id, mission, content.trap.almost);
       const [rowState, points] = fakeScores[outcome];
@@ -199,6 +223,13 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
   let extraPermission = false;
   const checkRows: ReportRow[] = [];
   for (const check of installChecks(content)) {
+    if (check.kind === "wifi") {
+      const joined = homeConnected(content, state);
+      const open = openConnected(content, state);
+      const ok = joined && !open;
+      checkRows.push({ type: "check", check: check.key, ok, state: !joined && !open ? "skip" : ok ? "ok" : "bad", points: ok ? 1 : 0, max: 1 });
+      continue;
+    }
     if (check.kind === "copy") {
       const ok = !installed.includes(check.app);
       wrongApp ||= !ok;
@@ -246,6 +277,7 @@ export function scoreScenario(content: ScenarioContent, state: SceneState): Scen
     wrongAnswer: rows.some((r) => r.type === "question" && r.state !== "ok"),
     wrongApp,
     extraPermission,
+    openWifi: openConnected(content, state),
   };
   const missedQuestion = (task: string) => rows.some((r) => r.type === "question" && r.task === task && r.state !== "ok");
   const tips = content.tips

@@ -5,7 +5,7 @@
 
 import type { ScenarioContent, ScenarioTemplate } from "@/lib/lab/content";
 import { reduceEvents, type LabEventData, type SceneState } from "@/lib/lab/events";
-import { scoreScenario, type FakeOutcome, type RealOutcome } from "@/lib/lab/scoring";
+import { fakeOutcomePoints, scoreScenario, type FakeOutcome, type RealOutcome } from "@/lib/lab/scoring";
 
 /** Seçim listesindeki sıra (en iyiden en kötüye). */
 export const fakeChoices = ["reported", "deleted", "ignored", "reportedAfterEngaging", "engagedLeft", "hacked"] as const satisfies readonly FakeOutcome[];
@@ -15,7 +15,11 @@ export const missionFakeChoices = ["reported", "deleted", "ignored", "reportedAf
 /** "Az kalsın" odasında sahte sayfaya bilgi girmek "hacklendi" değil "az kalsın"dır. */
 export const almostFakeChoices = ["reported", "deleted", "ignored", "reportedAfterEngaging", "engagedLeft", "almost"] as const satisfies readonly FakeOutcome[];
 
+/** Telefon kurulumundaki reklam: bildirmek yok; kapattı, TEMİZLE'den sonra vazgeçti, görmedi, kurdu. */
+export const adFakeChoices = ["closed", "backedOut", "ignored", "almost"] as const satisfies readonly FakeOutcome[];
+
 export function fakeChoicesFor(content: Pick<ScenarioContent, "mission"> & { trap?: Pick<ScenarioContent["trap"], "almost"> }): readonly FakeOutcome[] {
+  if (content.mission?.install?.setup) return adFakeChoices;
   if (content.trap?.almost) return almostFakeChoices;
   // Satış ve kayıt görevinde "son anda durma" yok: ödeme isteği ya onaylanır ya reddedilir, kayıtta ödeme yok.
   return content.mission && !content.mission.sale && !content.mission.signup ? missionFakeChoices : fakeChoices;
@@ -34,7 +38,8 @@ export type TryPath = {
 /** Varsayılan yol: her şeyi doğru yapan öğrenci (sahteleri bildirir, en yüksek puanlı seçenek). */
 export function defaultTryPath(content: ScenarioContent): TryPath {
   const items: TryPath["items"] = {};
-  for (const item of content.items) items[item.id] = item.kind === "fake" ? "reported" : "kept";
+  const ad = content.mission?.install?.setup?.ad.item;
+  for (const item of content.items) items[item.id] = item.kind === "fake" ? (item.id === ad ? "closed" : "reported") : "kept";
   const answers: TryPath["answers"] = {};
   for (const task of content.tasks) {
     if (task.type !== "question") continue;
@@ -97,6 +102,24 @@ function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: 
     case "ignored":
     case "kept":
       return [opened];
+    // Telefon kurulumundaki reklam (stateFromPath reklamda adEvents'i kullanır).
+    case "closed":
+    case "backedOut":
+      return [opened];
+  }
+}
+
+/** Telefon kurulumundaki reklam: kapatmak, TEMİZLE'den sonra vazgeçmek ya da temizleyiciyi kurmak. */
+function adEvents(item: string, outcome: FakeOutcome | RealOutcome): LabEventData[] {
+  switch (outcome) {
+    case "closed":
+      return [{ type: "ad_closed", item }];
+    case "backedOut":
+      return [{ type: "file_opened", item }];
+    case "almost":
+      return [{ type: "file_opened", item }, { type: "info_entered", item }];
+    default:
+      return [];
   }
 }
 
@@ -104,7 +127,18 @@ function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: 
 export function stateFromPath(content: ScenarioContent, template: ScenarioTemplate, path: TryPath): SceneState {
   const events: LabEventData[] = [];
   const mission = content.mission ? (content.mission.sale ? "sale" : content.mission.signup ? "signup" : content.mission.install ? "install" : "buy") : null;
+  const setup = content.mission?.install?.setup;
+  // Telefon kurulumu: doğru yol önce evin ağına bağlanır, güncellemeyi yükler (mağaza ağı ister).
+  if (setup) {
+    const home = setup.wifi.networks.findIndex((n) => n.home);
+    if (home >= 0) events.push({ type: "wifi_connected", network: home });
+    events.push({ type: "update_installed" });
+  }
   for (const item of content.items) {
+    if (setup && item.id === setup.ad.item) {
+      events.push(...adEvents(item.id, path.items[item.id] ?? "closed"));
+      continue;
+    }
     const fallback = item.kind === "fake" ? "reported" : "kept";
     events.push(...itemEvents(item.id, path.items[item.id] ?? fallback, template, mission));
   }
@@ -124,7 +158,14 @@ export function stateFromPath(content: ScenarioContent, template: ScenarioTempla
   }
   // Kurulum görevi: doğru yol (gerçek oyunu mağazadan kurar, izinlerde doğrusunu seçer, ödevi açar).
   const realApp = content.mission?.install?.apps.find((a) => !a.copy);
-  if (mission === "install" && realApp && path.missionDone !== false) {
+  if (setup) {
+    // Telefon kurulumu: bütün gerçek uygulamalar, izinlerde doğrusu; görev "Kurdum!" ile biter.
+    for (const app of content.mission?.install?.apps.filter((a) => !a.copy) ?? []) {
+      events.push({ type: "app_installed", app: app.id });
+      app.permissions.forEach((p, index) => events.push({ type: "permission_answered", app: app.id, index, choice: p.right ?? 0 }));
+    }
+    if (path.missionDone !== false) events.push({ type: "setup_finished" });
+  } else if (mission === "install" && realApp && path.missionDone !== false) {
     events.push({ type: "app_installed", app: realApp.id });
     realApp.permissions.forEach((p, index) => events.push({ type: "permission_answered", app: realApp.id, index, choice: p.right ?? 0 }));
     events.push({ type: "homework_opened", app: realApp.id });
@@ -153,6 +194,8 @@ export function reportForPath(content: ScenarioContent, template: ScenarioTempla
 
 /** Seçimin puanı (düğmelerdeki "+4"); puan tablosu lib/lab/scoring.ts'ten okunur. */
 export function outcomePoints(kind: "fake" | "real", outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate): number {
+  // Reklamın sonuçları kendi kuralıyla puanlanır (bildirmek yok): puan tablosundan okunur.
+  if (kind === "fake" && (outcome === "closed" || outcome === "backedOut")) return fakeOutcomePoints(outcome);
   const item = { id: "x", kind, sender: "", address: "", subject: "", time: "", body: "", footer: "", link: null, attachment: null, signs: [], why: "" };
   const content = {
     meta: { name: "", title: "", summary: "", story: "", learn: [], difficulty: "EASY", durationMin: 5 },
