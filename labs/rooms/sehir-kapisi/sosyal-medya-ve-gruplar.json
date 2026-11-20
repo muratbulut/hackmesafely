@@ -1,0 +1,367 @@
+{
+  "slug": "sosyal-medya-ve-gruplar",
+  "neighborhood": "sehir-kapisi",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 4,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Sosyal medya ve gruplar",
+      "title": "Kim görüyor, kim yazıyor?",
+      "summary": "Profil, takipçi, açık ve gizli hesap, etiket ve gruplar. Bir şey canını sıktığında kullanacağın üç düğme: ekran görüntüsü, bildir, engelle.",
+      "story": "Paylaştığın bir fotoğraf, yazdığın bir yorum ya da eklendiğin bir grup düşündüğünden çok daha fazla kişiye ulaşabilir. Kimin gördüğünü çoğu zaman tek bir ayar belirler. Bu odada önce tahmin edecek, sonra kuralı göreceksin: bir hesabın parçaları, açık ve gizli hesap, etiketler ve kalabalık gruplar. Bir şey canını sıktığında ne yapacağını da öğreneceksin. Dostluk Parkı'na bu bilgiyle gireceksin.",
+      "learn": [
+        {
+          "title": "Kim görüyor?",
+          "text": "Açık ve gizli hesap, takip isteği: gönderini kimin göreceğini ne belirler?"
+        },
+        {
+          "title": "Ne anlatıyor?",
+          "text": "Biyografin, etiketler ve konum etiketi senin hakkında neler söyler?"
+        },
+        {
+          "title": "Gruplar ve üç düğme",
+          "text": "Kalabalık bir gruba eklenince ne yaparsın? Ekran görüntüsü, bildir ve engelle ne işe yarar?"
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 7
+    },
+    "cards": [
+      {
+        "id": "kim-goruyor",
+        "type": "video",
+        "title": "Ayça ve Cansu: kim görüyor?",
+        "src": "/videolar/kim-goruyor.mp4",
+        "duration": "1:02",
+        "question": {
+          "at": 22,
+          "question": "Cansu'nun hesabı açık: Gizli hesap anahtarı kapalı. Paylaştığı fotoğrafı kimler görebilir?",
+          "options": [
+            "Yalnızca takipçileri",
+            "Uygulamayı kullanan herkes, hiç tanımadığı kişiler de",
+            "Yalnızca okulundaki öğrenciler",
+            "Yalnızca telefon rehberindeki kişiler"
+          ],
+          "answer": 1,
+          "explain": "Gizli hesap anahtarı kapalıysa hesap açıktır. Açık hesabın gönderilerini, takip etmeseler bile uygulamayı kullanan herkes görebilir. Gizli hesapta gönderileri yalnızca Cansu'nun kabul ettiği takipçiler görür."
+        }
+      },
+      {
+        "id": "profilin-parcalari",
+        "type": "info",
+        "layout": "explore",
+        "title": "Bir sosyal medya hesabının parçaları",
+        "paragraphs": [
+          "Uygulamalar farklı görünse de parçaları birbirine benzer. Her alana dokun.",
+          "Çoğu uygulama 13 yaşından küçüklere hesap açtırmaz. Açacağın her hesabı önce ailenle konuş."
+        ],
+        "points": [
+          {
+            "title": "Profil",
+            "text": "Adın ya da kullanıcı adın, fotoğrafın ve biyografin. Seni ilk görenin gördüğü yer.",
+            "icon": "user"
+          },
+          {
+            "title": "Gönderi",
+            "text": "Paylaştığın fotoğraf, video ya da yazı. Altına yorum yapılabilir, başkaları da paylaşabilir.",
+            "icon": "image"
+          },
+          {
+            "title": "Takipçi",
+            "text": "Gönderilerini kendi akışında gören kişiler.",
+            "icon": "users"
+          },
+          {
+            "title": "Takip isteği",
+            "text": "Gizli hesabında seni görmek isteyen birinin sorusu. Kabul edersen o da takipçin olur.",
+            "icon": "flag"
+          }
+        ]
+      },
+      {
+        "id": "gizlide-ne-gorunur",
+        "type": "quiz",
+        "guess": true,
+        "question": "Ayça'nın hesabı gizli. Hiç tanımadığı biri Ayça'nın profiline baktı. Büyük ihtimalle ne görür?",
+        "options": [
+          "Hiçbir şey, gizli hesap tamamen kapalıdır",
+          "Profil fotoğrafını, adını ve biyografisini; gönderilerini değil",
+          "Bütün gönderilerini, yalnızca yorum yapamaz",
+          "Yalnızca son paylaştığı gönderiyi"
+        ],
+        "answer": 1,
+        "explain": "Gizli hesap gönderileri kapatır, profilin vitrinini değil. Çoğu uygulamada profil fotoğrafı, ad ve biyografi herkese görünmeye devam eder. Bu yüzden biyografine ne yazdığın, hesabın gizli olsa da önemlidir."
+      },
+      {
+        "id": "acik-gizli",
+        "type": "info",
+        "layout": "list",
+        "title": "Açık hesap, gizli hesap",
+        "paragraphs": [
+          "Gönderilerini kimin göreceğini en çok bu ayar belirler."
+        ],
+        "points": [
+          {
+            "title": "Açık hesap",
+            "text": "Gönderilerini uygulamadaki herkes görebilir, seni takip etmeyenler ve hiç tanımadıkların da.",
+            "icon": "globe"
+          },
+          {
+            "title": "Gizli hesap",
+            "text": "Gönderilerini yalnızca kabul ettiğin takipçiler görür.",
+            "icon": "lock"
+          },
+          {
+            "title": "Gizlide bile",
+            "text": "Profil fotoğrafın, adın ve biyografin çoğu uygulamada herkese açık kalır.",
+            "icon": "eye"
+          },
+          {
+            "title": "Takip isteği",
+            "text": "Yalnızca gerçekten tanıdığın kişileri kabul et. Ortak arkadaşınız olması onu tanıdığın anlamına gelmez.",
+            "icon": "users"
+          }
+        ]
+      },
+      {
+        "id": "biyografine-yazilir-mi",
+        "type": "sort",
+        "title": "Biyografine yazılır mı?",
+        "hint": "Biyografini herkes görebilir. Her bilgiyi kutusuna koy.",
+        "bins": [
+          {
+            "label": "Yazılabilir",
+            "note": "Seni anlatır, seni bulmaya yaramaz",
+            "color": "green",
+            "icon": "heart"
+          },
+          {
+            "label": "Yazılmaz",
+            "note": "Seni bulmaya ya da tanımaya yarar",
+            "color": "red",
+            "icon": "lock"
+          }
+        ],
+        "items": [
+          {
+            "text": "Sevdiğin oyun",
+            "icon": "gamepad",
+            "bin": 0
+          },
+          {
+            "text": "Okulunun adı ve sınıfın",
+            "icon": "school",
+            "bin": 1
+          },
+          {
+            "text": "Çizim yapmayı sevdiğin",
+            "icon": "pen",
+            "bin": 0
+          },
+          {
+            "text": "Telefon numaran",
+            "icon": "phone",
+            "bin": 1
+          },
+          {
+            "text": "En sevdiğin renk",
+            "icon": "heart",
+            "bin": 0
+          },
+          {
+            "text": "Doğum tarihin",
+            "icon": "calendar",
+            "bin": 1
+          },
+          {
+            "text": "Oturduğun sokak",
+            "icon": "house",
+            "bin": 1
+          }
+        ],
+        "explain": "Sevdiklerin seni anlatır ama seni bulmaya yaramaz. Okul ve sınıf, telefon numarası, doğum tarihi ve sokak ise tanımadığın birinin seni bulmasına ya da kurtarma sorularını tahmin etmesine yetebilir. Biyografini herkesin okuyacağını düşünerek yaz."
+      },
+      {
+        "id": "konum-etiketi",
+        "type": "quiz",
+        "guess": true,
+        "question": "Okul çıkışı bir fotoğraf paylaştın. Uygulama altına Çınar Ortaokulu · 14:05 konumunu ekledi. Hesabın açık. Bu konumu kimler görür?",
+        "options": [
+          "Yalnızca sınıf arkadaşlarım",
+          "Herkes; tanımadığım kişiler de nerede ve ne zaman olduğumu öğrenir",
+          "Kimse, konum etiketi yalnızca bana görünür",
+          "Yalnızca o saatte okulun yakınında olanlar"
+        ],
+        "answer": 1,
+        "explain": "Açık hesapta gönderiyi de, üstündeki konumu da herkes görür. Her gün aynı saatte aynı yerde olduğunu öğrenen biri seni orada bulabilir. Paylaşmadan önce konumu kaldır ya da fotoğrafı eve dönünce paylaş."
+      },
+      {
+        "id": "etiketler",
+        "type": "info",
+        "layout": "list",
+        "title": "Bir gönderi neler anlatır?",
+        "paragraphs": [
+          "Gönderi yalnızca fotoğraftan ibaret değildir. Üstündekiler kimin olduğunu ve nerede çekildiğini de anlatır."
+        ],
+        "points": [
+          {
+            "title": "Kişi etiketi",
+            "text": "Gönderide birini işaretlemek. Onun takipçileri de gönderiyi görebilir. Etiketlemeden önce arkadaşına sor.",
+            "icon": "tag"
+          },
+          {
+            "title": "Konum etiketi",
+            "text": "Gönderinin nerede çekildiğini yazar. Bazı uygulamalar bunu kendisi önerir ya da ekler.",
+            "icon": "pin"
+          },
+          {
+            "title": "Fotoğraftaki ipuçları",
+            "text": "Okul forması, sokak tabelası, kapı numarası. Etiket olmasa da yerini anlatabilir.",
+            "icon": "camera"
+          },
+          {
+            "title": "Paylaşmadan önce",
+            "text": "Bu gönderiyi kimler görecek, onlara ne anlatıyor?",
+            "icon": "eye"
+          }
+        ]
+      },
+      {
+        "id": "gruba-eklendin",
+        "type": "quiz",
+        "guess": true,
+        "sms": {
+          "from": "Okul Sohbet · 300 üye",
+          "text": "beyaz_kartal seni bu gruba ekledi."
+        },
+        "question": "beyaz_kartal'ı tanımıyorsun. Gruptakilerin çoğunu da. Ne yaparsın?",
+        "options": [
+          "Kendimi tanıtırım: adım, okulum, sınıfım",
+          "Grubu kimin kurduğuna bakarım; tanımıyorsam çıkarım, kişisel bilgi yazmam",
+          "Herkese nerede oturduklarını sorarım, kim kimmiş öğrenirim",
+          "Bir şey yapmam, gruptakiler zaten benim yaşımdadır"
+        ],
+        "answer": 1,
+        "explain": "Kalabalık bir grupta yazdığını tanımadığın yüzlerce kişi okur; ekran görüntüsüyle başka yerlere de taşınabilir. Grubun bilgisinde kimin kurduğuna bak. Tanımıyorsan çıkmak ve ekleyeni engellemek senin hakkın. Kalsan bile okulunu, adresini, telefonunu ve konumunu yazma."
+      },
+      {
+        "id": "uc-dugme",
+        "type": "info",
+        "layout": "steps",
+        "title": "Canını sıkan bir şey olursa",
+        "paragraphs": [
+          "Bir mesaj, gönderi ya da kişi seni rahatsız ederse bu adımları sırayla at. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Ekran görüntüsü al",
+            "text": "Olanın kanıtını sakla. Mesaj silinse bile ne olduğunu gösterebilirsin.",
+            "icon": "camera"
+          },
+          {
+            "title": "Bildir",
+            "text": "Mesaja, gönderiye ya da hesaba basılı tut, Bildir'i seç. Uygulama inceler.",
+            "icon": "flag"
+          },
+          {
+            "title": "Engelle",
+            "text": "Çoğu uygulamada o kişi sana artık yazamaz, gönderilerini göremez.",
+            "icon": "ban"
+          },
+          {
+            "title": "Anlat",
+            "text": "Ailene, öğretmenine ya da güvendiğin bir büyüğe göster. Yalnız çözmek zorunda değilsin.",
+            "icon": "message"
+          }
+        ]
+      },
+      {
+        "id": "hangisi-ne-demek",
+        "type": "match",
+        "title": "Hangisi ne demek?",
+        "hint": "Soldaki her kelimeyi, ne demek olduğuyla eşleştir.",
+        "pairs": [
+          {
+            "left": "Açık hesap",
+            "icon": "globe",
+            "right": "Gönderilerini herkes görebilir"
+          },
+          {
+            "left": "Gizli hesap",
+            "icon": "lock",
+            "right": "Gönderilerini yalnız kabul ettiklerin görür"
+          },
+          {
+            "left": "Takip isteği",
+            "icon": "flag",
+            "right": "Seni görmek isteyen birinin sorusu"
+          },
+          {
+            "left": "Konum etiketi",
+            "icon": "pin",
+            "right": "Gönderinin nerede çekildiğini yazar"
+          },
+          {
+            "left": "Engelle",
+            "icon": "ban",
+            "right": "O kişi sana artık yazamaz"
+          },
+          {
+            "left": "Ekran görüntüsü",
+            "icon": "camera",
+            "right": "Olanın kanıtını saklar"
+          }
+        ],
+        "explain": "Hesap ayarın ve kabul ettiğin takip istekleri gönderilerini kimin göreceğini belirler. Konum etiketi nerede olduğunu anlatır. Ekran görüntüsü, bildir ve engelle ise bir şey canını sıktığında elindeki araçlardır."
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Açık hesabın gönderilerini [herkes] görebilir.",
+          "Takip isteğini yalnızca gerçekten [tanıdığım] kişilerden kabul ederim.",
+          "Biyografime okulumu ve [telefonumu] yazmam.",
+          "Kalabalık bir grupta yazdığımı [yüzlerce] kişi okuyabilir.",
+          "Rahatsız eden mesajın ekran görüntüsünü alır, [bildirir] ve engellerim."
+        ],
+        "extra": [
+          "kimse",
+          "herkesten",
+          "oyunumu",
+          "cevaplar"
+        ],
+        "explain": "Kimin gördüğünü hesap ayarın ve kabul ettiğin takipçiler belirler. Biyografin ve grup mesajların herkese açık bir pano gibidir. Bir şey canını sıkarsa kanıtını alır, bildirir, engeller ve bir büyüğüne anlatırsın."
+      },
+      {
+        "id": "paylasmadan-once",
+        "type": "info",
+        "layout": "steps",
+        "title": "Paylaşmadan önce üç soru",
+        "paragraphs": [
+          "Dostluk Parkı'nda ve Hesap Kalesi'nin sosyal medya odasında bu soruları çok soracaksın."
+        ],
+        "points": [
+          {
+            "title": "Kim görecek?",
+            "text": "Hesabın açık mı, gizli mi? Bu grupta kimler var?",
+            "icon": "users"
+          },
+          {
+            "title": "Ne anlatıyor?",
+            "text": "Konum, okul forması, saat, telefon numarası: seni bulmaya yarar mı?",
+            "icon": "search"
+          },
+          {
+            "title": "Yarın da ister miyim?",
+            "text": "Sildiğin bir gönderi bile başkasının telefonunda ekran görüntüsü olarak kalabilir.",
+            "icon": "calendar"
+          }
+        ]
+      }
+    ]
+  }
+}
