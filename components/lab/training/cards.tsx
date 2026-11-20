@@ -14,7 +14,7 @@ import { LinkPeek } from "./LinkPeek";
 import { SmsPeek } from "./SmsPeek";
 import { FilePeek } from "./FilePeek";
 import { PermissionPeek } from "./PermissionPeek";
-import { PopupPeek, WifiPeek } from "./PhonePeeks";
+import { FormPeek, PopupPeek, WifiPeek } from "./PhonePeeks";
 import { cardIconMap } from "./card-icons";
 import { CardTag, CardTitle, Mark } from "./common";
 import { BankCardInfo, ExploreInfo, StepsInfo } from "./InfoLayouts";
@@ -432,6 +432,8 @@ export function QuizView({ card, answer, busy, onAnswer }: { card: QuizCard; ans
         <WifiPeek networks={card.wifi} />
       ) : card.popup ? (
         <PopupPeek popup={card.popup} />
+      ) : card.form ? (
+        <FormPeek form={card.form} />
       ) : card.art ? (
         <QuizArtView art={card.art} />
       ) : null}

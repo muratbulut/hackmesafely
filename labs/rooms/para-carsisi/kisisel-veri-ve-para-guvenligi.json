@@ -189,16 +189,28 @@
       {
         "id": "cekilis-formu",
         "type": "quiz",
-        "question": "Bir okul çekilişi formu hangisini istemez?",
-        "art": "gift",
+        "guess": true,
+        "form": {
+          "site": "okul-cekilisi.xyz/katil",
+          "title": "Okul çekilişi: tablet kazan!",
+          "text": "Katılmak için bilgilerini yaz.",
+          "fields": [
+            "Adın soyadın",
+            "Sınıfın",
+            "T.C. kimlik numaran",
+            "Ev adresin"
+          ],
+          "button": "Katıl"
+        },
+        "question": "Bir “okul çekilişi” formu bunları istiyor. Hangisini gerçek bir okul çekilişi istemez?",
         "options": [
-          "Adını ve sınıfını",
+          "Adını soyadını",
+          "Sınıfını",
           "T.C. kimlik numaranı ve ev adresini",
-          "Hangi hediyeyi seçtiğini",
-          "Hediyeyi okulda hangi gün alabileceğini"
+          "Hepsini isteyebilir"
         ],
-        "answer": 1,
-        "explain": "Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve ev adresi isteyen \"çekiliş\" ödül vermek için değil, bilgini toplamak için kurulmuştur."
+        "answer": 2,
+        "explain": "Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve ev adresi isteyen \"çekiliş\" ödül vermek için değil, bilgini toplamak için kurulmuştur. Adresin sonundaki .xyz de okulun sitesi olmadığını gösteriyor."
       },
       {
         "id": "dur-sor-kontrol",
