@@ -1913,6 +1913,10 @@ export const tr = {
           countdown: "0:09",
           countdownLabel: "Kalan süre",
         },
+        // Sorunun üstündeki sitedeki form (FormPeek): alanlar boş, düğme basılmaz.
+        form: {
+          empty: "Yaz",
+        },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.
       sort: {

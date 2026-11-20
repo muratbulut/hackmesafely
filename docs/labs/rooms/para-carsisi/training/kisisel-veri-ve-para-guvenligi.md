@@ -90,16 +90,17 @@ Videodaki üç kutunun alıştırması. Öğrenci ikonlu bilgileri renkli kutula
 - **Yanıltıcı kelimeler** (en fazla 6): hemen, herkese, şifre
 - **Açıklama** (400): Kişisel veriyi korumak, tek tek bilgilerin bir araya gelince ne anlattığını görmekle başlar. Kim istiyor, neden istiyor, gerçekten gerekli mi? Emin değilsen önce ailene ya da öğretmenine danış.
 
-### 6. Mini test: Bir okul çekilişi formu hangisini istemez?
+### 6. Önce tahmin: Gerçek bir okul çekilişi hangisini istemez?
 
-- [ ] Adını ve sınıfını
+- **Ekran** (`form`, süs çizimi yerine; 20 Kasım, Murat): `okul-cekilisi.xyz/katil` adresinde "Okul çekilişi: tablet kazan!" formu, "Katılmak için bilgilerini yaz."; boş alanlar Adın soyadın, Sınıfın, T.C. kimlik numaran, Ev adresin; düğme "Katıl". Yalnızca gösterilir, yazılmaz.
+- **Soru:** Bir “okul çekilişi” formu bunları istiyor. Hangisini gerçek bir okul çekilişi istemez?
+- [ ] Adını soyadını
+- [ ] Sınıfını
 - [x] T.C. kimlik numaranı ve ev adresini
-- [ ] Hangi hediyeyi seçtiğini
-- [ ] Hediyeyi okulda hangi gün alabileceğini
-- **Çizim:** hediye kutusu
-- **Açıklama** (400): Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve ev adresi isteyen "çekiliş" ödül vermek için değil, bilgini toplamak için kurulmuştur.
+- [ ] Hepsini isteyebilir
+- **Açıklama** (400): Gerçek bir okul çekilişi en fazla adını ve sınıfını sorar, ödülü de okulda verir. Kimlik numarası ve ev adresi isteyen "çekiliş" ödül vermek için değil, bilgini toplamak için kurulmuştur. Adresin sonundaki .xyz de okulun sitesi olmadığını gösteriyor.
 
-> 17 Kasım: doğru şıktaki "velinin kartının CVV'si" kart bilgisi olduğu için ikinci eğitime ait; yerine "ev adresi" geldi.
+> 17 Kasım: doğru şıktaki "velinin kartının CVV'si" kart bilgisi olduğu için ikinci eğitime ait; yerine "ev adresi" geldi. 20 Kasım: hediye kutusu süsü kalktı, soru "Önce tahmin" ve form ekranıyla soruluyor ("Dur, sor, kontrol et" kartından önce).
 
 ### 7. Bilgi: Dur, sor, kontrol et
 

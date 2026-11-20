@@ -53,3 +53,20 @@ describe("mini testteki telefon ekranları", () => {
     expect(peek.querySelector("button")).toBeNull();
   });
 });
+
+describe("mini testteki sitedeki form", () => {
+  const form = { site: "okul-cekilisi.xyz/katil", title: "Okul çekilişi", text: "Bilgilerini yaz.", fields: ["Adın soyadın", "T.C. kimlik numaran"], button: "Katıl" };
+
+  it("şema formu kabul eder, tek alanlı form uymaz", () => {
+    expect(clientOf({ ...base, form })).toMatchObject({ form, popup: null });
+    expect(parseTraining({ meta: { name: "Oda", summary: "Kısa" }, cards: [{ ...base, form: { ...form, fields: ["Ad"] } }] })).toBeNull();
+  });
+
+  it("formun adresi, başlığı ve alanları görünür; yazılacak ya da basılacak bir şey yoktur", () => {
+    render(<QuizView card={clientOf({ ...base, form })} answer={null} busy={false} onAnswer={() => undefined} />);
+    const peek = screen.getByTestId("form-peek");
+    expect(peek).toHaveTextContent("okul-cekilisi.xyz/katil");
+    expect(peek).toHaveTextContent("T.C. kimlik numaran");
+    expect(peek.querySelector("button, input, form")).toBeNull();
+  });
+});
