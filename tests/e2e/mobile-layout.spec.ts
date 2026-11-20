@@ -893,7 +893,7 @@ const adminScreens: Screen<AdminData>[] = [
       await page.getByTestId("stage-phone-pick").click();
     },
   },
-  { name: "Oda önizleme, yüz yüze konuşma", open: (page) => page.getByTestId("login-phone-drop").click() },
+  { name: "Oda önizleme, yüz yüze konuşma", open: (page) => page.locator('[data-testid="stage-phone-drop"]:visible').click() },
   {
     name: "Oda önizleme, arkadaşın cevabı",
     open: async (page) => {
