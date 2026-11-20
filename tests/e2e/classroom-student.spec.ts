@@ -122,7 +122,7 @@ test.describe("öğrencinin sınıfı", () => {
     await expect(homework).toContainText("ÖĞRETMENİNİN VERDİĞİ ÖDEV");
     await expect(homework).toContainText(/0\/\d+ oda/);
     await expect(homework).toContainText("17 Ekim'e kadar · puanlanmaz, öğretmenin sadece bitirip bitirmediğini görür");
-    await expect(homework.getByRole("link", { name: "Oltalama eğitim odası ile başla" })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
+    await expect(homework.getByRole("link", { name: "Oltalamayı tanımak ile başla" })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
     expect(await membershipCount(email)).toBe(1);
 
     // Katılınca sayfa yeniden çizilir ve "Sınıf arkadaşı" rozeti yazılır.
@@ -202,7 +202,7 @@ test.describe("öğrencinin sınıfı", () => {
     await expect(main.getByRole("status")).toContainText(`${classroom.name} sınıfına katıldın`);
     await expect(main.getByRole("status")).toContainText(`Öğretmen: ${classroom.teacherName} · ${classroom.schoolName}`);
     // 30 (11 Kasım): sınıfın açık ödevi varsa ilk odası gösterilir.
-    await expect(main.getByTestId("first-homework")).toHaveText("İlk ödevin: Oltalama eğitim odası");
+    await expect(main.getByTestId("first-homework")).toHaveText("İlk ödevin: Oltalamayı tanımak");
     await expect(main.getByRole("link", { name: "Ödeve başla" })).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
     await main.getByRole("link", { name: "Ana sayfaya git" }).click();
     await page.waitForURL("/");

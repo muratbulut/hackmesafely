@@ -6,7 +6,7 @@
 import "server-only";
 import inboxExample from "@/labs/rooms/oltalama-limani/sahte-kargo-maili.json";
 import messagingExample from "@/labs/examples/kodu-soran-arkadas.json";
-import trainingExample from "@/labs/examples/oltalama-egitimi.json";
+import trainingExample from "@/labs/rooms/oltalama-limani/oltalama-egitimi.json";
 import { scenarioSchema, trainingSchema, type LabContent, type Template } from "@/lib/lab/content";
 
 const examples: Record<Template, unknown> = {

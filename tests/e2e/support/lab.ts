@@ -107,3 +107,75 @@ export async function pickUpPhone(page: Page) {
   // "Bırak" masaüstünde telefonun altında, telefon genişliğinde oynatıcının şeridinde; görünen biri.
   await expect(page.locator('[data-testid="stage-phone-drop"]:visible')).toBeVisible();
 }
+
+/** Eğitim kartı (oda dosyasındaki hâliyle); yalnızca oynatmak için gereken alanlar. */
+export type PlayCard = {
+  id: string;
+  type: string;
+  layout?: string;
+  answer?: number;
+  points?: unknown[];
+  spots?: { part: string }[];
+  question?: { at: number; options: string[]; answer: number } | string | null;
+  bins?: { label: string }[];
+  items?: { text: string; bin: number }[];
+  pairs?: { right: string }[];
+  sentences?: string[];
+};
+
+/**
+ * Eğitim kartını oynatıcıda doğru cevaplar ki "Devam" açılsın: sorulu video (soru saniyesine
+ * atlanır), adım adım ve keşfet kartları (bütün maddeler açılır), kutulara ayırma, eşleştirme,
+ * boşluk doldurma (ilk açılışta "Nasıl oynanır" penceresi kapatılır), tıkla-bul ve mini test.
+ * Düz bilgi kartında yapılacak bir şey yoktur. "Devam"a basmaz.
+ */
+export async function answerTrainingCard(page: Page, card: PlayCard) {
+  const player = page.getByTestId("training-player");
+  const choose = (text: string) => player.getByRole("group", { name: "Seçenekler" }).getByRole("button", { name: text, exact: true }).click();
+  if (["sort", "match", "fill"].includes(card.type)) {
+    const help = page.getByRole("button", { name: /Anladım, başla/ });
+    if (await help.isVisible({ timeout: 2000 }).catch(() => false)) await help.click();
+    await expect(help).toBeHidden();
+  }
+  if (card.type === "video" && card.question && typeof card.question === "object") {
+    const q = card.question;
+    await page.waitForFunction(() => {
+      const video = document.querySelector<HTMLVideoElement>('[data-testid="training-player"] video');
+      return !video || video.readyState >= 1;
+    });
+    const video = player.locator("video");
+    if (await video.count()) await video.evaluate((v: HTMLVideoElement, second) => void (v.currentTime = second), q.at);
+    await player.getByRole("button", { name: q.options[q.answer], exact: true }).click();
+  }
+  if (card.type === "info" && (card.layout === "steps" || card.layout === "explore")) {
+    const list = player.getByRole("list", { name: card.layout === "steps" ? "Adımlar" : "Profil alanları" }).getByRole("button");
+    for (let i = 0; i < (card.points ?? []).length; i++) await list.nth(i).click();
+  }
+  if (card.type === "sort") {
+    const labels = (card.bins ?? []).map((b) => b.label);
+    for (const item of card.items ?? []) {
+      await player
+        .getByRole("group", { name: "Yerleştirilecek bilgiler" })
+        .getByRole("button", { name: `${item.text}. Kutusuna koymak için seç ya da sürükle.` })
+        .click();
+      await player.getByRole("button", { name: `Seçili bilgiyi şuraya koy: ${labels[item.bin]}` }).click();
+    }
+    await player.getByRole("button", { name: "Kontrol et" }).click();
+  }
+  if (card.type === "match") {
+    for (const pair of card.pairs ?? []) await choose(pair.right);
+    await player.getByRole("button", { name: "Kontrol et" }).click();
+  }
+  if (card.type === "fill") {
+    for (const sentence of card.sentences ?? []) {
+      for (const [, word] of sentence.matchAll(/\[([^\]]+)\]/g)) await choose(word);
+      await player.getByRole("button", { name: /^(Sonraki cümle|Özete geç)/ }).click();
+    }
+    await player.getByRole("button", { name: "Kontrol et" }).click();
+  }
+  if (card.type === "clickFind") {
+    for (const spot of card.spots ?? []) await player.locator(`[data-part="${spot.part}"]`).click();
+    await expect(player.getByText("Hepsini buldun!")).toBeVisible();
+  }
+  if (card.type === "quiz") await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(card.answer ?? 0).click();
+}

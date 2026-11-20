@@ -1,0 +1,382 @@
+{
+  "slug": "oltalama-egitimi",
+  "neighborhood": "oltalama-limani",
+  "type": "TRAINING",
+  "template": "TRAINING",
+  "sortOrder": 0,
+  "status": "PUBLISHED",
+  "content": {
+    "meta": {
+      "name": "Oltalamayı tanımak",
+      "title": "Yem tatlı, kanca gizli",
+      "summary": "Olta mailden, SMS'ten, oyun sohbetinden, hatta aramadan gelir. Oltacının bastığı duyguları ve şüphelenince atacağın adımları oynayarak öğren.",
+      "story": "Oltalama, birinin güvendiğin bir kurum ya da kişi gibi davranıp senden şifre, kod ya da para koparmaya çalışmasıdır. Mesajı okumayı Şehir Kapısı'nda öğrendin; burada oltanın kendisini tanıyacaksın: nereden atıldığını, hangi duyguya bastığını, ne istediğini. Sonunda bir mesaj sana acele ettirdiğinde ne yapacağını, yanlışlıkla bastıysan da nasıl toparlayacağını bileceksin.",
+      "learn": [
+        {
+          "title": "Olta nereden gelir?",
+          "text": "Mail, SMS, oyun ve sosyal medya mesajı, telefon araması. Kanal değişir, oyun aynı kalır."
+        },
+        {
+          "title": "Hangi düğmeye basıyor?",
+          "text": "Acele, korku, ödül, merak ve otorite. Bir duygu hissettiysen dur."
+        },
+        {
+          "title": "Ne yaparım?",
+          "text": "Basmam, kendim kontrol ederim, bildiririm. Bastıysam şifremi değiştirir, bir büyüğüme anlatırım."
+        }
+      ],
+      "difficulty": "EASY",
+      "durationMin": 8
+    },
+    "cards": [
+      {
+        "id": "oltalama-nedir",
+        "type": "info",
+        "title": "Oltalama nedir?",
+        "paragraphs": [
+          "Biri güvendiğin bir kurum ya da kişi gibi davranıp senden bir şey koparmaya çalışır. Adı balık tutmaktan gelir: olta atılır, yem takılır, balığın düşünmeden ısırması beklenir."
+        ],
+        "points": [
+          {
+            "title": "Yem",
+            "icon": "flag",
+            "text": "Mesajın seni harekete geçiren kısmı: \"Hesabın kapanıyor\", \"Kazandın!\"."
+          },
+          {
+            "title": "Kanca",
+            "icon": "globe",
+            "text": "Bastırmak istediği bağlantı, düğme ya da dosya. Bazen de aramanı istediği bir numara."
+          },
+          {
+            "title": "Ne ister?",
+            "icon": "key",
+            "text": "Şifren, telefonuna gelen kod, ailenin kart bilgisi, kimlik numaran."
+          },
+          {
+            "title": "Kim gibi görünür?",
+            "icon": "user",
+            "text": "Okul, oyun, kargo, banka, Postam. Bazen de bir arkadaşın."
+          }
+        ]
+      },
+      {
+        "id": "her-yerden",
+        "type": "info",
+        "layout": "steps",
+        "title": "Olta her yerden atılır",
+        "paragraphs": [
+          "Kanal değişir, oyun aynı kalır: yem, kanca, bir şey istemek. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Mail",
+            "icon": "mail",
+            "text": "En bilineni. Sahte gönderen, acil bir konu, bir düğme. **Üç bakış** burada işe yarar."
+          },
+          {
+            "title": "SMS",
+            "icon": "phone",
+            "text": "Kısa ve hızlı. Bilinmeyen numara, **kısaltılmış bağlantı**, \"kargonuz\", \"cezanız\", \"ödülünüz\"."
+          },
+          {
+            "title": "Oyun ve sosyal medya",
+            "icon": "message",
+            "text": "\"Bedava eşya\", \"hesabın şikâyet edildi\". Ya da ele geçirilmiş bir **arkadaş hesabından** \"bu videoda sen misin?\"."
+          },
+          {
+            "title": "Telefon araması",
+            "icon": "call",
+            "text": "\"Bankadan arıyoruz, telefonunuza gelen **kodu söyleyin**.\" Ses de olta olabilir."
+          }
+        ]
+      },
+      {
+        "id": "sms-kanca",
+        "type": "quiz",
+        "question": "Bu SMS'te kanca nerede?",
+        "sms": {
+          "from": "+90 850 000 12 34",
+          "text": "Tebrikler! 500 TL değerinde market çeki kazandın. Çekini 2 saat içinde almak için: cek-hediye.xyz/al"
+        },
+        "options": [
+          "Bağlantıda: bastırıp bilgi girdirmek istiyor",
+          "\"Tebrikler\" kelimesinde",
+          "Kanca yok, numara kurumsal göründüğü için gerçek"
+        ],
+        "answer": 0,
+        "explain": "Yem ödül (\"market çeki kazandın\") ve acele (\"2 saat\"). Kanca bağlantı: basınca seni bilgi isteyen bir sayfaya götürür. Katılmadığın bir çekilişi kazanamazsın."
+      },
+      {
+        "id": "dugmeler",
+        "type": "info",
+        "title": "Oltacının düğmeleri",
+        "paragraphs": [
+          "Oltacı seni düşündürmek istemez, hissettirmek ister: bir duyguya basar ki düşünmeden basasın. En çok bu beşine basar. Acele ile korku çoğu zaman birlikte gelir."
+        ],
+        "points": [
+          {
+            "title": "Acele ve korku",
+            "icon": "stop",
+            "text": "\"Son 1 saat\", \"hesabın kapatılacak\", \"ceza yazılacak\"."
+          },
+          {
+            "title": "Ödül",
+            "icon": "gift",
+            "text": "\"Kazandın\", \"bedava\", \"sadece sana özel\"."
+          },
+          {
+            "title": "Merak",
+            "icon": "eye",
+            "text": "\"Bu fotoğrafta sen misin?\", \"senin hakkında konuşuyorlar\"."
+          },
+          {
+            "title": "Otorite",
+            "icon": "school",
+            "text": "\"Okul Müdürlüğü\", \"Güvenlik Ekibi\", \"Polis\". Büyük bir ad, sorgulamayasın diye."
+          }
+        ]
+      },
+      {
+        "id": "hangi-dugme",
+        "type": "match",
+        "title": "Bu cümle hangi düğmeye basıyor?",
+        "hint": "Her cümleyi bastığı duyguyla eşleştir.",
+        "pairs": [
+          {
+            "left": "\"Teklif gece yarısı bitiyor!\"",
+            "icon": "calendar",
+            "right": "Acele"
+          },
+          {
+            "left": "\"Hesabın şikâyet edildi, kapatılacak.\"",
+            "icon": "ban",
+            "right": "Korku"
+          },
+          {
+            "left": "\"Çekilişi sen kazandın, hediyeni seç!\"",
+            "icon": "gift",
+            "right": "Ödül"
+          },
+          {
+            "left": "\"Sınıf grubunda senin videon dolaşıyor, bak.\"",
+            "icon": "eye",
+            "right": "Merak"
+          },
+          {
+            "left": "\"Okul Müdürlüğü: bilgilerini bugün güncelle.\"",
+            "icon": "school",
+            "right": "Otorite"
+          }
+        ],
+        "explain": "Beşi de seni düşünmeden harekete geçirmek için yazılmış. Bir mesaj sende acele, korku, sevinç ya da merak uyandırıyorsa ya da büyük bir adla konuşuyorsa, basmadan önce dur."
+      },
+      {
+        "id": "mesajla-istenir-mi",
+        "type": "sort",
+        "title": "Mesajla istenir mi?",
+        "hint": "Gerçek bir kurum bazı şeyleri bir mesajla ya da bağlantıyla asla istemez.",
+        "bins": [
+          {
+            "label": "İsteyebilir",
+            "note": "Zararsız bilgi",
+            "color": "green",
+            "icon": "shield"
+          },
+          {
+            "label": "Mesajla asla istemez",
+            "note": "İsteniyorsa olta",
+            "color": "red",
+            "icon": "ban"
+          }
+        ],
+        "items": [
+          {
+            "text": "Şifren",
+            "icon": "lock",
+            "bin": 1
+          },
+          {
+            "text": "Ders programın",
+            "icon": "calendar",
+            "bin": 0
+          },
+          {
+            "text": "Telefonuna gelen kod",
+            "icon": "phone",
+            "bin": 1
+          },
+          {
+            "text": "Kargo takip numaran",
+            "icon": "tag",
+            "bin": 0
+          },
+          {
+            "text": "Kartın arkasındaki 3 hane",
+            "icon": "card",
+            "bin": 1
+          },
+          {
+            "text": "Kulüp kaydı için sınıfın",
+            "icon": "school",
+            "bin": 0
+          },
+          {
+            "text": "T.C. kimlik numaran",
+            "icon": "id",
+            "bin": 1
+          },
+          {
+            "text": "Toplantıya gelip gelmeyeceğin",
+            "icon": "users",
+            "bin": 0
+          }
+        ],
+        "explain": "Şifre, kod, kart bilgisi ve kimlik numarası bir mesajla, bir bağlantıyla istenmez. Okulun, oyunun ya da bankanın bunlara ihtiyacı varsa sen kendi uygulamasına girersin. Ders programı, sınıf ya da takip numarası gibi bilgiler ise zararsızdır."
+      },
+      {
+        "id": "hesap-kapaniyor",
+        "type": "clickFind",
+        "title": "Bu maildeki 4 oltayı bul",
+        "hint": "Mailde 4 şüpheli yer var. Kimden geldiğine, ne hissettirdiğine ve ne istediğine bak.",
+        "mail": {
+          "sender": "Postam Güvenlik Ekibi",
+          "address": "guvenlik@postam-hesap-kontrol.com",
+          "subject": "SON UYARI: Hesabınız kapatılıyor",
+          "time": "07:52",
+          "paragraphs": [
+            "Sayın kullanıcı,",
+            "Hesabınızda olağandışı bir giriş tespit ettik.",
+            "24 saat içinde doğrulamazsanız hesabınız ve bütün mailleriniz kalıcı olarak silinecek.",
+            "Doğrulama için şifrenizi ve telefonunuza gelen kodu girin."
+          ],
+          "button": "Hesabımı doğrula",
+          "footer": "Postam Güvenlik · Bu mail otomatik gönderilmiştir."
+        },
+        "spots": [
+          {
+            "part": "address",
+            "text": "Postam'ın adresi postam.com. Bu mail sağdan okununca postam-hesap-kontrol.com'dan gelmiş: Postam'a benzemek için kurulmuş başka bir adres.",
+            "hint": "Adı değil, @ işaretinden sonrasını sağdan oku."
+          },
+          {
+            "part": "p2",
+            "text": "\"24 saat\" acele ettirir, \"kalıcı olarak silinecek\" korkutur. İki düğmeye birden basıyor ki düşünmeden doğrulayasın.",
+            "hint": "Hangi cümle sana bir şey hissettiriyor?"
+          },
+          {
+            "part": "p3",
+            "text": "Şifreni ve telefonuna gelen kodu istiyor. Postam ikisini de bir mailde asla istemez. Bunu isteyen her mail oltadır.",
+            "hint": "Senden ne istiyor?"
+          },
+          {
+            "part": "button",
+            "text": "Düğme seni oltacının sayfasına götürür. Basılı tutsan gerçek adresinde yine postam-hesap-kontrol.com görürsün. Hesabını merak ediyorsan Postam'ı kendin aç.",
+            "hint": "Düğmeye basarsan nereye gidersin?"
+          }
+        ]
+      },
+      {
+        "id": "kendin-bak",
+        "type": "quiz",
+        "question": "Bu mail gerçek mi diye merak ettin. En güvenli ne yaparsın?",
+        "options": [
+          "Postam'ı kendim açıp hesabımda bir uyarı var mı bakarım",
+          "Düğmeye basıp açılan sayfaya bakarım, şifre yazmam",
+          "Maile cevap yazıp gerçekten Postam mı diye sorarım",
+          "Arkadaşlarıma iletip onlara da gelmiş mi sorarım"
+        ],
+        "answer": 0,
+        "explain": "Düğmeye basmak bile seni oltacının sayfasına götürür; maile cevap yazarsan cevabı da oltacı yazar. Uygulamayı ya da siteyi kendin açarsan gerçek durumu görürsün."
+      },
+      {
+        "id": "ne-yaparsin",
+        "type": "info",
+        "layout": "steps",
+        "title": "Şüphelenince ne yaparsın?",
+        "paragraphs": [
+          "Dört adım, her mesajda aynı. Adımlara dokun."
+        ],
+        "points": [
+          {
+            "title": "Dur",
+            "icon": "stop",
+            "text": "Bağlantıya, düğmeye, eke **basma**. Cevap verme, verilen numarayı arama."
+          },
+          {
+            "title": "Kendin kontrol et",
+            "icon": "search",
+            "text": "Uygulamayı ya da siteyi **kendin aç**. Arkadaşından geldiyse ona başka bir yoldan sor."
+          },
+          {
+            "title": "Bildir",
+            "icon": "flag",
+            "text": "Postam'da **Oltalama olarak bildir**. SMS'te ve uygulamalarda Bildir ve Engelle."
+          },
+          {
+            "title": "Anlat",
+            "icon": "ask",
+            "text": "Bir büyüğüne göster. Utanacak bir şey yok, **olta herkese atılır**."
+          }
+        ]
+      },
+      {
+        "id": "bastiysan",
+        "type": "quiz",
+        "question": "Ayşegül bir düğmeye bastı ve açılan sayfaya şifresini yazdı. Şimdi ne yapmalı?",
+        "options": [
+          "Şifresini hemen değiştirir ve bir büyüğüne anlatır",
+          "Kimseye söylemez, bir şey olmamıştır",
+          "Aynı sayfaya bir daha girip yazdığını silmeye çalışır"
+        ],
+        "answer": 0,
+        "explain": "Ne kadar erken davranırsan o kadar az zarar olur. Aynı şifreyi başka yerde de kullanıyorsan onları da değiştir. Kod ya da kart bilgisi verdiysen hemen ailene söyle."
+      },
+      {
+        "id": "kendi-cumlenle",
+        "type": "fill",
+        "title": "Kendi cümlenle",
+        "hint": "",
+        "sentences": [
+          "Olta yalnız mailden değil, SMS'ten, mesajdan ve [aramadan] da gelir.",
+          "\"Son 1 saat\" diyen bir mesaj beni [acele] ettirmek ister.",
+          "Gerçek bir kurum şifremi ve kodumu mesajla [istemez].",
+          "Emin değilsem uygulamayı [kendim] açarım.",
+          "Bastıysam şifremi değiştirir ve bir büyüğüme [anlatırım]."
+        ],
+        "extra": [
+          "hemen basarım",
+          "ister",
+          "sakin",
+          "saklarım"
+        ],
+        "explain": "Olta her kanaldan gelir ve hep bir duyguya basar. Şifre, kod ve kart bilgisi mesajla istenmez. Emin değilsen kendin bakarsın; bastıysan saklamaz, toparlarsın."
+      },
+      {
+        "id": "uc-soru",
+        "type": "info",
+        "layout": "steps",
+        "title": "Oltayı görmenin üç sorusu",
+        "paragraphs": [
+          "Bu üç soruyu limandaki bütün odalarda soracaksın. İlk durak: sahte bir kargo maili."
+        ],
+        "points": [
+          {
+            "title": "Hangi düğmeye basıyor?",
+            "icon": "stop",
+            "text": "Acele, korku, ödül, merak, otorite. Bir duygu hissettiysen **dur**."
+          },
+          {
+            "title": "Ne istiyor?",
+            "icon": "key",
+            "text": "Şifre, kod, kart, kimlik. Mesajla isteniyorsa **olta**."
+          },
+          {
+            "title": "Kendim baktım mı?",
+            "icon": "search",
+            "text": "Uygulamayı ya da siteyi **kendin aç**, sonra karar ver."
+          }
+        ]
+      }
+    ]
+  }
+}

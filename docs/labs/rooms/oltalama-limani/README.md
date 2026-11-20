@@ -15,7 +15,7 @@ Sıra rotadaki sıradır: her eğitimin altında açtığı senaryolar. "Yazan" 
 
 | Oda | Tür | İlk dalga | Senaryo dosyası | Bekleyen kod işi | Yazan | Durum |
 | --- | --- | --- | --- | --- | --- | --- |
-| [Sahte mesajı tanımak](../../room-plan.md#temel-eğitim-sahte-mesajı-tanımak) | Temel eğitim | Evet | `training/oltalama-egitimi.md` | Yok | Murat | Sitede yayında |
+| [Oltalamayı tanımak](../../room-plan.md#temel-eğitim-oltalamayı-tanımak) | Temel eğitim | Evet | `training/oltalama-egitimi.md` | Yok | Murat | Sitede yayında (20 Kasım yenilendi) |
 | [Sahte kargo maili](../../room-plan.md#senaryo-sahte-kargo-maili) | Senaryo (Postam) | Evet | `scenario/sahte-kargo-maili.md` | Yok (M1 masaüstü, oda dosyası `labs/rooms/oltalama-limani/`) | Murat | Sitede yayında |
 | [Karne günü gelen mail](../../room-plan.md#senaryo-karne-günü-gelen-mail) | Senaryo (Postam) | Evet | `scenario/karne-gunu-gelen-mail.md` | Yok | Murat | Yazılacak |
 | [SMS, arama ve sahte destek](../../room-plan.md#i̇leri-eğitim-sms-arama-ve-sahte-destek) | İleri eğitim |  | `training/sms-arama-ve-sahte-destek.md` | Yok | Murat | Yazılacak |

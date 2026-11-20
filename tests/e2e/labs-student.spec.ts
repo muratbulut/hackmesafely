@@ -49,7 +49,7 @@ test.describe("öğrenci", () => {
     await page.goto("/yol-haritasi/oltalama-limani");
     await page.getByRole("list", { name: "Oltalama Limanı rotası" }).getByRole("button", { name: /Sahte kargo maili/ }).click();
     const preview = isMobile ? page.getByRole("dialog") : page.getByRole("region", { name: "Seçili oda" });
-    await expect(preview).toContainText("Oltalama eğitim odası bitince açılır.");
+    await expect(preview).toContainText("Oltalamayı tanımak bitince açılır.");
 
     await page.goto("/odalar");
     await expect(page.getByRole("group", { name: "Filtre" }).getByRole("button", { name: /^Durum/ })).toBeVisible();
@@ -60,7 +60,7 @@ test.describe("öğrenci", () => {
     await page.goto("/oda/sahte-kargo-maili");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Kargonuz kapıda... değil!");
     // 28 (11 Kasım): kilitli odada ana düğme eğitimin adını söyler; adım yolunda ikinci bir düğme yok.
-    const lockedButton = page.getByRole("link", { name: "Önce eğitim: Oltalama eğitim odası" }).filter({ visible: true });
+    const lockedButton = page.getByRole("link", { name: "Önce eğitim: Oltalamayı tanımak" }).filter({ visible: true });
     await expect(lockedButton).toHaveAttribute("href", "/oda/oltalama-egitimi/oyna");
     await expect(page.getByRole("link", { name: "Eğitime başla" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Odaya gir", exact: true })).toHaveCount(0);
@@ -73,7 +73,7 @@ test.describe("öğrenci", () => {
 
     // Lablar: "Bitenler" süzgecinde eğitim labı, "Kilitli"de senaryo artık yok.
     await page.goto("/odalar?durum=bitenler");
-    await expect(page.getByRole("list", { name: "Odalar" }).getByRole("link", { name: /Oltalama eğitim/ })).toBeVisible();
+    await expect(page.getByRole("list", { name: "Odalar" }).getByRole("link", { name: /Oltalamayı tanımak/ })).toBeVisible();
     await page.goto("/odalar?durum=kilitli");
     await expect(page.getByRole("list", { name: "Odalar" }).getByRole("link", { name: /Sahte kargo maili/ })).toHaveCount(0);
   });

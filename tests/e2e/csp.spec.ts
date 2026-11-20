@@ -4,7 +4,7 @@ import { test as base, expect, type Locator, type Page, type Response } from "@p
 import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
-import { continueFromScene, dismissLevelUps, finishTraining, reportStep, signInDesktop } from "./support/lab";
+import { answerTrainingCard, continueFromScene, dismissLevelUps, finishTraining, reportStep, signInDesktop, type PlayCard } from "./support/lab";
 import { createSchool, makeCoordinator, makeTeacher, userIdOf } from "./support/teacher";
 
 // İçerik Güvenliği Politikası (Faz 6, güvenlik turu 5; tur 1 D2, tur 2 O2). Her HTML yanıtı aynı
@@ -87,8 +87,8 @@ async function expectImageLoaded(image: Locator) {
 }
 
 // Eğitim labının kartları örnek labdan okunur (lab.spec.ts gibi); oynatıcı doğru cevapları bilmez.
-const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content as {
-  cards: { type: string; answer?: number; spots?: { part: string }[] }[];
+const training = JSON.parse(readFileSync("labs/rooms/oltalama-limani/oltalama-egitimi.json", "utf8")).content as {
+  cards: PlayCard[];
 };
 
 /** Profil bölümünü açar (masaüstünde soldaki menüden, telefonda listeden; profile.spec.ts gibi). */
@@ -171,11 +171,7 @@ test.describe("hesapla gezilen sayfalar", () => {
     const player = page.getByTestId("training-player");
     await expect(player).toBeVisible();
     for (const card of training.cards) {
-      if (card.type === "clickFind") {
-        for (const spot of card.spots ?? []) await player.locator(`[data-part="${spot.part}"]`).click();
-        await expect(player.getByText("Hepsini buldun!")).toBeVisible();
-      }
-      if (card.type === "quiz") await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(card.answer ?? 0).click();
+      await answerTrainingCard(page, card);
       await player.getByRole("button", { name: /^(Devam|Bitir)$/ }).click();
     }
     await expect(page.getByRole("heading", { name: "Eğitim odası bitti!" })).toBeVisible();

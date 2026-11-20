@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { isLive, signOutHere, signUp, signUpVerified, uniqueEmail } from "./support/account";
-import { attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep, signInDesktop } from "./support/lab";
+import { answerTrainingCard, attemptsOf, closeLevelUp, continueFromScene, finishTraining, reportStep, signInDesktop } from "./support/lab";
 
 // Faz 3 bitti ölçütünün öğrenci tarafı: eğitim labı, sahte kargo maili (hacklenme ve güvende
 // kalma yolları), sunucuda hesaplanan puan ve rapor. Doğru cevaplar örnek labdan okunur
 // (labs/examples); oynatıcı onları hiç bilmez.
 
-const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content;
+const training = JSON.parse(readFileSync("labs/rooms/oltalama-limani/oltalama-egitimi.json", "utf8")).content;
 const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
 
 const playPath = "/oda/sahte-kargo-maili/oyna";
@@ -44,14 +44,13 @@ test.describe("lab", () => {
         await expect(player.getByText("Burası normal görünüyor.")).toBeVisible();
         for (const spot of card.spots) await player.locator(`[data-part="${spot.part}"]`).click();
         await expect(player.getByText("Hepsini buldun!")).toBeVisible();
-      }
-      if (card.type === "quiz") {
+      } else if (card.type === "quiz") {
         const next = player.getByRole("button", { name: /^(Devam|Bitir)$/ });
         // Cevap vermeden geçilmez.
         await expect(next).toBeDisabled();
         await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(card.answer).click();
         await expect(player.getByText("Doğru!")).toBeVisible();
-      }
+      } else await answerTrainingCard(page, card);
       await player.getByRole("button", { name: /^(Devam|Bitir)$/ }).click();
     }
     await expect(page.getByRole("heading", { name: "Eğitim odası bitti!" })).toBeVisible();
