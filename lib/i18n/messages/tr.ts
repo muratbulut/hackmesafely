@@ -1859,6 +1859,8 @@ export const tr = {
         cvvLabel: "CVV",
         sample: "Bu kart örnektir, gerçek değildir.",
         sms: "Ödeme onay kodun: <b>583 106</b>. Kodu kimseyle paylaşma.",
+        bankInitial: "Ö",
+        smsTime: "Şimdi",
         signature: "= senin imzan",
         parent: "VELİ İZNİ",
       },
