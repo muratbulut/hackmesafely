@@ -230,24 +230,31 @@ Saldırıların çoğu bir mesajla başlar: mail, SMS, sohbet ya da arama. Bu ma
 
 Bağlantılı mahalleler: Hesap Kalesi (çalınan şifre ve kod), Yazılım Ormanı (bağlantıdan inen dosya), Para Çarşısı (kart bilgisi isteyen sayfa).
 
-### Temel eğitim: Sahte mesajı tanımak
+### Temel eğitim: Oltalamayı tanımak
 
-*Oltayı gör* · İlk dalga · Sitede yayında
+*Yem tatlı, kanca gizli* · İlk dalga · Sitede yayında (20 Kasım'da Şehir Kapısı biçiminde yenilendi; eski adı "Oltalama eğitim odası", planda "Sahte mesajı tanımak") · Tam metin: `rooms/oltalama-limani/training/oltalama-egitimi.md`
 
-Öğrenci bu odadan sonra:
+Gönderen adresini ve bağlantının gerçek adresini okumak Şehir Kapısı'ndaki "Mesajı okumak"ta öğretilir; bu oda onun üstüne kurar. Öğrenci bu odadan sonra:
 
-- Gönderen adresini okur; görünen isme değil, @ işaretinden sonrasına bakar.
-- Bağlantının gerçek adresine tıklamadan bakar.
-- Acele ve korku taktiğini fark eder, maili bildirir.
+- Oltanın yalnız mailden değil SMS'ten, oyun ve sosyal medya mesajından ve telefon aramasından da geldiğini bilir.
+- Oltacının bastığı duyguları (acele, korku, ödül, merak, otorite) fark eder.
+- Şifre, kod, kart ve kimlik bilgisinin mesajla istenmediğini bilir; şüphelenince basmaz, kendisi kontrol eder, bildirir, bir büyüğüne anlatır. Bastıysa şifresini değiştirir.
 
-Kartlar:
+Kartlar (13, yaklaşık 8 dakika):
 
-1. Bilgi: oltalama nedir
-2. Tıkla-bul: kargo maili
-3. Mini test: kargo maili gerçek mi
-4. Bilgi: şüphelenince ne yaparsın
-5. Yeni kart önerisi: kandırmanın 5 duygusu (acele, korku, ödül, merak, otorite)
-6. Yeni kart önerisi: SMS'te de aynı (kısa bağlantı, numara)
+1. Video: Ayşegül ve Ayça, olta nasıl atılır? (Ayşegül'e "oyun hesabın kapanıyor" SMS'i gelir; soru durağı: mesaj neyle acele ettiriyor?)
+2. Bilgi: oltalama nedir (yem, kanca, ne ister, kim gibi görünür)
+3. Bilgi, adım adım: olta her yerden atılır (mail, SMS, oyun ve sosyal medya, arama)
+4. Mini test, SMS bildirimiyle: bu SMS'te kanca nerede?
+5. Bilgi: oltacının düğmeleri
+6. Eşleştirme: bu cümle hangi düğmeye basıyor?
+7. Kutulara ayırma: mesajla istenir mi?
+8. Tıkla-bul: "hesabın kapatılıyor" maili, 4 işaret (kargo değil: senaryoyu ele vermesin)
+9. Mini test: mail gerçek mi diye merak ettin, en güvenli ne yaparsın?
+10. Bilgi, adım adım: şüphelenince ne yaparsın?
+11. Mini test: bastıysan ne yaparsın?
+12. Boşluk doldurma: kendi cümlenle
+13. Bilgi, adım adım: oltayı görmenin üç sorusu (bitince Sahte kargo maili açılır)
 
 #### Senaryo: Sahte kargo maili
 

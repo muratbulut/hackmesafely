@@ -331,7 +331,7 @@ test.describe("öğretmenin sınıfları", () => {
     await dialog.getByLabel("Son tarih (isteğe bağlı)").fill(turkeyDay(10));
     // Odalar: senaryoyu açan eğitim seçiliyken kaldırılamaz; senaryo çıkınca eğitim tek başına kalır.
     const rooms = dialog.getByRole("group", { name: "Odalar" });
-    const trainingBox = rooms.getByRole("checkbox", { name: /Oltalama eğitim odası/ });
+    const trainingBox = rooms.getByRole("checkbox", { name: /Oltalamayı tanımak/ });
     await expect(trainingBox).toBeChecked();
     await expect(trainingBox).toBeDisabled();
     // Onay kutusu görünmez (kendi çizimimiz); kullanıcı gibi odanın adına dokunulur.

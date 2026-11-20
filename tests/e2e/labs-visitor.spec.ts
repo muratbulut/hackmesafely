@@ -26,7 +26,7 @@ test("siber şehir: Şehir Kapısı en başta geniş \"Buradan başla\" kartı, 
 test("mahalle: senaryo labı seçilince kayıt penceresi açılır, kayıt bu laba döner", async ({ page, isMobile }) => {
   await page.goto("/yol-haritasi/oltalama-limani");
   const route = page.getByRole("list", { name: "Oltalama Limanı rotası" });
-  await expect(route.getByRole("button", { name: /Oltalama eğitim/ })).toBeVisible();
+  await expect(route.getByRole("button", { name: /Oltalamayı tanımak/ })).toBeVisible();
   await route.getByRole("button", { name: /Sahte kargo maili/ }).click();
 
   // Telefonda önizleme alttan açılan pencerededir.
@@ -78,16 +78,16 @@ test.describe("lablar kataloğu", () => {
     await expect(page).toHaveURL(/\/odalar\?ara=KARGO$/);
     const results = page.getByRole("list", { name: "Odalar" });
     await expect(results.getByRole("button", { name: /Sahte kargo maili/ })).toBeVisible();
-    await expect(results.getByRole("button", { name: /Oltalama eğitim/ })).toHaveCount(0);
+    await expect(results.getByRole("button", { name: /Oltalamayı tanımak/ })).toHaveCount(0);
 
-    await page.getByRole("searchbox", { name: "Oda ara" }).fill("eğitim");
-    await expect(results.getByRole("button", { name: /Oltalama eğitim/ })).toBeVisible();
+    await page.getByRole("searchbox", { name: "Oda ara" }).fill("TANIMAK");
+    await expect(results.getByRole("button", { name: /Oltalamayı tanımak/ })).toBeVisible();
   });
 
   test("adresteki süzgeç açılışta uygulanır ve kaldırılabilir", async ({ page }) => {
     await page.goto("/odalar?tur=egitim");
     const results = page.getByRole("list", { name: "Odalar" });
-    await expect(results.getByRole("button", { name: /Oltalama eğitim/ })).toBeVisible();
+    await expect(results.getByRole("button", { name: /Oltalamayı tanımak/ })).toBeVisible();
     await expect(results.getByRole("button", { name: /Sahte kargo maili/ })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Eğitim odası filtresini kaldır" }).click();

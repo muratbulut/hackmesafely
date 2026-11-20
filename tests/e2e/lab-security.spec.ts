@@ -7,7 +7,7 @@ import { attemptsOf, finishTraining, signInDesktop } from "./support/lab";
 // metinleri öğrencinin tarayıcısına hiç gitmez; sahte sayfa, tıklama kaydedilmeden açılmaz.
 
 const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
-const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content;
+const training = JSON.parse(readFileSync("labs/rooms/oltalama-limani/oltalama-egitimi.json", "utf8")).content;
 const playPath = "/oda/sahte-kargo-maili/oyna";
 
 /** Yalnızca sunucuda kalması gereken metinler: neden, işaretler, sahte sayfa, açıklamalar, ipuçları. */

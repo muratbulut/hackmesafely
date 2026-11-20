@@ -1,10 +1,10 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { isLive, signUp, signUpVerified, uniqueEmail } from "./support/account";
 import { withDb } from "./support/db";
-import { dismissLevelUps, openFakeKargo, pickUpPhone, signInDesktop, submitSavedPassword } from "./support/lab";
+import { answerTrainingCard, dismissLevelUps, openFakeKargo, pickUpPhone, signInDesktop, submitSavedPassword, type PlayCard } from "./support/lab";
 import { layoutProblems, smallTargets } from "./support/layout";
 import { createSchool, makeCoordinator, makeTeacher } from "./support/teacher";
 
@@ -290,6 +290,7 @@ async function insertFinishedAttempt(userId: string, status: "COMPLETED" | "HACK
 type StudentData = { code: string; report: string };
 
 const trainingPath = "/oda/oltalama-egitimi/oyna";
+const trainingCards = (JSON.parse(readFileSync("labs/rooms/oltalama-limani/oltalama-egitimi.json", "utf8")) as { content: { cards: PlayCard[] } }).content.cards;
 const playPath = "/oda/sahte-kargo-maili/oyna";
 /** Telefondaki "Bugün" bölümü: sınıf ve ödev, sonra günün ipucu (hoca öncesi kontrol, 26). */
 const todaySection = (page: Page) => page.getByRole("region", { name: "Bugün" }).filter({ visible: true });
@@ -388,34 +389,24 @@ async function solveSort(page: Page) {
 
 const studentScreens: Screen<StudentData>[] = [
   { name: "Katılma sayfası", path: (d) => `/katil/${d.code}` },
-  // Eğitim labı kart kart (ilerleme sunucuda; her kart bir öncekinin devamı).
-  { name: "Eğitim, bilgi kartı", path: trainingPath },
+  // Eğitim odası kart kart (ilerleme sunucuda; her kart bir öncekinin devamı). Kartlar oda
+  // dosyasından okunur: her kart açılınca, cevaplı kartlar bir de cevaplanınca denetlenir.
+  { name: "Eğitim, 1. kart", path: trainingPath },
   // Baştan başla (19 Kasım): telefonda şeridin sağında; onay alttan açılır.
   {
     name: "Eğitim, baştan başla penceresi",
     open: (page) => page.getByTestId("training-player").getByRole("button", { name: "Baştan başla" }).click(),
   },
   {
-    name: "Eğitim, tıkla-bul kartı",
-    open: async (page) => {
-      await page.getByTestId("restart-dialog").getByRole("button", { name: "Vazgeç" }).click();
-      await next(page);
-    },
+    name: "Eğitim, 1. kart (vazgeçildi)",
+    open: (page) => page.getByTestId("restart-dialog").getByRole("button", { name: "Vazgeç" }).click(),
   },
-  {
-    name: "Eğitim, tıkla-bul bulundu",
-    open: async (page) => {
-      const player = page.getByTestId("training-player");
-      for (const part of ["address", "p2", "button"]) await player.locator(`[data-part="${part}"]`).click();
-      await expect(player.getByText("Hepsini buldun!")).toBeVisible();
-    },
-  },
-  { name: "Eğitim, test kartı", open: next },
-  {
-    name: "Eğitim, test cevaplandı",
-    open: (page) => page.getByTestId("training-player").getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(1).click(),
-  },
-  { name: "Eğitim, son kart", open: next },
+  ...trainingCards.flatMap((card, i): Screen<StudentData>[] => {
+    const label = `Eğitim, ${i + 1}. kart (${card.layout ?? card.type})`;
+    const opened: Screen<StudentData>[] = i === 0 ? [] : [{ name: label, open: next }];
+    const plain = card.type === "info" && card.layout !== "steps" && card.layout !== "explore";
+    return plain ? opened : [...opened, { name: `${label} cevaplandı`, open: (page) => answerTrainingCard(page, card) }];
+  }),
   { name: "Eğitim, bitti", open: next },
   { name: "Ana sayfa", path: "/" },
   { name: "Ana sayfa, sınıf ve günün ipucu", path: "/", open: (page) => todaySection(page).scrollIntoViewIfNeeded() },

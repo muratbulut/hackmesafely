@@ -3,7 +3,7 @@
 | Alan | Değer |
 | --- | --- |
 | Mahalle | Oltalama Limanı |
-| Açan eğitim | Sahte mesajı tanımak (temel eğitim, `oltalama-egitimi`) |
+| Açan eğitim | Oltalamayı tanımak (temel eğitim, `oltalama-egitimi`) |
 | Sahne | T2: bilgisayar (Postam, Tarayıcı, Yolda Kargo) ve masadaki telefon (Ayça'nın sesli mesajı) |
 | Oda adresi | `/oda/sahte-kargo-maili` |
 | Yazan | Murat |

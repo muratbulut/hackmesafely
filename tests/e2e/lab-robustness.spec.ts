@@ -5,6 +5,7 @@ import { isLive, signUpVerified, uniqueEmail } from "./support/account";
 import { callAction, callActionBurst } from "./support/actions";
 import { deleteTestLabs, makeAdmin } from "./support/admin";
 import { withDb } from "./support/db";
+import { answerTrainingCard, type PlayCard } from "./support/lab";
 
 // Faz 6: lab yönetiminin ve eğitim labının sağlamlığı (güvenlik turu 2'den kalanlar D8, D9, D10,
 // B1). Eylemler arayüzün yanında elle hazırlanmış istekle de çağrılır (tarayıcı konsolundan
@@ -17,9 +18,7 @@ test.skip(isLive, "veritabanına yazan ve hesap açan testler canlı sitede çal
 
 
 const kargo = JSON.parse(readFileSync("labs/rooms/oltalama-limani/sahte-kargo-maili.json", "utf8")).content;
-const training = JSON.parse(readFileSync("labs/examples/oltalama-egitimi.json", "utf8")).content as {
-  cards: { id: string; type: string; question?: string }[];
-};
+const training = JSON.parse(readFileSync("labs/rooms/oltalama-limani/oltalama-egitimi.json", "utf8")).content as { cards: PlayCard[] };
 
 const stamp = () => `${Date.now().toString(36)}${process.pid.toString(36)}${randomUUID().slice(0, 4)}`;
 const newId = () => `e2e${randomUUID().replace(/-/g, "").slice(0, 21)}`;
@@ -204,6 +203,12 @@ test("D10: veritabanı bir mahallede ikinci eğitimi kabul eder; silinen eğitim
 
 const quizIndex = training.cards.findIndex((c) => c.type === "quiz");
 const quiz = training.cards[quizIndex];
+// Bitirmeden önce cevaplanması gereken öteki kartlar (sorulu video, eşleştirme, kutulara ayırma,
+// boşluk doldurma ve diğer sorular; lib/lab/training.ts needsAnswer). Testler yalnızca ilk mini
+// testi sınar: ötekiler cevaplanmış yazılır, oda büyüdükçe test değişmez.
+const otherAnswers = training.cards
+  .filter((c) => c.id !== quiz.id && (c.type === "quiz" || ["match", "sort", "fill"].includes(c.type) || (c.type === "video" && !!c.question)))
+  .map((c) => c.id);
 
 const progressOf = async (email: string) =>
   (
@@ -217,6 +222,10 @@ const progressOf = async (email: string) =>
 test("B1: eğitim, soruları cevaplanmadan 'son kart' kaydedilerek bitirilemez", async ({ page }) => {
   const email = uniqueEmail("saglamlik-egitim");
   await signUpVerified(page, email);
+  await query(
+    `INSERT INTO "TrainingProgress" ("userId", "labId", "cardIndex", "answeredCards") SELECT u."id", l."id", 0, $2 FROM "User" u, "Lab" l WHERE u."email" = $1 AND l."slug" = 'oltalama-egitimi'`,
+    [email, otherAnswers],
+  );
 
   const skipped = (await callAction(page.request, "saveTrainingProgress", ["oltalama-egitimi", training.cards.length])) as Result;
   expect(skipped).toMatchObject({ ok: false, reason: "unanswered", card: quizIndex });
@@ -287,20 +296,25 @@ test("B1: soruyu atlayarak son karta gelen öğrenci bitirince soruya geri göt�
   await signUpVerified(page, email);
   // Kaldığı kart son kart (ör. eski bir sürümde soru yoktu ya da ilerleme elle yazıldı).
   await query(
-    `INSERT INTO "TrainingProgress" ("userId", "labId", "cardIndex") SELECT u."id", l."id", $2 FROM "User" u, "Lab" l WHERE u."email" = $1 AND l."slug" = 'oltalama-egitimi'`,
-    [email, training.cards.length - 1],
+    `INSERT INTO "TrainingProgress" ("userId", "labId", "cardIndex", "answeredCards") SELECT u."id", l."id", $2, $3 FROM "User" u, "Lab" l WHERE u."email" = $1 AND l."slug" = 'oltalama-egitimi'`,
+    [email, training.cards.length - 1, otherAnswers],
   );
 
   await page.goto("/oda/oltalama-egitimi/oyna");
   const player = page.getByTestId("training-player");
+  // Son kart adım adım açılıyorsa Bitir maddeler açılınca gelir.
+  await answerTrainingCard(page, training.cards[training.cards.length - 1]);
   await player.getByRole("button", { name: "Bitir", exact: true }).click();
   await expect(toast(page, "Eğitimi bitirmeden önce bu soruyu cevapla.")).toBeVisible();
-  await expect(player.getByText(quiz.question!)).toBeVisible();
+  await expect(player.getByText(quiz.question as string)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Eğitim odası bitti!" })).toHaveCount(0);
   expect((await progressOf(email))?.completedAt ?? null).toBeNull();
 
   await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").first().click();
-  for (let i = quizIndex; i < training.cards.length; i++) await player.getByRole("button", { name: /^(Devam|Bitir)$/ }).click();
+  for (let i = quizIndex; i < training.cards.length; i++) {
+    if (i > quizIndex) await answerTrainingCard(page, training.cards[i]);
+    await player.getByRole("button", { name: /^(Devam|Bitir)$/ }).click();
+  }
   await expect(page.getByRole("heading", { name: "Eğitim odası bitti!" })).toBeVisible();
   expect((await progressOf(email))?.completedAt).not.toBeNull();
 });
