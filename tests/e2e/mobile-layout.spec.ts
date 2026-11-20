@@ -639,7 +639,7 @@ type AdminData = {
   teacher: string;
   member: string;
   school: string;
-  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup" | "login" | "install", string>;
+  labs: Record<"inbox" | "messaging" | "training" | "placement" | "money" | "mission" | "sale" | "signup" | "login" | "install" | "setup", string>;
   article: string;
 };
 
@@ -1001,6 +1001,92 @@ const adminScreens: Screen<AdminData>[] = [
       await expect(page.getByTestId("install-game")).toBeVisible();
     },
   },
+  // Telefon kurulumu: Ayça'nın araması, kurulumun Wi‑Fi ekranı ve defter, açık ağ notu, ana ekran, bildirim çubuğu, Ayarlar'daki güncelleme, iki öneriyle Mağaza, El Feneri'ndeki reklam, Kurdum! bildirimi (Şehir Kapısı "Yeni telefonunu kur").
+  { name: "Oda önizleme, Ayça'nın araması", path: (d) => `/yonetim/odalar/${d.labs.setup}/onizle`, open: (page) => page.getByRole("button", { name: "Hazırım, başla" }).click() },
+  {
+    name: "Oda önizleme, kurulumun Wi‑Fi ekranı",
+    open: async (page) => {
+      const call = page.getByTestId("mission-call");
+      await call.getByRole("button", { name: "Aç", exact: true }).click();
+      await call.getByRole("button", { name: "Geç ›" }).click();
+      await call.getByRole("button", { name: "Tamam, kuruyorum" }).click();
+      await pickUpPhone(page);
+      await page.getByTestId("setup-start").click();
+      await expect(page.getByTestId("setup-wifi")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, açık ağın notu",
+    open: async (page) => {
+      await page.getByTestId("wifi-network").nth(1).click();
+      await expect(page.getByTestId("wifi-note")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, şifre kutusu ve defter",
+    open: async (page) => {
+      await page.getByTestId("wifi-note-ok").click();
+      await page.getByTestId("wifi-network").first().click();
+      await page.getByTestId("wifi-notebook-open").click();
+      await expect(page.getByTestId("wifi-notebook")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, telefonun ana ekranı ve güncelleme bildirimi",
+    open: async (page) => {
+      await page.getByTestId("wifi-fill").click();
+      await page.getByTestId("wifi-connect").click();
+      await expect(page.getByTestId("setup-home-screen")).toBeVisible();
+      await expect(page.getByTestId("update-banner")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, bildirim çubuğu",
+    open: async (page) => {
+      await page.getByTestId("shade-handle").click();
+      await expect(page.getByTestId("shade")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, Ayarlar'da güncelleme",
+    open: async (page) => {
+      await page.getByTestId("shade-update").click();
+      await page.getByTestId("update-install").click();
+      await expect(page.getByTestId("update-done")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, iki öneriyle Mağaza",
+    open: async (page) => {
+      await page.getByTestId("setup-home").click();
+      await page.getByTestId("setup-app-store").click();
+      await expect(page.getByTestId("store-suggestion")).toHaveCount(2);
+    },
+  },
+  {
+    name: "Oda önizleme, El Feneri'ndeki reklam",
+    open: async (page) => {
+      for (const [name, choice] of [["Harita", 0], ["El Feneri", 2]] as const) {
+        await page.getByTestId("store-suggestion").filter({ hasText: name }).click();
+        await page.getByTestId("store-result").filter({ hasText: name }).click();
+        await page.getByTestId("store-get").click();
+        await page.getByTestId("permission-prompt").getByTestId("permission-choice").nth(choice).click();
+        if (name === "Harita") {
+          await page.getByTestId("setup-home").click();
+          await page.getByTestId("setup-app-store").click();
+        }
+      }
+      await expect(page.getByTestId("setup-ad")).toBeVisible();
+    },
+  },
+  {
+    name: "Oda önizleme, Kurdum! bildirimi",
+    open: async (page) => {
+      await page.getByTestId("ad-close").click();
+      await page.getByTestId("setup-home").click();
+      await expect(page.getByTestId("finish-banner")).toBeVisible();
+    },
+  },
   { name: "Günün ipucu", path: "/yonetim/ipucu" },
   { name: "Yeni ipucu penceresi", path: "/yonetim/ipucu", open: (page) => page.getByRole("button", { name: "Yeni ipucu" }).click() },
   {
@@ -1163,7 +1249,7 @@ test.describe("telefon düzeni", () => {
     const labs = Object.fromEntries(
       (
         await query(
-          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor', 'okul-bilgisayarinda-giris', 'uygulama-nereden-geliyor')`,
+          `SELECT "slug", "id" FROM "Lab" WHERE "slug" IN ('sahte-kargo-maili', 'kodu-soran-arkadas', 'oltalama-egitimi', 'kisisel-veri-ve-para-guvenligi', 'kart-ve-para-guvenligi', 'kulaklik-icin-veli-karti', 'eski-telefonunu-sat', 'baglanti-nereye-gidiyor', 'okul-bilgisayarinda-giris', 'uygulama-nereden-geliyor', 'yeni-telefonunu-kur')`,
         )
       ).map((r) => [r.slug, r.id]),
     );
@@ -1188,6 +1274,7 @@ test.describe("telefon düzeni", () => {
           signup: labs["baglanti-nereye-gidiyor"],
           login: labs["okul-bilgisayarinda-giris"],
           install: labs["uygulama-nereden-geliyor"],
+          setup: labs["yeni-telefonunu-kur"],
         },
         article: (await query(`SELECT "id" FROM "NewsArticle" WHERE "slug" = $1`, [draft]))[0].id as string,
       });

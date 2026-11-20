@@ -61,7 +61,15 @@ export type ServerEvent =
   | { type: "file_opened"; item: string }
   | { type: "app_installed"; app: string }
   | { type: "permission_answered"; app: string; index: number; choice: number }
-  | { type: "homework_opened"; app: string };
+  | { type: "homework_opened"; app: string }
+  /**
+   * Telefon kurulumu (install.setup): Wi‑Fi listesindeki ağa bağlandı (sırası; evin ağı ya da açık
+   * ağ), sistem güncellemesini yükledi, reklamı kapattı (× ile), arayanın bildirimine "Kurdum!" dedi.
+   */
+  | { type: "wifi_connected"; network: number }
+  | { type: "update_installed" }
+  | { type: "ad_closed"; item: string }
+  | { type: "setup_finished" };
 
 export type LabEventData = BatchEvent | ServerEvent;
 
@@ -88,6 +96,11 @@ export type SceneState = {
   installed: string[];
   permissions: Record<string, number>;
   homework: string[];
+  /** Telefon kurulumu: bağlandığı ağların sırası, güncellemeyi yükledi, kapattığı reklamlar, "Kurdum!" dedi. */
+  wifi: number[];
+  updated: boolean;
+  adsClosed: string[];
+  setupFinished: boolean;
   answers: Record<string, number>;
   reviewDone: boolean;
   /**
@@ -124,6 +137,10 @@ export const emptyState = (): SceneState => ({
   installed: [],
   permissions: {},
   homework: [],
+  wifi: [],
+  updated: false,
+  adsClosed: [],
+  setupFinished: false,
   answers: {},
   reviewDone: false,
   remember: null,
@@ -195,6 +212,14 @@ export function applyEvent(state: SceneState, event: LabEventData): SceneState {
       return { ...state, permissions: { ...(state.permissions ?? {}), [permissionKey(event.app, event.index)]: event.choice }, decisions: state.decisions + 1 };
     case "homework_opened":
       return { ...state, homework: add(state.homework ?? [], event.app) };
+    case "wifi_connected":
+      return (state.wifi ?? []).includes(event.network) ? state : { ...state, wifi: [...(state.wifi ?? []), event.network], decisions: state.decisions + 1 };
+    case "update_installed":
+      return state.updated ? state : { ...state, updated: true, decisions: state.decisions + 1 };
+    case "ad_closed":
+      return { ...state, adsClosed: add(state.adsClosed ?? [], event.item), decisions: state.decisions + 1 };
+    case "setup_finished":
+      return { ...state, setupFinished: true };
     case "reply_sent":
       return {
         ...state,
@@ -229,7 +254,8 @@ export function taskProgress(
 ) {
   const done = tasks.map((task) => {
     // Giriş görevinde "uygulamada yap" portala giriş yapınca ("Giriş yap"), "bırak" kalkınca biter.
-    if (task.type === "action") return mode === "login" ? state.remember !== null : state.opened.length > 0;
+    // Telefon kurulumunda "telefonu al" ilk ağa bağlanınca biter (mesaj yok).
+    if (task.type === "action") return mode === "login" ? state.remember !== null : state.opened.length > 0 || (state.wifi ?? []).length > 0;
     if (task.type === "leave") return !!state.left;
     if (task.type === "review") return state.reviewDone;
     // Alış görevi: mağazada ödeyip onay kodu için bir karar verince (yazdı ya da yazmadı) biter.
@@ -241,7 +267,8 @@ export function taskProgress(
       // Giriş görevi: ödevi yükleyince biter.
       if (mode === "login") return !!state.uploaded;
       // Kurulum görevi: oyunu açıp ödevi açınca biter (ödevi yalnızca gerçek oyun açar).
-      if (mode === "install") return (state.homework ?? []).length > 0;
+      // Telefon kurulumu: her şey kurulup arayana "Kurdum!" denince biter.
+      if (mode === "install") return (state.homework ?? []).length > 0 || !!state.setupFinished;
       return codeDecided(state).length > 0;
     }
     return task.id in state.answers;

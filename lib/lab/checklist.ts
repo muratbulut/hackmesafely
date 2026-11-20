@@ -2,7 +2,7 @@
 // odanın sayfasında (eksikler) ve oda dosyalarının testinde çalışır. Maddelerin yazısı sözlükte:
 // t.admin.room.checklist[anahtar].
 
-import { fillParts, maxScore, rawTotal, stageFits, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type TrainingContent } from "./content";
+import { fillParts, maxScore, rawTotal, stageFits, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type Setup, type TrainingContent } from "./content";
 
 export type EditorSection = "cover" | "items" | "trap" | "tasks" | "report" | "cards";
 
@@ -24,6 +24,8 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
   const linked = content.items.filter((i) => i.payment || i.request || i.order || i.form);
   // Giriş görevli odada mail yok, tuzak sahte sayfa değil çıkış yapmadan kalkmaktır (Az kalsın).
   const login = !!mission?.login;
+  // Telefon kurulumunda Mesajlar yok: tek öğe uygulamanın içindeki sahte reklamdır.
+  const setupMode = !!mission?.install?.setup;
 
   const checks: CheckItem<ScenarioCheck>[] = [
     // Odanın kendi hatırlatmaları artık zorunlu değil: öğrenci odaya girerken genel hatırlatmaları görür (18. revize).
@@ -31,7 +33,9 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
     {
       key: "items",
       section: "items",
-      ok: login ? content.items.length === 0 : fakes.length >= 1 && reals.length >= 1 && content.items.every((i) => filled(i.sender) && filled(i.body)),
+      ok: login
+        ? content.items.length === 0
+        : fakes.length >= 1 && (setupMode || reals.length >= 1) && content.items.every((i) => filled(i.sender) && filled(i.body)),
     },
     {
       key: "signs",
@@ -113,6 +117,36 @@ function stageReady(content: ScenarioContent, template: ScenarioTemplate) {
  * (Mesajlar): ilan ve hazırlık maddeleri; bir sahte mesajda ödeme isteği, bir gerçek mesajda sipariş.
  * Kayıt görevi (Postam): form dolu; bir gerçek mailin bağlantısı formu açar, ödeme ve sipariş yok.
  */
+/**
+ * Telefon kurulumu hazır mı: bir evin ağı (kilitli) ve en az bir açık ağ, şifre, defter, notlar ve
+ * ağın rapor satırı; güncellemenin ekranı; reklam eki olan bir sahte öğeyi ve gerçek bir uygulamayı
+ * gösteriyor; "Kurdum!" bildirimi dolu. Kopya uygulama ve ödev ekranı yok.
+ */
+function setupReady(content: ScenarioContent, setup: Setup) {
+  const apps = content.mission?.install?.apps ?? [];
+  const wifi = setup.wifi;
+  const homes = wifi.networks.filter((n) => n.home);
+  const adItem = content.items.find((i) => i.id === setup.ad.item);
+  const report = wifi.report;
+  return (
+    homes.length === 1 &&
+    homes[0].locked &&
+    wifi.networks.some((n) => !n.locked && !n.home) &&
+    wifi.networks.every((n) => filled(n.name)) &&
+    [wifi.password, wifi.notebook.title, wifi.openNote.title, wifi.openNote.text, wifi.openNote.button, wifi.unknown].every(filled) &&
+    [report.title, report.ok, report.bad, report.right, report.why].every(filled) &&
+    [setup.update.title, setup.update.text, setup.update.version, setup.update.done].every(filled) &&
+    [setup.ad.title, setup.ad.text, setup.ad.button, setup.ad.source].every(filled) &&
+    [setup.finish.text, setup.finish.reply].every(filled) &&
+    !!adItem &&
+    adItem.kind === "fake" &&
+    adItem.attachment !== null &&
+    apps.some((a) => a.id === setup.ad.app && !a.copy) &&
+    apps.every((a) => !a.copy) &&
+    !content.mission?.install?.game
+  );
+}
+
 function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
   const mission = content.mission!;
   const common =
@@ -137,7 +171,8 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
       !mission.sale &&
       !mission.signup &&
       content.trap.almost &&
-      [install.store, install.game.title, install.game.homework, install.game.open, install.game.done].every(filled) &&
+      filled(install.store) &&
+      (install.setup ? setupReady(content, install.setup) : !!install.game && [install.game.title, install.game.homework, install.game.open, install.game.done].every(filled)) &&
       side(install.fileCompare.left) &&
       side(install.fileCompare.right) &&
       install.apps.some((a) => !a.copy) &&

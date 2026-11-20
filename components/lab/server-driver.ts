@@ -5,6 +5,10 @@ import {
   checkTrainingAnswer,
   checkTrainingPlacement,
   checkTrainingSpot,
+  closeAd,
+  connectWifi,
+  finishSetup,
+  installUpdate,
   getTrainingHint,
   finishAttempt,
   leaveDesk,
@@ -46,6 +50,10 @@ export function serverDriver(slug: string): LabDriver {
     installApp,
     answerPermission,
     openHomework,
+    connectWifi,
+    installUpdate,
+    closeAd,
+    finishSetup,
     finish: finishAttempt,
   };
 }

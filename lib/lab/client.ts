@@ -2,7 +2,7 @@
 // (CLAUDE.md, "Lab güvenliği"): öğenin sahte mi gerçek mi olduğu, işaretler, sahte sayfa, soru
 // puanları, doğru cevaplar, açıklamalar, rapor metinleri ve ipuçları gitmez.
 
-import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Stage, type StoreApp, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
+import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Setup, type Stage, type StoreApp, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
 import { placementBank } from "./training";
 
 export type ClientItem = {
@@ -85,7 +85,22 @@ export type ClientInstall = {
   store: string;
   query: string;
   apps: ClientStoreApp[];
-  game: { title: string; homework: string; open: string };
+  game: { title: string; homework: string; open: string } | null;
+  setup: ClientSetup | null;
+};
+
+/**
+ * Telefon kurulumu: ağların adı ve kilidi (hangisinin evin ağı olduğu gitmez), defterdeki şifre,
+ * güncellemenin ekranı ("yüklendi" cümlesi gitmez), reklamın görünüşü ve görevi bitiren bildirim.
+ * Açık ağın notu, bilinmeyen şifre cümlesi ve rapor satırı seçince sunucudan gelir.
+ */
+export type ClientSetup = {
+  networks: { name: string; locked: boolean }[];
+  password: string;
+  notebook: { title: string; from: string };
+  update: { title: string; text: string; version: string; size: string };
+  ad: { item: string; app: string; title: string; text: string; button: string; source: string };
+  finish: { text: string; reply: string };
 };
 
 export function toClientScenario(content: ScenarioContent, template: ScenarioTemplate): ClientScenario {
@@ -158,12 +173,26 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
                   text: a.text,
                   icon: a.icon,
                 })),
-                game: { title: content.mission.install.game.title, homework: content.mission.install.game.homework, open: content.mission.install.game.open },
+                game: content.mission.install.game
+                  ? { title: content.mission.install.game.title, homework: content.mission.install.game.homework, open: content.mission.install.game.open }
+                  : null,
+                setup: content.mission.install.setup ? clientSetup(content.mission.install.setup) : null,
               }
             : null,
         }
       : null,
     stage: content.stage ?? null,
+  };
+}
+
+function clientSetup(setup: Setup): ClientSetup {
+  return {
+    networks: setup.wifi.networks.map((n) => ({ name: n.name, locked: n.locked })),
+    password: setup.wifi.password,
+    notebook: setup.wifi.notebook,
+    update: { title: setup.update.title, text: setup.update.text, version: setup.update.version, size: setup.update.size },
+    ad: setup.ad,
+    finish: setup.finish,
   };
 }
 
