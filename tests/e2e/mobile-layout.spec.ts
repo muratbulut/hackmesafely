@@ -774,9 +774,10 @@ const adminScreens: Screen<AdminData>[] = [
   { name: "Oda önizleme, banka kartı", open: next },
   { name: "Oda önizleme, banka kartı SMS", open: (page) => openPoints(page, "Kartın bölümleri", 3) },
   { name: "Oda önizleme, banka kartı gezildi", open: (page) => openPoints(page, "Kartın bölümleri") },
+  // 1 TL sorusu "Önce tahmin": hediye mailinin (tıkla-bul) önünde gelir.
+  { name: "Oda önizleme, önce tahmin", open: next },
+  { name: "Oda önizleme, önce tahmin cevaplandı", open: (page) => page.getByTestId("training-player").getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(1).click() },
   { name: "Oda önizleme, tıkla-bul", open: next },
-  { name: "Oda önizleme, ikinci test", open: next },
-  { name: "Oda önizleme, ikinci test cevaplandı", open: (page) => page.getByTestId("training-player").getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(1).click() },
   { name: "Oda önizleme, ikinci eğitimin adım adım kartı", open: next },
   // Görevli oda: annenin görüntülü araması, görev kartı, mağaza ve SMS (Para Çarşısı "Kulaklık için veli kartı", oda dosyası, taslak).
   // Önce perde ve "Başlamadan önce", arama "Hazırım"dan sonra çalar (18. revize).
