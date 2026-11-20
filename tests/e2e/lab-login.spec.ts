@@ -87,6 +87,8 @@ async function typePassword(page: Page) {
 /** Kod telefona gelir: telefonu al, bak, bırak; Deniz konuşur. */
 async function readCode(page: Page, isMobile: boolean) {
   await expect(page.getByTestId("school-portal")).toHaveAttribute("data-page", "code");
+  // Masaüstünde T2 ekranı da pencereli: pencere büyütülür (telefon genişliğinde pencereler hep tam boy).
+  await expect(page.getByTestId("scenario-stage").getByRole("button", { name: "Büyüt" }).first()).toBeVisible({ visible: !isMobile });
   // Telefona bakmadan kutuya dokununca yönlendirme.
   await page.getByTestId("portal-code").first().click();
   await expect(page.getByTestId("portal-code-nudge")).toContainText("telefonuna geldi");
@@ -94,7 +96,9 @@ async function readCode(page: Page, isMobile: boolean) {
   await page.getByTestId("stage-phone-pick").click();
   await expect(page.getByTestId("login-sms")).toContainText(room.mission.code);
   await shot(page, "4-telefon", isMobile);
-  await page.getByTestId("login-phone-drop").click();
+  // "Masaya bırak" telefonun içinde değil: masaüstünde altında, telefon genişliğinde şeritte.
+  await expect(page.getByTestId("stage-phone").getByTestId("stage-phone-drop")).toHaveCount(0);
+  await page.locator('[data-testid="stage-phone-drop"]:visible').click();
 }
 
 /** Deniz: iki satır, seçenek, cevabı, "Ekranına dön". */

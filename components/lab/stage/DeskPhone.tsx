@@ -34,7 +34,6 @@ export function DeskPhone({
   notice,
   children,
   screenRef,
-  hideDrop = false,
   barSlot = null,
 }: {
   place: "t1" | "t2";
@@ -45,8 +44,6 @@ export function DeskPhone({
   children: ReactNode;
   /** Ekranın kendisi (T2'de velinin SMS'i buraya çizilir). */
   screenRef?: Ref<HTMLDivElement>;
-  /** Sahne kendi "Masaya bırak" düğmesini çiziyorsa (giriş görevi) telefonun altındaki düğme çizilmez. */
-  hideDrop?: boolean;
   /** Telefon genişliğinde "Bırak" düğmesinin yeri (oynatıcının şeridi). */
   barSlot?: HTMLElement | null;
 }) {
@@ -115,7 +112,7 @@ export function DeskPhone({
           </div>
         </div>
       </div>
-      {inHand && !hideDrop ? (
+      {inHand ? (
         <div className="st-handrow">
           <button type="button" onClick={onDrop} data-testid="stage-phone-drop">
             <ArrowDown className="size-4" strokeWidth={2.2} aria-hidden="true" />
@@ -123,7 +120,7 @@ export function DeskPhone({
           </button>
         </div>
       ) : null}
-      {inHand && !hideDrop && barSlot
+      {inHand && barSlot
         ? createPortal(
             <button
               type="button"
