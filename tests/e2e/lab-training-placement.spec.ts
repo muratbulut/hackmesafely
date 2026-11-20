@@ -144,7 +144,9 @@ async function playCards(page: Page, list: Card[]) {
       // İlk şıklardan yanlış olanı seçilir: sunucu doğrusunu harfiyle söyler, cevap değişmez.
       const wrong = card.answer === 0 ? 1 : 0;
       await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(wrong).click();
-      await expect(shown(player, `Tam değil. Doğrusu ${"ABCD"[card.answer as number]}.`)).toBeVisible();
+      const letter = "ABCD"[card.answer as number];
+      // "Önce tahmin" sorusunun geri bildirimi yumuşaktır.
+      await expect(shown(player, card.guess ? `İyi tahmin, ama doğrusu ${letter}.` : `Tam değil. Doğrusu ${letter}.`)).toBeVisible();
     }
 
     await next(page).click();
