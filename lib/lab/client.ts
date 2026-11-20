@@ -2,7 +2,7 @@
 // (CLAUDE.md, "Lab güvenliği"): öğenin sahte mi gerçek mi olduğu, işaretler, sahte sayfa, soru
 // puanları, doğru cevaplar, açıklamalar, rapor metinleri ve ipuçları gitmez.
 
-import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Setup, type Stage, type StoreApp, type Task, type TaskType, type TrainingContent, iconedPoints, voicedLines } from "./content";
+import { fillParts, type Card, type Mission, type LabMeta, type SortColor, type CardIcon, type QuizArt, type ScenarioContent, type ScenarioTemplate, type Setup, type Stage, type StoreApp, type Task, type TaskType, type TrainingContent, type Voicemail, iconedPoints, voicedLines } from "./content";
 import { placementBank } from "./training";
 
 export type ClientItem = {
@@ -16,6 +16,8 @@ export type ClientItem = {
   /** Gösterilen adres; tıklanınca ne açılacağını sunucu söyler. */
   link: { url: string; text: string } | null;
   attachment: { name: string; size: string } | null;
+  /** Takip görevi: mailde yazan takip numarası (boşsa yok); gerçek olup olmadığını sorgu söyler. */
+  tracking: string;
 };
 
 export type ClientTask = {
@@ -78,6 +80,13 @@ export type ClientMission = Pick<Mission, "caller" | "look" | "owner" | "lines" 
    * gitmez) ve oyunun ödev ekranı ("açıldı" cümlesi ödevi açınca gelir).
    */
   install: ClientInstall | null;
+  /** Takip görevi: kargo uygulamasının adı ve alt satırı (gerçek numara ve sonuçlar gitmez). */
+  track: { app: string; sub: string } | null;
+  /**
+   * Sesli mesajla açılan görev: Mesajlar'daki önceki konuşma, sesli mesajın saati, kabul edince
+   * giden cevap ve odayı bitirince ilerleyen saat. Bitişlerin satırları gitmez (bitince gelir).
+   */
+  voicemail: Voicemail | null;
 };
 
 export type ClientStoreApp = Pick<StoreApp, "id" | "name" | "publisher" | "rating" | "downloads" | "category" | "text" | "icon">;
@@ -118,6 +127,7 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
       footer: item.footer,
       link: item.link,
       attachment: item.attachment,
+      tracking: item.tracking?.trim() ?? "",
     })),
     tasks: content.tasks.map((task) => ({
       id: task.id,
@@ -179,6 +189,8 @@ export function toClientScenario(content: ScenarioContent, template: ScenarioTem
                 setup: content.mission.install.setup ? clientSetup(content.mission.install.setup) : null,
               }
             : null,
+          track: content.mission.track ? { app: content.mission.track.app, sub: content.mission.track.sub } : null,
+          voicemail: content.mission.voicemail ?? null,
         }
       : null,
     stage: content.stage ?? null,
@@ -205,7 +217,7 @@ function withoutNext(login: NonNullable<Mission["login"]>) {
 export type ClientCard =
   | Extract<Card, { type: "info" }>
   | (Omit<Extract<Card, { type: "clickFind" }>, "spots"> & { spotCount: number })
-  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; wifi: { name: string; locked: boolean }[] | null; popup: { site: string; title: string; text: string; button: string } | null; guess: boolean }
+  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; wifi: { name: string; locked: boolean }[] | null; popup: { site: string; title: string; text: string; button: string; icon?: CardIcon } | null; form: { site: string; title: string; text: string; fields: string[]; button: string } | null; guess: boolean }
   | {
       id: string;
       type: "video";
@@ -237,7 +249,7 @@ export function toClientCard(card: Card): ClientCard {
       return { ...rest, spotCount: spots.length };
     }
     case "quiz":
-      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null, sms: card.sms ?? null, file: card.file ?? null, permission: card.permission ?? null, wifi: card.wifi ?? null, popup: card.popup ?? null, guess: card.guess ?? false };
+      return { id: card.id, type: "quiz", question: card.question, options: card.options, art: card.art ?? null, link: card.link ?? null, sms: card.sms ?? null, file: card.file ?? null, permission: card.permission ?? null, wifi: card.wifi ?? null, popup: card.popup ?? null, form: card.form ?? null, guess: card.guess ?? false };
     case "video":
       return {
         id: card.id,

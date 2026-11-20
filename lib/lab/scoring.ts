@@ -132,6 +132,8 @@ export function realOutcome(state: SceneState, item: string): RealOutcome {
  */
 export function missionDone(content: Pick<ScenarioContent, "items" | "mission">, state: SceneState) {
   if (content.mission?.login) return !!state.uploaded;
+  // Takip görevi: gerçek gönderinin numarasını kargonun kendi uygulamasında sorguladı.
+  if (content.mission?.track) return !!state.parcelFound;
   if (content.mission?.signup) {
     const sent = state.formSent ?? [];
     return content.items.some((i) => i.kind === "real" && i.form && sent.includes(i.id));

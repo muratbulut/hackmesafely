@@ -1,8 +1,11 @@
-import { Lock, LockOpen, TriangleAlert, Wifi } from "lucide-react";
+import { Gift, Lock, LockOpen, TriangleAlert, Wifi } from "lucide-react";
 import { getMessages } from "@/lib/i18n";
+import type { CardIcon } from "@/lib/lab/content";
+import { cardIconMap } from "./card-icons";
 
 type Network = { name: string; locked: boolean };
-type Popup = { site: string; title: string; text: string; button: string };
+type Popup = { site: string; title: string; text: string; button: string; icon?: CardIcon };
+type Form = { site: string; title: string; text: string; fields: string[]; button: string };
 
 /**
  * Mini testin üstündeki telefon ekranları (Şehir Kapısı, Telefonun ve internet). İkisi de yalnızca
@@ -51,6 +54,7 @@ export function WifiPeek({ networks }: { networks: Network[] }) {
 /** Bir sitenin içinde açılan korkutucu pencere: adres çubuğu, uyarı, geri sayım ve düğme. */
 export function PopupPeek({ popup }: { popup: Popup }) {
   const m = getMessages().lab.training.quiz.popup;
+  const Icon = popup.icon ? cardIconMap[popup.icon] : TriangleAlert;
   return (
     <div data-testid="popup-peek" className="overflow-hidden rounded-[20px] border border-card bg-surface-deep px-4 py-5">
       <div className="mx-auto max-w-[360px] overflow-hidden rounded-2xl border border-scene-line-strong bg-scene-paper font-sans text-scene-ink shadow-floating">
@@ -60,7 +64,7 @@ export function PopupPeek({ popup }: { popup: Popup }) {
         </div>
         <div className="p-3">
           <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-scene-red bg-scene-red-soft px-4 py-4 text-center motion-safe:[animation:pop_.35s_.3s_ease-out_both,shake_.5s_.9s_ease-in-out]">
-            <TriangleAlert className="size-8 text-scene-red" strokeWidth={2.2} aria-hidden="true" />
+            <Icon className="size-8 text-scene-red" strokeWidth={2.2} aria-hidden="true" />
             <b className="text-[16px] leading-snug text-scene-red">{popup.title}</b>
             <span className="text-[14px] leading-snug text-scene-ink-2">{popup.text}</span>
             <span className="text-xs text-scene-ink-muted">
@@ -70,6 +74,49 @@ export function PopupPeek({ popup }: { popup: Popup }) {
               {popup.button}
             </span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Bir sitedeki form (Kişisel veri): adres çubuğu, başlık, boş alanlar ve düğme; yalnızca formun ne istediğini gösterir. */
+export function FormPeek({ form }: { form: Form }) {
+  const m = getMessages().lab.training.quiz.form;
+  return (
+    <div data-testid="form-peek" className="overflow-hidden rounded-[20px] border border-card bg-surface-deep px-4 py-5">
+      <div className="mx-auto max-w-[360px] overflow-hidden rounded-2xl border border-scene-line-strong bg-scene-paper font-sans text-scene-ink shadow-floating motion-safe:[animation:sms-drop_.5s_.2s_ease-out_both]">
+        <div className="flex items-center gap-2 border-b border-scene-line bg-scene-white px-3 py-2">
+          <Lock className="size-3.5 flex-none text-scene-ink-muted" strokeWidth={2.4} aria-hidden="true" />
+          <span className="truncate rounded-full bg-scene-paper px-3 py-1 text-[13px] text-scene-ink-2">{form.site}</span>
+        </div>
+        <div className="flex flex-col gap-2.5 p-4">
+          <div className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="grid size-9 flex-none place-items-center rounded-full bg-scene-blue text-scene-white">
+              <Gift className="size-[18px]" strokeWidth={2.2} />
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <b className="text-[16px] leading-snug">{form.title}</b>
+              {form.text ? <span className="text-[13px] leading-snug text-scene-ink-muted">{form.text}</span> : null}
+            </span>
+          </div>
+          <ul className="flex flex-col gap-1.5">
+            {form.fields.map((field, i) => (
+              <li
+                key={field}
+                className="flex min-h-9 items-center gap-2 rounded-lg border border-scene-line-strong bg-scene-white px-3 py-1.5 motion-safe:[animation:sms-drop_.4s_ease-out_both]"
+                style={{ animationDelay: `${0.45 + i * 0.1}s` }}
+              >
+                <span className="min-w-0 flex-1 text-[13px] font-bold text-scene-ink-2">{field}</span>
+                <span aria-hidden="true" className="text-xs text-scene-ink-faint">
+                  {m.empty}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <span aria-hidden="true" className="mt-1 rounded-lg bg-scene-blue px-4 py-2.5 text-center text-[15px] font-bold text-scene-white">
+            {form.button}
+          </span>
         </div>
       </div>
     </div>

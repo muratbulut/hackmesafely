@@ -2,7 +2,7 @@
 // odanın sayfasında (eksikler) ve oda dosyalarının testinde çalışır. Maddelerin yazısı sözlükte:
 // t.admin.room.checklist[anahtar].
 
-import { fillParts, maxScore, rawTotal, stageFits, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type Setup, type TrainingContent } from "./content";
+import { fillParts, maxScore, rawTotal, sameTracking, stageFits, usesTrapPage, type ScenarioContent, type ScenarioTemplate, type Setup, type TrainingContent } from "./content";
 
 export type EditorSection = "cover" | "items" | "trap" | "tasks" | "report" | "cards";
 
@@ -52,7 +52,7 @@ export function scenarioChecklist(content: ScenarioContent, template: ScenarioTe
         : filled(trap.ask) &&
         // Görevli odada tuzak sahte mağazadır: sayfası mağaza sayfası, adresi sahte maildeki bağlantı.
         // Kayıt görevinde tuzak yine sahte sayfadır.
-        (mission && !mission.signup
+        (mission && !mission.signup && !mission.track
           ? true
           : template === "INBOX"
           ? filled(trap.url) && filled(trap.title)
@@ -96,9 +96,12 @@ function stageReady(content: ScenarioContent, template: ScenarioTemplate) {
   const stageOk = !stage || (stageFits(stage.type, template) && (!stage.password || filled(stage.password.value)));
   // Giriş görevi bilgisayar ve masadaki telefonla (T2) açılır: kod telefona gelir.
   const loginOk = !content.mission?.login || stage?.type === "DESKTOP_PHONE";
+  // Sesli mesaj masadaki telefona düşer: bilgisayar ve telefon (T2) ister.
+  const voiceOk = !content.mission?.voicemail || stage?.type === "DESKTOP_PHONE";
   return (
     stageOk &&
     loginOk &&
+    voiceOk &&
     content.tasks.every(
       (t) =>
         !t.talk ||
@@ -180,6 +183,25 @@ function missionReady(content: ScenarioContent, template: ScenarioTemplate) {
       install.apps.filter((a) => a.copy).every((a) => !!a.report && filled(a.empty)) &&
       install.apps.every((a) => a.permissions.every((p) => p.choices.every(filled) && (p.right === null || !!p.report))) &&
       fakes.some((i) => i.attachment !== null) &&
+      content.items.every((i) => !i.payment && !i.request && !i.order && !i.form)
+    );
+  }
+  // Takip görevi (Postam ve kargo uygulaması): uygulama, gerçek numara ve iki sonuç dolu; numarası
+  // görevdeki numarayla aynı tek bir gerçek mail var, sahte mailin de (bulunamayan) numarası var.
+  // Mağaza, kart, ödeme ve form yok; tuzak sahte sayfadır (yukarıda).
+  if (mission.track) {
+    const track = mission.track;
+    const tracked = content.items.filter((i) => filled(i.tracking ?? ""));
+    return (
+      template === "INBOX" &&
+      !mission.shop &&
+      !mission.card &&
+      !mission.sale &&
+      !mission.signup &&
+      [track.app, track.number, track.found.title, track.missing.title].every(filled) &&
+      track.found.steps.every((s) => filled(s.title)) &&
+      tracked.filter((i) => i.kind === "real" && sameTracking(i.tracking!, track.number)).length === 1 &&
+      tracked.some((i) => i.kind === "fake" && !sameTracking(i.tracking!, track.number)) &&
       content.items.every((i) => !i.payment && !i.request && !i.order && !i.form)
     );
   }

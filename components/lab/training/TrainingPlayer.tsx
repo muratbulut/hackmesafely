@@ -40,9 +40,9 @@ export type TrainingPlayerProps = {
 };
 
 const secondary =
-  "flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-card text-base font-bold text-fg transition-opacity disabled:cursor-default disabled:opacity-40";
+  "flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-card text-base font-bold text-fg transition-opacity disabled:cursor-default disabled:border-card disabled:bg-surface disabled:text-fg-4";
 const primary =
-  "flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent text-[17px] font-bold text-on-accent transition-[filter,opacity] hover:brightness-110 disabled:cursor-default disabled:opacity-45 disabled:hover:brightness-100";
+  "flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent text-[17px] font-bold text-on-accent transition-[filter,opacity] hover:brightness-110 disabled:cursor-default disabled:bg-[color-mix(in_srgb,var(--accent)_45%,var(--canvas))] disabled:text-[color-mix(in_srgb,var(--on-accent)_55%,var(--accent))] disabled:hover:brightness-100";
 
 /**
  * Eğitim labı oynatıcısı (Egitim-Masaustu, Egitim-Mobil-1..5): bilgi, tıkla-bul, mini test ve
@@ -290,7 +290,7 @@ export function TrainingPlayer({ driver, title, cards, startIndex, exitHref, pla
         {/* Gezinme: masaüstünde kartın altında, telefonda ekranın altında sabit */}
         <div
           className={cn(
-            "fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-card bg-canvas/95 px-4 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] lg:static lg:mx-auto lg:w-full lg:justify-between lg:border-0 lg:bg-transparent lg:p-0",
+            "fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-card bg-canvas px-4 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] lg:static lg:mx-auto lg:w-full lg:justify-between lg:border-0 lg:bg-transparent lg:p-0",
             wide ? "lg:max-w-[940px]" : "lg:max-w-[760px]",
           )}
         >

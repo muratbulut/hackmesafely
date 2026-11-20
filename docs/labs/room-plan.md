@@ -258,18 +258,20 @@ Kartlar (13, yaklaşık 8 dakika):
 
 #### Senaryo: Sahte kargo maili
 
-Başlık: "Kargonuz kapıda... değil!" · Sahne: Postam · Şablon: M1 · Sonuç: Hesap · Sitede yayında · İlk dalga · Tanıtım sayfasında sahnesi var
+Başlık: "Kargonuz kapıda... değil!" · Sahne: Postam ve Yolda Kargo (bilgisayar), Mesajlar (telefon) · Şablon: T2 · Sonuç: Hesap · Sitede yayında (20 Kasım yenilemesi) · İlk dalga · Tanıtım sayfasında sahnesi var
 
-- **Hikâye:** Kargon yolda ve gelen kutun dolu. "Kargo Takip" adına gelen mail adresin eksik olduğunu, 24 saat içinde güncellemezsen paketin iade edileceğini söylüyor.
-- **Tuzak:** "Adresi güncelle" düğmesinden Postam şifresini girmek.
-- **Doğru karar:** Maili bildirmek; kargoyu firmanın uygulamasından kendisi takip etmek.
+- **Hikâye:** Ablan Ayça sabah sınava girmeden sesli mesaj bırakmış: sana Yolda Kargo'yla sürpriz bir paket yollamış, bugün gelecek; takip numarası mailine düşecek. Gelen kutunda iki Yolda Kargo maili var: biri "gönderin yola çıktı" diyor, öbürü adresin eksik olduğunu, 24 saat içinde güncellemezsen paketin iade edileceğini söylüyor.
+- **Görev:** Ayça'nın paketini takip etmek: maillerdeki takip numaralarından birini bilgisayardaki Yolda Kargo uygulamasında sorgulamak. Gerçek numara gönderiyi bulur, sahte maildeki numara bulunamaz (sonucu sunucu söyler).
+- **Tuzak:** "Adresi güncelle" düğmesinden açılan sayfada tarayıcının kayıtlı şifre önerisiyle ("Doldur") Postam şifresini vermek.
+- **Doğru karar:** Gerçek numarayı uygulamada sorgulamak, sahte maili bildirmek.
 - **İşaretler:**
-    - Gönderen kargo-teslimat-tr.xyz
+    - Gönderen yolda-kargo-teslimat.com (gerçeği yoldakargo.com.tr)
     - "24 saat içinde" baskısı
-    - Bağlantı benzer bir adrese gidiyor
-- **Gerçek öğeler:** Okul duyurusu, Market Puan siparişi, Elif'in ödev maili.
-- **Ana soru:** Kargo mailinin gerçek olup olmadığını en güvenli nasıl anlarsın? Doğru: "Firmanın uygulamasını kendim açıp takip numarama bakarım". Yanlışlar: "Maildeki düğmeye tıklayıp açılan siteye bakarım"; "Maile cevap yazıp sorarım".
-- **Bekleyen kod işi:** Yok, bugünkü sahneyle yazılır.
+    - Bağlantı benzer bir adrese gidiyor; takip numarası uygulamada bulunamıyor
+- **Gerçek öğeler:** Yolda Kargo'nun gerçek gönderi maili (bağlantısız), okul duyurusu, Elif'in ödev maili.
+- **Bitişler:** Ayça'nın sesli mesajları: paket geldi (görev yapıldı), paket şubeye döndü (görev yapılmadı), arkadaşlarıma senden mail geldi (hacklendi).
+- **Ana soru:** Kargo mailinin gerçek olup olmadığını en güvenli nasıl anlarsın? Doğru: "Firmanın uygulamasını kendim açıp takip numarama bakarım". Yanlışlar: "Maildeki düğmeye tıklayıp açılan siteye bakarım"; "Maile cevap yazıp sorarım". İkinci soru: şifreni kaptırdığını fark edince ilk ne yaparsın (Postam'ı kendin açıp şifreni değiştirmek).
+- **Kod işi (20 Kasım, bitti):** takip görevi (`mission.track`, Yolda Kargo uygulaması `components/lab/track/`), sesli mesajla açılış ve bitişler (`mission.voicemail`, `components/lab/mission/VoiceMessage.tsx`), kayıtlı şifre önerisi (`trap.autofill`). Ayrıntı `docs/guides/new-lab.md` 2.20. Bekleyen: Ayça'nın sesi ve çizimi.
 
 #### Senaryo: Karne günü gelen mail
 
@@ -739,9 +741,9 @@ Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Şablon: T1 · Sonuç: V
 Kartlar:
 
 1. Video (Ayşegül ve Ayça, soru durağı): kartın önü, arkası, SMS kodu; bedava elmas için 3 rakam
-2. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır
-3. Tıkla-bul: "hediye kazandın" maili
-4. Mini test (4 şık, 1 TL çizimi): "bedava ama 1 TL doğrulama" ne ister
+2. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır (SMS adımında sitenin tek telefonu)
+3. Önce tahmin (4 şık, açılır pencere ekranı): oyunda açılan "1 TL öde, hediyeni al" penceresi aslında ne ister
+4. Tıkla-bul: "hediye kazandın" maili
 5. Bilgi, adım adım düzeni: dur, sor, kontrol et
 
 #### Senaryo: Kulaklık için veli kartı

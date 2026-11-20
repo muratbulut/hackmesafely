@@ -265,11 +265,13 @@ export type DemoEvent =
   | { type: "review_done" }
   | { type: "answer"; task: string; option: number }
   | { type: "link_clicked"; item: string }
-  | { type: "info_entered"; item: string };
+  | { type: "info_entered"; item: string }
+  | { type: "parcel_tracked"; item: string; found: boolean };
 
 const open = (item: string): DemoEvent => ({ type: "item_opened", item });
 const move = (item: string, to: "inbox" | "spam" | "trash"): DemoEvent => ({ type: "item_moved", item, to });
 const answer = (task: string, option: number): DemoEvent => ({ type: "answer", task, option });
+const track = (item: string, found: boolean): DemoEvent => ({ type: "parcel_tracked", item, found });
 const review: DemoEvent = { type: "review_done" };
 
 export type AttemptProfile = "perfect" | "deleted" | "falseAlarm" | "clickedReported" | "ignored" | "hacked";
@@ -280,9 +282,9 @@ export type AttemptProfile = "perfect" | "deleted" | "falseAlarm" | "clickedRepo
  * labs/rooms/oltalama-limani/sahte-kargo-maili.json içeriğiyle yeniden hesaplar; içerik değişirse test düşer.
  */
 export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; status: "COMPLETED" | "HACKED"; report: unknown }> = {
-  // Sahte maili linke dokunmadan bildirdi, soruların en iyi cevabı.
+  // Ayça'nın gönderisini gerçek numarayla buldu, sahte maili linke dokunmadan bildirdi, soruların en iyi cevabı.
   perfect: {
-    events: [open("okul"), open("kargo"), move("kargo", "spam"), open("market"), open("elif"), review, answer("okul-sorusu", 2), answer("market-sorusu", 1)],
+    events: [open("okul"), open("gonderi"), track("gonderi", true), open("kargo"), move("kargo", "spam"), open("elif"), review, answer("kargo-sorusu", 0), answer("sifre-sorusu", 0)],
     status: "COMPLETED",
     report: {
       status: "safe",
@@ -290,21 +292,22 @@ export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; stat
       score: 100,
       rows: [
         { type: "fake", item: "kargo", outcome: "reported", state: "ok", points: 4, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: 2, state: "ok", points: 2, max: 2 },
-        { type: "question", task: "market-sorusu", option: 1, state: "ok", points: 1, max: 1 },
+        { type: "mission", task: "gorev", done: true, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: 0, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: 0, state: "ok", points: 1, max: 1 },
       ],
-      tips: [],
-      genericTips: 3,
+      tips: [4],
+      genericTips: 2,
       caught: true,
       compromise: null,
     },
   },
-  // Sahte maili sildi (bildirmedi).
+  // Gönderiyi buldu, sahte maili sildi (bildirmedi).
   deleted: {
-    events: [open("kargo"), move("kargo", "trash"), open("okul"), open("market"), open("elif"), review, answer("okul-sorusu", 0), answer("market-sorusu", 1)],
+    events: [open("kargo"), move("kargo", "trash"), open("gonderi"), track("gonderi", true), open("okul"), open("elif"), review, answer("kargo-sorusu", 2), answer("sifre-sorusu", 0)],
     status: "COMPLETED",
     report: {
       status: "safe",
@@ -312,43 +315,45 @@ export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; stat
       score: 70,
       rows: [
         { type: "fake", item: "kargo", outcome: "deleted", state: "part", points: 2, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: 0, state: "part", points: 1, max: 2 },
-        { type: "question", task: "market-sorusu", option: 1, state: "ok", points: 1, max: 1 },
+        { type: "mission", task: "gorev", done: true, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: 2, state: "bad", points: 0, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: 0, state: "ok", points: 1, max: 1 },
       ],
-      tips: [2],
-      genericTips: 2,
+      tips: [2, 4],
+      genericTips: 1,
       caught: false,
       compromise: null,
     },
   },
   // Sahteyi bildirdi ama gerçek okul duyurusunu da sahte sandı.
   falseAlarm: {
-    events: [open("okul"), move("okul", "spam"), open("kargo"), move("kargo", "spam"), open("market"), review, answer("okul-sorusu", 1), answer("market-sorusu", 1)],
+    events: [open("okul"), move("okul", "spam"), open("gonderi"), track("gonderi", true), open("kargo"), move("kargo", "spam"), review, answer("kargo-sorusu", 0), answer("sifre-sorusu", 1)],
     status: "COMPLETED",
     report: {
       status: "safe",
       title: "safeButMissed",
-      score: 70,
+      score: 80,
       rows: [
         { type: "fake", item: "kargo", outcome: "reported", state: "ok", points: 4, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "okul", outcome: "reported", state: "bad", points: 0, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: 1, state: "bad", points: 0, max: 2 },
-        { type: "question", task: "market-sorusu", option: 1, state: "ok", points: 1, max: 1 },
+        { type: "mission", task: "gorev", done: true, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: 0, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: 1, state: "bad", points: 0, max: 1 },
       ],
-      tips: [3],
-      genericTips: 2,
+      tips: [3, 4],
+      genericTips: 1,
       caught: true,
       compromise: null,
     },
   },
   // Linke tıkladı, bilgi girmeden geri dönüp bildirdi.
   clickedReported: {
-    events: [open("kargo"), { type: "link_clicked", item: "kargo" }, move("kargo", "spam"), open("okul"), open("market"), open("elif"), review, answer("okul-sorusu", 2), answer("market-sorusu", 0)],
+    events: [open("kargo"), { type: "link_clicked", item: "kargo" }, move("kargo", "spam"), open("gonderi"), track("gonderi", true), open("okul"), open("elif"), review, answer("kargo-sorusu", 1), answer("sifre-sorusu", 0)],
     status: "COMPLETED",
     report: {
       status: "safe",
@@ -356,41 +361,43 @@ export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; stat
       score: 70,
       rows: [
         { type: "fake", item: "kargo", outcome: "reportedAfterEngaging", by: "link", state: "part", points: 2, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: 2, state: "ok", points: 2, max: 2 },
-        { type: "question", task: "market-sorusu", option: 0, state: "bad", points: 0, max: 1 },
+        { type: "mission", task: "gorev", done: true, state: "ok", points: 1, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: 1, state: "bad", points: 0, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: 0, state: "ok", points: 1, max: 1 },
       ],
-      tips: [0, 2],
+      tips: [0, 2, 4],
+      genericTips: 0,
+      caught: false,
+      compromise: null,
+    },
+  },
+  // Sahte maildeki numarayı sorguladı (bulunamadı), maile dokunmadı: görev de yapılmadı.
+  ignored: {
+    events: [open("gonderi"), open("kargo"), track("kargo", false), open("okul"), open("elif"), review, answer("kargo-sorusu", 1), answer("sifre-sorusu", 1)],
+    status: "COMPLETED",
+    report: {
+      status: "risky",
+      title: "missed",
+      score: 40,
+      rows: [
+        { type: "fake", item: "kargo", outcome: "ignored", state: "part", points: 1, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
+        { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
+        { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
+        { type: "mission", task: "gorev", done: false, state: "bad", points: 0, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: 1, state: "bad", points: 0, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: 1, state: "bad", points: 0, max: 1 },
+      ],
+      tips: [2, 4],
       genericTips: 1,
       caught: false,
       compromise: null,
     },
   },
-  // Sahte maile dokunmadı, gelen kutusunda bıraktı.
-  ignored: {
-    events: [open("market"), open("okul"), open("kargo"), open("elif"), review, answer("okul-sorusu", 0), answer("market-sorusu", 0)],
-    status: "COMPLETED",
-    report: {
-      status: "risky",
-      title: "missed",
-      score: 50,
-      rows: [
-        { type: "fake", item: "kargo", outcome: "ignored", state: "part", points: 1, max: 4 },
-        { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: 0, state: "part", points: 1, max: 2 },
-        { type: "question", task: "market-sorusu", option: 0, state: "bad", points: 0, max: 1 },
-      ],
-      tips: [2],
-      genericTips: 2,
-      caught: false,
-      compromise: null,
-    },
-  },
-  // Linke tıklayıp sahte sayfaya bilgi girdi: hacklendi (deneme o anda biter).
+  // Linke tıklayıp sahte sayfaya kayıtlı şifresini girdi: hacklendi (deneme o anda biter).
   hacked: {
     events: [open("okul"), open("kargo"), { type: "link_clicked", item: "kargo" }, { type: "info_entered", item: "kargo" }],
     status: "HACKED",
@@ -400,11 +407,12 @@ export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; stat
       score: 30,
       rows: [
         { type: "fake", item: "kargo", outcome: "hacked", by: "link", state: "bad", points: 0, max: 4 },
+        { type: "real", item: "gonderi", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "okul", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "real", item: "market", outcome: "kept", state: "ok", points: 1, max: 1 },
         { type: "real", item: "elif", outcome: "kept", state: "ok", points: 1, max: 1 },
-        { type: "question", task: "okul-sorusu", option: null, state: "skip", points: 0, max: 2 },
-        { type: "question", task: "market-sorusu", option: null, state: "skip", points: 0, max: 1 },
+        { type: "mission", task: "gorev", done: false, state: "bad", points: 0, max: 1 },
+        { type: "question", task: "kargo-sorusu", option: null, state: "skip", points: 0, max: 1 },
+        { type: "question", task: "sifre-sorusu", option: null, state: "skip", points: 0, max: 1 },
       ],
       tips: [0, 1, 2],
       genericTips: 0,
@@ -415,7 +423,7 @@ export const attemptProfiles: Record<AttemptProfile, { events: DemoEvent[]; stat
 };
 
 /** Yarım kalan deneme (öğrenci şu an labda). */
-export const inProgressEvents: DemoEvent[] = [open("okul"), open("kargo")];
+export const inProgressEvents: DemoEvent[] = [open("okul"), open("gonderi")];
 
 /** Eğitim labında öğrencinin durumu: bitirdi, yarıda, hiç başlamadı. */
 export type TrainingState = "done" | "half" | "none";

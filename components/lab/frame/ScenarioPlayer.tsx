@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { MascotMood } from "@/components/mascot/Mascot";
 import { Toast } from "@/components/status/Toast";
 import { withNext } from "@/lib/account/shared";
-import type { AlmostStory, EndingTalk, HackedStory, LeaveStory, LinkPage, ShopSms, TalkLine } from "@/lib/lab/story";
+import type { AlmostStory, EndingTalk, HackedStory, LeaveStory, LinkPage, ParcelResult, ShopSms, TalkLine } from "@/lib/lab/story";
 import { missionMode } from "@/lib/lab/content";
 import type { ClientItem, ClientScenario } from "@/lib/lab/client";
 import { containsSecret, emptyState, taskProgress, type Folder, type SceneState } from "@/lib/lab/events";
@@ -23,6 +23,8 @@ import { MessagingScene } from "../messaging/MessagingScene";
 import { InstallPhone, type InstallHandlers } from "../install/InstallPhone";
 import { SetupPhone, type SetupHandlers } from "../install/SetupPhone";
 import { MissionCall } from "../mission/MissionCall";
+import { VoiceMessage, type VoiceNote } from "../mission/VoiceMessage";
+import { ParcelTracker } from "../track/ParcelTracker";
 import { StageView } from "../stage/StageView";
 import { TalkScene } from "../stage/TalkScene";
 import { useLabSession, type SessionProblem } from "../useLabSession";
@@ -53,8 +55,18 @@ export type ScenarioPlayerProps = {
 /** Hacklenince alarmdan önce şeritteki maskotun kırmızıya dönmesi için kısa bekleme. */
 const HACKED_PAUSE_MS = 900;
 
-/** call: görevli odada başlangıç kartından önce velinin araması. */
-type Phase = "call" | "intro" | "playing" | "hacked" | "scene";
+/**
+ * call: görevli odada başlangıç kartından önce velinin araması. badvoice: sesli mesajlı görevde
+ * hacklenince alarmdan sonra görevi verenin kötü mesajı (telefonda; bilgisayara dokunulamaz).
+ */
+type Phase = "call" | "intro" | "playing" | "hacked" | "badvoice" | "scene";
+
+/** Sesli mesajlı görevde ilk mesajın telefona düşmesi için kısa bekleme. */
+const VOICE_DELAY_MS = 1200;
+/** Odayı bitirince saatin ilerlediğini söyleyen ekranın süresi. */
+const LATER_MS = 2300;
+
+const nowTime = () => new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
 
 /** Görevli odanın bitiş araması: iyi (odayı bitirince) ya da kötü (kodu sahte siteye yazınca). */
 type Ending = { kind: "good"; call: EndingCall; reportPath: string } | { kind: "bad"; story: HackedStory };
@@ -75,6 +87,12 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     initialSeq: resume?.nextSeq ?? 0,
   });
   const mission = scenario.mission;
+  // Sesli mesajla açılan görev (T2): açılış ve bitişler masadaki telefonda Mesajlar'da.
+  const voicemail = mission?.voicemail && scenario.stage?.type === "DESKTOP_PHONE" && scenario.template === "INBOX" ? mission.voicemail : null;
+  const introNote = useMemo<VoiceNote | null>(
+    () => (mission && voicemail ? { key: "intro", lines: mission.lines, voice: mission.voice, time: voicemail.time } : null),
+    [mission, voicemail],
+  );
   // Önce perde ve "Başlamadan önce" (18. revize), görevli odada sonra velinin araması.
   const [phase, setPhase] = useState<Phase>(resume ? "playing" : "intro");
   // Görevli odada istek ve kart, arama kabul edilince (ya da yarım denemede hemen) panele yerleşir.
@@ -109,10 +127,24 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
   const [endTalk, setEndTalk] = useState<{ talk: EndingTalk; reportPath: string } | null>(null);
   // Giriş görevi: çıkış yapmadan kalkınca "Az kalsın".
   const [leaveAlmost, setLeaveAlmost] = useState<LeaveStory | null>(null);
+  // Sesli mesajlı görev: konuşmadaki sesli mesajlar, kabul cevabının saati, son mesajdan sonraki
+  // düğme ve odayı bitirince saatin ilerlediği ekran.
+  const [notes, setNotes] = useState<VoiceNote[]>(() => (resume && introNote ? [introNote] : []));
+  const [replyTime, setReplyTime] = useState(voicemail?.time ?? "");
+  const [voiceAction, setVoiceAction] = useState<{ label: string; onClick: () => void } | null>(null);
+  const [later, setLater] = useState(false);
   const moodTimer = useRef<number | null>(null);
   useEffect(() => () => {
     if (moodTimer.current !== null) window.clearTimeout(moodTimer.current);
   }, []);
+
+  // Oda başlayınca görevi verenin sesli mesajı telefona düşer.
+  const introPending = phase === "playing" && !!introNote && notes.length === 0;
+  useEffect(() => {
+    if (!introPending || !introNote) return;
+    const timer = window.setTimeout(() => setNotes([introNote]), VOICE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [introPending, introNote]);
 
   const { state } = session;
   const { template, items, tasks } = scenario;
@@ -160,8 +192,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     // Başka bir sekmede başka sürümle başlamış bir deneme var: o sürümle açılsın.
     if (result.version !== version) return window.location.reload();
     session.begin(result.attemptId);
-    // Giriş görevinde arama yok: görevi masaüstündeki not verir.
-    setPhase(mission && !login ? "call" : "playing");
+    // Giriş görevinde arama yok: görevi masaüstündeki not verir. Sesli mesajlı görevde de arama yok.
+    setPhase(mission && !login && !voicemail ? "call" : "playing");
     setStarting(false);
   }
 
@@ -303,6 +335,19 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
       if (result) fail(result.reason);
       return;
     }
+    // Sesli mesajlı görevde saat ilerler, görevi verenin mesajı telefona düşer, sonra rapor.
+    if (voicemail && result.call && result.call.lines.length > 0) {
+      const call = result.call;
+      const reportPath = result.reportPath;
+      setLater(true);
+      window.setTimeout(() => {
+        setLater(false);
+        const time = voicemail.later?.title.match(/\d{1,2}[.:]\d{2}/)?.[0].replace(".", ":") ?? nowTime();
+        setNotes((all) => [...all, { key: call.missed ? "missed" : "good", lines: call.lines, voice: call.voice, time }]);
+        setVoiceAction({ label: t.voicemail.report, onClick: () => showReport(reportPath) });
+      }, prefersReducedMotion() ? 600 : LATER_MS);
+      return;
+    }
     // Görevli odada iş doğru yerden yapıldıysa önce velinin teşekkür araması.
     if (result.call && result.call.lines.length > 0) return setEnding({ kind: "good", call: result.call, reportPath: result.reportPath });
     // Yüz yüze sorunun son sözleri yazılmışsa önce son konuşma (Deniz: "Hadi, kantine!").
@@ -347,6 +392,18 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     }
     setNotice(result.done ? t.mission.ordered : null);
     return { reply: result.reply, done: result.done };
+  }
+
+  /** Takip görevi: maildeki numarayı kargo uygulamasında sorgular; sonucu sürücü söyler. */
+  async function trackParcel(id: string): Promise<ParcelResult | null> {
+    const result = await session.immediate((attemptId, seq) => driver.trackParcel(attemptId, seq, id));
+    if (!result) return null;
+    if (!result.ok) {
+      fail(result.reason);
+      return null;
+    }
+    session.applyLocal({ type: "parcel_tracked", item: id, found: result.result.found });
+    return result.result;
   }
 
   /** Satış görevi: siparişi kargoya verir; hazırlamadan gönderdiyse alıcının mesajı döner. */
@@ -484,6 +541,18 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     router.push(exitHref);
   }
 
+  // Alarmdan sonra: sesli mesajlı görevde önce görevi verenin kötü mesajı (telefonda), sonra sahne.
+  function afterAlarm() {
+    const call = story?.call;
+    if (voicemail && call && call.lines.length > 0) {
+      setPhase("badvoice");
+      setNotes((all) => [...all, { key: "bad", lines: call.lines, voice: call.voice, time: nowTime() }]);
+      setVoiceAction({ label: t.voicemail.continue, onClick: showScene });
+      return;
+    }
+    showScene();
+  }
+
   // Alarmdan sonra sonuç sahnesi (22. revize); "Devam" raporu açar. Açıklama ekranı kalktı (19).
   function showScene() {
     window.scrollTo(0, 0);
@@ -508,7 +577,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     footer: login ? t.login.footer : t.frame.footer[template],
     mission,
     missionShown,
-    onReplay: () => setReplay(true),
+    // Sesli mesaj telefondaki konuşmada durur; "Tekrar dinle" yok.
+    onReplay: voicemail ? undefined : () => setReplay(true),
     onTalk: () => {
       setTalkAway(null);
       setTalkReady(true);
@@ -586,6 +656,8 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
     </>
   );
   const first = items[0];
+  // Takip görevi: açılmış ve takip numarası olan mailler (aynı numara bir kez).
+  const trackable = items.filter((i, n) => i.tracking && state.opened.includes(i.id) && items.findIndex((o) => o.tracking === i.tracking) === n);
 
   // T3: sıradaki görev yüz yüze sorulan bir soruysa konuşma sahnesi açılır (giriş görevinde kod
   // telefona gelip bakılınca). Cevaplanan konuşma karşıdakinin cevabı okunana kadar açık kalır.
@@ -673,6 +745,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                   setTalkReady(true);
                 }}
                 onLeave={leaveDesk}
+                barSlot={barSlot}
               />
             ) : (
               <StageView
@@ -683,8 +756,58 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                 firstNotice={first ? { title: first.sender, text: (first.body.split("\n")[0] ?? "").replace(/\*\*/g, "") } : null}
                 resumed={!!resume}
                 barSlot={barSlot}
+                extraApp={
+                  mission?.track
+                    ? {
+                        app: "parcel",
+                        title: mission.track.app,
+                        node: <ParcelTracker app={mission.track.app} sub={mission.track.sub} items={trackable} onQuery={trackParcel} />,
+                      }
+                    : null
+                }
+                phoneNode={
+                  mission && voicemail ? (
+                    <VoiceMessage
+                      caller={mission.caller}
+                      owner={mission.owner}
+                      history={voicemail.history}
+                      notes={notes}
+                      accepted={missionShown}
+                      reply={voicemail.reply}
+                      replyTime={replyTime}
+                      card={
+                        missionShown
+                          ? null
+                          : {
+                              title: mission.title,
+                              points: mission.points,
+                              pointIcons: mission.pointIcons,
+                              accept: mission.accept,
+                              onAccept: () => {
+                                setMissionShown(true);
+                                setReplyTime(nowTime());
+                                setNotice(t.voicemail.dropHint);
+                              },
+                            }
+                      }
+                      onListened={() => undefined}
+                      action={voiceAction}
+                    />
+                  ) : null
+                }
+                deskLocked={phase === "badvoice"}
               />
             )}
+            {later && voicemail?.later ? (
+              <div
+                className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 bg-call-dark/85 p-6 text-center text-call-ink [animation:fade-in_.4s_ease-out_both]"
+                role="status"
+                data-testid="voicemail-later"
+              >
+                <b className="font-heading text-[clamp(24px,4vw,40px)] leading-tight">{voicemail.later.title}</b>
+                {voicemail.later.text ? <span className="text-sm opacity-80">{voicemail.later.text}</span> : null}
+              </div>
+            ) : null}
             {talk}
           </div>
         ) : phone ? (
@@ -701,14 +824,16 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
             {talk}
           </div>
         )}
-        <TaskAside {...panel} />
+        <div inert={phase === "badvoice"} className="contents">
+          <TaskAside {...panel} />
+        </div>
       </main>
 
-      <div inert={phase === "intro" || phase === "call"} className="flex-none lg:hidden">
-        <TaskSheet {...panel} />
+      <div inert={phase === "intro" || phase === "call" || phase === "badvoice"} className="flex-none lg:hidden">
+        <TaskSheet {...panel} away={later || !!voiceAction} />
       </div>
 
-      {mission && (phase === "call" || replay) ? (
+      {mission && !voicemail && (phase === "call" || replay) ? (
         <MissionCall
           key={replay ? "replay" : "intro"}
           caller={mission.caller}
@@ -783,7 +908,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
         }}
         onConfirm={() => void restart()}
       />
-      {phase === "hacked" && story ? <HackedAlarm kind={story.kind} account={story.account} avatar={avatar} contact={story.contact} alarm={story.alarm} onDone={showScene} /> : null}
+      {phase === "hacked" && story ? <HackedAlarm kind={story.kind} account={story.account} avatar={avatar} contact={story.contact} alarm={story.alarm} onDone={afterAlarm} /> : null}
       <Toast message={problemText ?? notice} onClose={clearToast} className="max-lg:bottom-[84px]" />
     </div>
   );

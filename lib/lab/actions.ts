@@ -13,11 +13,11 @@ import { getPendingLevelUp } from "@/lib/progress/level-up";
 import { awardBadges, getProgressSummary } from "@/lib/progress/summary";
 import { rateLimit, rateRules } from "@/lib/rate-limit";
 import { getUser } from "@/lib/session";
-import { opensForm, opensOrder, opensRequest, opensShop, parseScenario, usesTrapPage, type ScenarioContent } from "./content";
+import { opensForm, opensOrder, opensRequest, opensShop, parseScenario, sameTracking, usesTrapPage, type ScenarioContent } from "./content";
 import { findInCity, getCity, getPublishedLab, type PublishedLab } from "./data";
 import { batchEventSchema, reduceEvents, rowToEvent, type ServerEvent } from "./events";
 import { missionDone, scoreScenario, type ScenarioReport } from "./scoring";
-import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, smsFor, talkReply, type HackedVia } from "./story";
+import { almostStory, endingTalk, goodCall, hackedStory, leaveStory, linkPageFor, parcelResult, smsFor, talkReply, type HackedVia } from "./story";
 import { afterInstall, canInstallFile, fileAlmost, installApp as installStep, openHomework as homeworkStep, opensFile, permissionStep } from "./install";
 import { canCloseAd, canFinishSetup, connectWifi as wifiStep, installUpdate as updateStep, openConnected } from "./setup";
 import { checkPlacement, checkQuiz, checkSpot, firstUnanswered, hintFor, isPlacement, quizOf, validHintRequest, validPicks } from "./training";
@@ -461,6 +461,23 @@ export async function finishSetup(attemptId: string, seq: number) {
   if (!validSeq(seq) || !canFinishSetup(attempt.content, stateOf(attempt, seq))) return fail("invalid");
   if (!(await record(attempt.id, seq, { type: "setup_finished" }))) return fail("invalid");
   return { ok: true as const };
+}
+
+/**
+ * Takip görevi: maildeki takip numarasını kargo uygulamasında sorguladı. Gerçek gönderinin numarası
+ * tarayıcıya gitmez; sorgunun sonucu (durum ve adımlar ya da "bulunamadı") burada söylenir.
+ */
+export async function trackParcel(attemptId: string, seq: number, itemId: string) {
+  const who = await actor(true);
+  if (!who.ok) return who;
+  const attempt = await openAttempt(who.user.id, attemptId);
+  if ("ok" in attempt) return attempt;
+  const track = attempt.content.mission?.track;
+  const item = attempt.content.items.find((i) => i.id === itemId);
+  if (!track || !item?.tracking || attempt.lab.template !== "INBOX" || !validSeq(seq)) return fail("invalid");
+  const found = sameTracking(item.tracking, track.number);
+  if (!(await record(attempt.id, seq, { type: "parcel_tracked", item: item.id, found }))) return fail("invalid");
+  return { ok: true as const, result: parcelResult(track, found) };
 }
 
 /**

@@ -156,7 +156,7 @@ export function BrowserPage({
       </div>
 
       {/* Lab uyarısı: sayfanın dışında, pencerenin altında */}
-      {trap && !trap.tapFill ? (
+      {trap && !trap.tapFill && !trap.autofill ? (
         <p className="flex flex-none items-start gap-2 border-t border-scene-amber-line bg-scene-amber-soft px-4 py-2 text-xs leading-normal text-scene-amber-ink">
           <Info className="mt-px size-3.5 flex-none" strokeWidth={2.2} aria-hidden="true" />
           {t.warning}
@@ -209,8 +209,10 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
 
   // Az kalsın odası: kutuya dokununca şifre noktalarla yazılır; öğrenci bir şey yazmaz.
   const [filling, setFilling] = useState(false);
+  // Kayıtlı şifre önerisi (trap.autofill): "Doldur" deyince noktalar kendiliğinden yazılır.
+  const fixed = page.tapFill || page.autofill;
   function tapFill() {
-    if (!page.tapFill || value || filling || busy) return;
+    if (!fixed || value || filling || busy) return;
     const dots = "•".repeat(9);
     if (prefersReducedMotion()) {
       setValue(dots);
@@ -283,11 +285,11 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
             id={fieldId}
             type={account ? "password" : "text"}
             value={value}
-            readOnly={page.tapFill}
-            onClick={tapFill}
+            readOnly={fixed}
+            onClick={page.tapFill ? tapFill : undefined}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
-              if (page.tapFill && (e.key === " " || (e.key === "Enter" && !value))) {
+              if (fixed && (e.key === " " || (e.key === "Enter" && !value))) {
                 e.preventDefault();
                 tapFill();
                 return;
@@ -300,9 +302,32 @@ function TrapSite({ page, busy, onSubmit }: { page: Extract<LinkPage, { kind: "t
             spellCheck={false}
             data-1p-ignore=""
             data-lpignore="true"
-            placeholder={page.tapFill ? t.tapPlaceholder : t.placeholder}
+            placeholder={page.tapFill ? t.tapPlaceholder : page.autofill ? t.savedPlaceholder : t.placeholder}
             className="-mt-1.5 h-12 cursor-text rounded-[10px] border border-scene-line-strong bg-scene-white px-3 text-base text-scene-ink outline-none focus:border-scene-orange"
           />
+          {page.autofill && !value && !filling ? (
+            <div
+              className="-mt-1.5 flex items-center gap-3 rounded-xl border border-scene-line-strong bg-scene-white px-3 py-2 shadow-[0_8px_22px_var(--scene-shadow)] [animation:fade-up_.25s_ease-out_both]"
+              data-testid="trap-saved-password"
+            >
+              <KeyRound className="size-5 flex-none text-scene-blue" strokeWidth={2.2} aria-hidden="true" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <b className="text-[14px]">{t.saved}</b>
+                <small className="truncate text-[12px] text-scene-ink-muted">
+                  {format(t.savedLine, { account: inbox.account })}
+                </small>
+              </span>
+              <button
+                type="button"
+                onClick={tapFill}
+                disabled={busy}
+                className="min-h-10 cursor-pointer rounded-lg bg-scene-blue px-3.5 text-sm font-bold text-scene-white"
+                data-testid="trap-fill"
+              >
+                {t.fill}
+              </button>
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={submit}
