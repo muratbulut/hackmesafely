@@ -49,6 +49,8 @@ export type LoginStageProps = {
   onTalk: () => void;
   /** Zil çaldı, kalktı; closed: tarayıcıyı kapatmıştı. */
   onLeave: (closed: boolean) => Promise<LeaveResult>;
+  /** Telefon genişliğinde "Bırak" düğmesinin yeri (oynatıcının şeridi). */
+  barSlot?: HTMLElement | null;
 };
 
 /**
@@ -393,7 +395,7 @@ export function LoginStage(props: LoginStageProps) {
       </Computer>
 
       {inHand ? <button type="button" aria-label={t.phone.drop} onClick={dropPhone} className="absolute inset-0 z-[11] cursor-pointer" /> : null}
-      <DeskPhone place="t2" inHand={inHand} onPick={pickPhone} onDrop={dropPhone} notice={phoneNotice} hideDrop>
+      <DeskPhone place="t2" inHand={inHand} onPick={pickPhone} onDrop={dropPhone} notice={phoneNotice} barSlot={props.barSlot}>
         <div className="flex min-h-0 flex-1 flex-col bg-scene-white" data-testid="login-phone-screen">
           {sms ? (
             <>
@@ -420,17 +422,6 @@ export function LoginStage(props: LoginStageProps) {
           )}
         </div>
       </DeskPhone>
-      {inHand ? (
-        <button
-          type="button"
-          onClick={dropPhone}
-          className="absolute bottom-4 left-1/2 z-[13] flex min-h-11 -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border border-stage-os-line bg-stage-os-glass px-[18px] text-sm font-bold whitespace-nowrap text-stage-os-fg shadow-[0_10px_30px_var(--stage-shadow)] [animation:fade-up_.3s_ease-out_.35s_both] hover:border-stage-road"
-          data-testid="login-phone-drop"
-        >
-          <Smartphone className="size-4" strokeWidth={2.2} aria-hidden="true" />
-          {t.phone.drop}
-        </button>
-      ) : null}
 
       {bell ? (
         <div

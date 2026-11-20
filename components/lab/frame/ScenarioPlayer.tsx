@@ -745,6 +745,7 @@ export function ScenarioPlayer({ driver, scenario, version, avatar, resume, exit
                   setTalkReady(true);
                 }}
                 onLeave={leaveDesk}
+                barSlot={barSlot}
               />
             ) : (
               <StageView

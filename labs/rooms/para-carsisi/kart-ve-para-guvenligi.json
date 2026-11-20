@@ -33,7 +33,7 @@
         "id": "kart-videosu",
         "type": "video",
         "title": "Ayşegül ve Ayça: bedava elmas",
-        "src": "/videolar/kartin-onu-arkasi-sms-kodu.mp4",
+        "src": "/videolar/bedava-elmas.mp4",
         "duration": "1:33",
         "question": {
           "at": 64,
@@ -80,6 +80,27 @@
         ]
       },
       {
+        "id": "bir-tl",
+        "type": "quiz",
+        "question": "Oyun oynarken bu pencere açıldı. Bu sayfa aslında ne istiyor?",
+        "popup": {
+          "site": "hediye-kazan.xyz/odul",
+          "title": "Tebrikler, kulaklık kazandın!",
+          "text": "Hediyeni göndermek için sadece 1 TL doğrulama. Kart bilgilerini gir.",
+          "button": "1 TL öde, hediyemi al",
+          "icon": "gift"
+        },
+        "guess": true,
+        "options": [
+          "Sadece 1 TL, başka bir şey değil",
+          "Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir",
+          "Kartın gerçek olup olmadığını kontrol etmek ister",
+          "Sonraki alışverişinde sana indirim yapmak ister"
+        ],
+        "answer": 1,
+        "explain": "1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart \"doğrulamaz\"."
+      },
+      {
         "id": "hediye-maili",
         "type": "clickFind",
         "title": "Bu \"hediye\" mailindeki 4 şüpheli yeri bul",
@@ -121,20 +142,6 @@
             "hint": "Mail sana ne kadar zaman tanıyor? Acele ettiren cümleyi bul."
           }
         ]
-      },
-      {
-        "id": "bir-tl",
-        "type": "quiz",
-        "question": "\"Bedava hediye, sadece 1 TL doğrulama\" diyen bir sayfa ne ister aslında?",
-        "art": "coin",
-        "options": [
-          "Sadece 1 TL, başka bir şey değil",
-          "Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir",
-          "Kartın gerçek olup olmadığını kontrol etmek ister",
-          "Sonraki alışverişinde sana indirim yapmak ister"
-        ],
-        "answer": 1,
-        "explain": "1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart \"doğrulamaz\"."
       },
       {
         "id": "dur-sor-kontrol",

@@ -1890,6 +1890,8 @@ export const tr = {
         cvvLabel: "CVV",
         sample: "Bu kart örnektir, gerçek değildir.",
         sms: "Ödeme onay kodun: <b>583 106</b>. Kodu kimseyle paylaşma.",
+        bankInitial: "Ö",
+        smsTime: "Şimdi",
         signature: "= senin imzan",
         parent: "VELİ İZNİ",
       },
@@ -1943,6 +1945,10 @@ export const tr = {
         popup: {
           countdown: "0:09",
           countdownLabel: "Kalan süre",
+        },
+        // Sorunun üstündeki sitedeki form (FormPeek): alanlar boş, düğme basılmaz.
+        form: {
+          empty: "Yaz",
         },
       },
       // Kutulara ayırma: bilgiyi tutup kutuya sürükle ya da önce bilgiye, sonra kutuya dokun.

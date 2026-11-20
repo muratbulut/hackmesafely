@@ -734,9 +734,9 @@ Başlık: "Tebrikler, kazandın!" · Sahne: Mesajlar · Şablon: T1 · Sonuç: V
 Kartlar:
 
 1. Video (Ayşegül ve Ayça, soru durağı): kartın önü, arkası, SMS kodu; bedava elmas için 3 rakam
-2. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır
-3. Tıkla-bul: "hediye kazandın" maili
-4. Mini test (4 şık, 1 TL çizimi): "bedava ama 1 TL doğrulama" ne ister
+2. Bilgi, banka kartı düzeni: kartın önü ve arkası, SMS kodu imzadır (SMS adımında sitenin tek telefonu)
+3. Önce tahmin (4 şık, açılır pencere ekranı): oyunda açılan "1 TL öde, hediyeni al" penceresi aslında ne ister
+4. Tıkla-bul: "hediye kazandın" maili
 5. Bilgi, adım adım düzeni: dur, sor, kontrol et
 
 #### Senaryo: Kulaklık için veli kartı

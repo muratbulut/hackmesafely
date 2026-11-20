@@ -174,8 +174,16 @@ export const cardSchema = z.discriminatedUnion("type", [
     /**
      * Sorunun üstünde bir sitenin içinde açılan korkutucu pencere (Telefonun ve internet): sitenin
      * adresi, başlık, metin ve düğme yazısı. Düğme hiçbir şey yapmaz; geri sayım yalnızca görünür.
+     * `icon` isteğe bağlı: pencerenin ikonu (ör. sahte hediye sayfasında "gift"); yoksa uyarı üçgeni.
      */
-    popup: z.object({ site: line(60), title: line(80), text: line(160), button: line(30) }).optional(),
+    popup: z.object({ site: line(60), title: line(80), text: line(160), button: line(30), icon: z.enum(cardIcons).optional() }).optional(),
+    /**
+     * Sorunun üstünde bir sitedeki form (Para Çarşısı, Kişisel veri, 20 Kasım): adres, başlık, kısa
+     * metin, boş alanların adları ve düğme. Yazılmaz, gönderilmez; yalnızca formun ne istediği görünür.
+     */
+    form: z
+      .object({ site: line(60), title: line(80), text: line(160).default(""), fields: z.array(line(40)).min(2).max(5), button: line(30) })
+      .optional(),
     /**
      * Kuraldan önce gelen soru (Şehir Kapısı, 18 Kasım, Murat): etiketi "Mini test" yerine "Önce
      * tahmin", geri bildirimi yumuşak ("Tahminin doğru!", "İyi tahmin, ama doğrusu B."). Puanlama aynı.
