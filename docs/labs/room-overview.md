@@ -80,7 +80,7 @@ Yazan: **Murat**.
 | Oda | Tür | Sahne | Yazmak için gereken | Durum |
 | --- | --- | --- | --- | --- |
 | **Sahte mesajı tanımak** | Temel eğitim | Eğitim kartları | Hazır | Yayında |
-| Sahte kargo maili | Senaryo | Postam | Hazır | Yayında |
+| Sahte kargo maili | Senaryo | T2: Postam, Yolda Kargo, telefonda sesli mesaj | Hazır (20 Kasım yenilemesi) | Yayında |
 | Karne günü gelen mail | Senaryo | Postam | Hazır | Yazılacak |
 | **SMS, arama ve sahte destek** | İleri eğitim | Eğitim kartları | Resimde tıkla-bul | Yazılacak |
 | "Kartınız bloke edildi" SMS'i | Senaryo | Mesajlar | Hazır (M1) | Yazılacak |

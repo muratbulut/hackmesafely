@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import { withDb } from "./db";
 
@@ -106,4 +107,77 @@ export async function pickUpPhone(page: Page) {
   await page.getByTestId("stage-phone-pick").click();
   // "Bırak" masaüstünde telefonun altında, telefon genişliğinde oynatıcının şeridinde; görünen biri.
   await expect(page.locator('[data-testid="stage-phone-drop"]:visible')).toBeVisible();
+}
+
+/**
+ * Sahte kargo maili (18 Kasım yenilemesi, T2): iki Yolda Kargo maili var; sahte olan "teslim
+ * edilemedi" der. Gelen kutusunda sahte maili açar.
+ */
+export const fakeKargoMail = /^Yolda Kargo.*teslim edilemedi/;
+export async function openFakeKargo(scope: Page | ReturnType<Page["getByTestId"]>) {
+  await scope.getByRole("button", { name: fakeKargoMail }).click();
+}
+
+/**
+ * Sahte kargo sayfası: şifre kutusu yazılmaz, tarayıcının kayıtlı şifre önerisinde "Doldur" denir
+ * (trap.autofill), sonra "Giriş yap ve doğrula". Sayfa açık olmalı.
+ */
+export async function submitSavedPassword(scope: Page | ReturnType<Page["getByTestId"]>) {
+  await scope.getByTestId("trap-fill").click();
+  await scope.getByRole("button", { name: /Giriş yap ve doğrula/ }).click();
+}
+
+/**
+ * Sesli mesajlı görev (T2): hacklendin alarmından sonra görevi verenin kötü bitiş sesli mesajı
+ * telefona düşer; öğrenci dinler, "Devam" deyince sonuç sahnesi açılır.
+ */
+export async function passVoiceNote(page: Page, action: "Devam" | "Raporu gör") {
+  const voice = page.getByTestId("voicemail");
+  // Bitiş mesajı (kötü, iyi ya da kaçırdın) gelene kadar beklenir.
+  const note = voice.locator(`[data-testid="voice-note"][data-note="${action === "Devam" ? "bad" : "good"}"], [data-testid="voice-note"][data-note="missed"]`);
+  await expect(note).toHaveCount(1, { timeout: 10_000 });
+  // Mesaj telefon masadayken düşer ("Telefonu al: Ayça"): öğrenci telefonu alır. Telefon zaten
+  // eldeyse bildirim çıkmaz, mesaj ekrandadır.
+  const inHand = page.locator('[data-testid="stage-phone"][data-hand="true"]');
+  const pick = page.getByRole("button", { name: /^Telefonu al: / });
+  await expect(inHand.or(pick).first()).toBeVisible();
+  if (!(await inHand.isVisible())) await pick.click();
+  await note.getByTestId("voice-play").click();
+  await voice.getByTestId("voicemail-action").filter({ hasText: action }).click();
+}
+
+/**
+ * Testin kendi odası: kendi mahallesinde yayında bir senaryo odası açar, iş bitince siler. Genel
+ * oynatıcı davranışını (maskot, bağlantılar) denetleyen testler odanın içeriğine bağlanmasın diye
+ * eski sahte kargo maili (tests/fixtures/rooms) gibi sabit bir kopyayla çalışır.
+ */
+export async function withTempRoom(content: unknown, run: (slug: string) => Promise<void>, template = "INBOX") {
+  const stamp = `${Date.now().toString(36)}${process.pid.toString(36)}${randomUUID().slice(0, 4)}`;
+  const newId = () => `e2e${randomUUID().replace(/-/g, "").slice(0, 21)}`;
+  const neighborhood = { id: newId(), slug: `e2e-mahalle-${stamp}` };
+  const lab = { id: newId(), slug: `e2e-oda-${stamp}` };
+  const json = JSON.stringify(content);
+  await withDb(async (client) => {
+    await client.query(`INSERT INTO "Neighborhood" ("id", "slug", "name", "color", "sortOrder") VALUES ($1, $2, $3, 'accent', 9000 + floor(random() * 900)::int)`, [
+      neighborhood.id,
+      neighborhood.slug,
+      `E2E Mahalle ${neighborhood.slug}`,
+    ]);
+    await client.query(
+      `INSERT INTO "Lab" ("id", "slug", "neighborhoodId", "type", "template", "sortOrder", "status", "publishedVersion", "difficulty", "durationMin", "draftContent", "updatedAt")
+       VALUES ($1, $2, $3, 'SCENARIO', $5, 1, 'PUBLISHED', 1, 'EASY', 5, $4::jsonb, now())`,
+      [lab.id, lab.slug, neighborhood.id, json, template],
+    );
+    await client.query(`INSERT INTO "LabVersion" ("labId", "version", "content") VALUES ($1, 1, $2::jsonb)`, [lab.id, json]);
+  });
+  try {
+    await run(lab.slug);
+  } finally {
+    await withDb(async (client) => {
+      await client.query(`DELETE FROM "LabAttempt" WHERE "labId" = $1`, [lab.id]);
+      await client.query(`DELETE FROM "LabVersion" WHERE "labId" = $1`, [lab.id]);
+      await client.query(`DELETE FROM "Lab" WHERE "id" = $1`, [lab.id]);
+      await client.query(`DELETE FROM "Neighborhood" WHERE "id" = $1`, [neighborhood.id]);
+    });
+  }
 }

@@ -58,7 +58,7 @@ describe("örnek veri: lab denemeleri", () => {
     const items = new Set(content!.items.map((i) => i.id));
     const tasks = new Set(content!.tasks.map((t) => t.id));
     for (const event of [...Object.values(demo.attemptProfiles).flatMap((p) => p.events), ...demo.inProgressEvents]) {
-      if (event.type === "link_clicked" || event.type === "info_entered") expect(items.has(event.item)).toBe(true);
+      if (event.type === "link_clicked" || event.type === "info_entered" || event.type === "parcel_tracked") expect(items.has(event.item)).toBe(true);
       else expect(batchEventSchema.safeParse(event).success, JSON.stringify(event)).toBe(true);
       if ("item" in event) expect(items.has(event.item)).toBe(true);
       if (event.type === "answer") expect(tasks.has(event.task)).toBe(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Mail, MessageCircle, Settings, ShoppingBag, type LucideIcon } from "lucide-react";
+import { Globe, Mail, MessageCircle, Settings, ShoppingBag, Truck, type LucideIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { patterns } from "@/components/background/patterns";
 import { defaultLocale, getMessages } from "@/lib/i18n";
@@ -58,7 +58,8 @@ export function StageWall({ pattern = "hero", className }: { pattern?: "hero" | 
   );
 }
 
-export type StageApp = "postam" | "browser" | "messages" | "store" | "settings";
+/** parcel: takip görevindeki kargo firmasının uygulaması (kurgusal "Yolda Kargo"). */
+export type StageApp = "postam" | "browser" | "messages" | "store" | "settings" | "parcel";
 
 const appIcons: Record<StageApp, LucideIcon> = {
   postam: Mail,
@@ -66,6 +67,7 @@ const appIcons: Record<StageApp, LucideIcon> = {
   messages: MessageCircle,
   store: ShoppingBag,
   settings: Settings,
+  parcel: Truck,
 };
 const appColors: Record<StageApp, string> = {
   postam: "bg-scene-orange",
@@ -73,6 +75,7 @@ const appColors: Record<StageApp, string> = {
   messages: "bg-scene-green",
   store: "bg-scene-violet",
   settings: "bg-scene-ink-2",
+  parcel: "bg-scene-violet",
 };
 
 /** Kurgusal uygulamanın simgesi (gerçek marka yok): Postam turuncu zarf, tarayıcı mavi küre, Mesajlar yeşil balon, Mağaza mor çanta. */
@@ -116,6 +119,8 @@ export type StagePhone = {
   notify: (title: string, text: string) => void;
   /** Öğrenci işini bitirdi: telefon masaya döner. */
   putDown: () => void;
+  /** Telefon ekranı dolu kalsın ("Yeni bir şey yok" örtüsü çıkmasın): sesli mesajlı görevin konuşması. */
+  keep: () => void;
 };
 
 export const StagePhoneContext = createContext<StagePhone | null>(null);

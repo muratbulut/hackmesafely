@@ -2,12 +2,12 @@
 
 import { MessageCircle } from "lucide-react";
 import { Computer } from "@/components/device/Computer";
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ClientStage } from "@/lib/lab/client";
 import { getMessages } from "@/lib/i18n";
 import { StagePhoneContext, type StagePhone } from "./common";
 import { DeskPhone, type PhoneNotice } from "./DeskPhone";
-import { Desktop } from "./Desktop";
+import { Desktop, type ExtraApp } from "./Desktop";
 import "./stage.css";
 
 export type StageViewProps = {
@@ -23,6 +23,12 @@ export type StageViewProps = {
   resumed: boolean;
   /** Telefon genişliğinde oynatıcının şeridindeki yer: eldeki telefonun "Bırak" düğmesi. */
   barSlot?: HTMLElement | null;
+  /** M1 ve T2: masaüstünde odanın ikinci uygulaması (takip görevinde kargo uygulaması). */
+  extraApp?: ExtraApp | null;
+  /** T2: telefona düşen ekranlar (sesli mesajlı görevin konuşması); telefonun bağlamında çizilir. */
+  phoneNode?: ReactNode;
+  /** T2: bilgisayara dokunulamaz (hacklendikten sonra görevi verenin mesajı beklenirken). */
+  deskLocked?: boolean;
 };
 
 /**
@@ -30,7 +36,7 @@ export type StageViewProps = {
  * T1 masadaki telefon, T2 masaüstü ve yanında masadaki telefon. T3 konuşma soru görevinde açılır
  * (TalkScene). Sahne yalnızca görünüştür: her eylem yine oynatıcıdan sürücüye gider.
  */
-export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNotice, resumed, barSlot = null }: StageViewProps) {
+export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNotice, resumed, barSlot = null, extraApp = null, phoneNode = null, deskLocked = false }: StageViewProps) {
   if (stage.type === "PHONE")
     return (
       <PhoneDesk firstNotice={firstNotice} resumed={resumed} barSlot={barSlot}>
@@ -46,6 +52,7 @@ export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNo
       browserNode={browserNode}
       onCloseBrowser={onCloseBrowser}
       startUnlocked={resumed}
+      extra={extraApp}
     />
   );
   if (stage.type === "DESKTOP")
@@ -54,7 +61,11 @@ export function StageView({ stage, appNode, browserNode, onCloseBrowser, firstNo
         {desktop}
       </div>
     );
-  return <DesktopPhone barSlot={barSlot}>{desktop}</DesktopPhone>;
+  return (
+    <DesktopPhone barSlot={barSlot} phoneNode={phoneNode} deskLocked={deskLocked}>
+      {desktop}
+    </DesktopPhone>
+  );
 }
 
 /** Masanın üstündeki eşyalar (3B çizim, gerçek ışık ve gölge): defter sol üst, kupa sağ üst, kalem sol alt, kulaklık sağ alt. */
@@ -123,7 +134,17 @@ function PhoneDesk({
  * (velinin onay SMS'i) telefon titrer; öğrenci alır, bakar, bırakır. Ekranın içeriği
  * StagePhoneContext ile gelir (components/lab/mission/MissionSms.tsx).
  */
-function DesktopPhone({ children, barSlot }: { children: ReactNode; barSlot: HTMLElement | null }) {
+function DesktopPhone({
+  children,
+  barSlot,
+  phoneNode,
+  deskLocked,
+}: {
+  children: ReactNode;
+  barSlot: HTMLElement | null;
+  phoneNode: ReactNode;
+  deskLocked: boolean;
+}) {
   const t = getMessages().lab.stage.phone;
   const [inHand, setInHand] = useState(false);
   const [notice, setNotice] = useState<PhoneNotice | null>(null);
@@ -131,26 +152,44 @@ function DesktopPhone({ children, barSlot }: { children: ReactNode; barSlot: HTM
   const [busy, setBusy] = useState(false);
   const keyRef = useRef(0);
 
+  // Telefon eldeyken gelen mesaj ekranda görülür: masaya dönünce "Telefonu al" çıkmaz.
+  const handRef = useRef(false);
+  useEffect(() => {
+    handRef.current = inHand;
+  }, [inHand]);
   const notify = useCallback((title: string, text: string) => {
     setBusy(true);
-    setNotice({ app: "messages", title, text, key: ++keyRef.current });
+    setNotice(handRef.current ? null : { app: "messages", title, text, key: ++keyRef.current });
   }, []);
   const putDown = useCallback(() => {
     setInHand(false);
     setNotice(null);
     setBusy(false);
   }, []);
-  const phone: StagePhone = useMemo(() => ({ screen, notify, putDown }), [screen, notify, putDown]);
+  const keep = useCallback(() => setBusy(true), []);
+  const phone: StagePhone = useMemo(() => ({ screen, notify, putDown, keep }), [screen, notify, putDown, keep]);
 
   return (
     <StagePhoneContext.Provider value={phone}>
       <div className="st-stage st-wood relative flex min-h-0 flex-1 flex-col overflow-hidden" data-stage="t2" data-hand={inHand ? "true" : "false"}>
         <span aria-hidden="true" className="st-lamp" />
         <DeskProps only="mug" />
-        <Computer className="st-monitor" inert={inHand}>
+        <Computer className="st-monitor" inert={inHand || deskLocked}>
           {children}
         </Computer>
-        <DeskPhone place="t2" inHand={inHand} onPick={() => setInHand(true)} onDrop={() => setInHand(false)} notice={inHand ? null : notice} barSlot={barSlot}>
+        {phoneNode}
+        <DeskPhone
+          place="t2"
+          inHand={inHand}
+          onPick={() => {
+            // Alınan telefonun bildirimi görülmüştür: masaya dönünce "Telefonu al" yeniden çıkmaz.
+            setInHand(true);
+            setNotice(null);
+          }}
+          onDrop={() => setInHand(false)}
+          notice={inHand ? null : notice}
+          barSlot={barSlot}
+        >
           <div ref={setScreen} className="flex min-h-0 flex-1 flex-col" />
           {busy ? null : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-scene-paper p-6 text-center text-scene-ink-muted">

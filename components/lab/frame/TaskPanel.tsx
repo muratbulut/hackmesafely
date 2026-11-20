@@ -267,7 +267,7 @@ export function TaskAside(props: TaskPanelProps & { footer: string }) {
 }
 
 /** Telefonda alttaki görev şeridi; dokununca görevler alttan açılır. Bütün görevler bitince kendiliğinden açılır. */
-export function TaskSheet(props: TaskPanelProps & { footer: string }) {
+export function TaskSheet(props: TaskPanelProps & { footer: string; away?: boolean }) {
   const t = getMessages().lab.frame;
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -282,6 +282,12 @@ export function TaskSheet(props: TaskPanelProps & { footer: string }) {
     }
     wasFinished.current = props.finished;
   }, [props.finished]);
+
+  // Oda sahnede bitiyorsa (sesli mesajlı görevde saat ilerler, mesaj telefona düşer) pencere kapanır.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sahnenin bitişi pencereyi kapatır
+    if (props.away) setOpen(false);
+  }, [props.away]);
 
   function close() {
     if (prefersReducedMotion()) {

@@ -16,7 +16,7 @@ Sıra rotadaki sıradır: her eğitimin altında açtığı senaryolar. "Yazan" 
 | Oda | Tür | İlk dalga | Senaryo dosyası | Bekleyen kod işi | Yazan | Durum |
 | --- | --- | --- | --- | --- | --- | --- |
 | [Sahte mesajı tanımak](../../room-plan.md#temel-eğitim-sahte-mesajı-tanımak) | Temel eğitim | Evet | `training/oltalama-egitimi.md` | Yok | Murat | Sitede yayında |
-| [Sahte kargo maili](../../room-plan.md#senaryo-sahte-kargo-maili) | Senaryo (Postam) | Evet | `scenario/sahte-kargo-maili.md` | Yok (M1 masaüstü, oda dosyası `labs/rooms/oltalama-limani/`) | Murat | Sitede yayında |
+| [Sahte kargo maili](../../room-plan.md#senaryo-sahte-kargo-maili) | Senaryo (Postam) | Evet | `scenario/sahte-kargo-maili.md` | Bitti (20 Kasım yenilemesi: T2, takip görevi, sesli mesaj, kayıtlı şifre önerisi; oda dosyası `labs/rooms/oltalama-limani/`) | Murat | Sitede yayında, yenilendi |
 | [Karne günü gelen mail](../../room-plan.md#senaryo-karne-günü-gelen-mail) | Senaryo (Postam) | Evet | `scenario/karne-gunu-gelen-mail.md` | Yok | Murat | Yazılacak |
 | [SMS, arama ve sahte destek](../../room-plan.md#i̇leri-eğitim-sms-arama-ve-sahte-destek) | İleri eğitim |  | `training/sms-arama-ve-sahte-destek.md` | Yok | Murat | Yazılacak |
 | ["Kartınız bloke edildi" SMS'i](../../room-plan.md#senaryo-kartınız-bloke-edildi-smsi) | Senaryo (Mesajlar) |  | `scenario/kartiniz-bloke-edildi-sms-i.md` | Yok (M1 hazır) | Murat | Yazılacak |

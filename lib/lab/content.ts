@@ -339,6 +339,12 @@ export const itemSchema = z.object({
    * kulüp kayıt formu). Formu gönderince görev biter. Gerçek öğede yazılır; isteğe bağlı.
    */
   form: z.boolean().optional(),
+  /**
+   * Takip görevli odada (mission.track, Oltalama Limanı "Sahte kargo maili") mailde yazan takip
+   * numarası: "YK 4417 2093 58". Öğrenci maili açınca numara kargo uygulamasındaki listeye gelir;
+   * hangisinin gerçek gönderi olduğunu sorgulayınca sunucu söyler. İsteğe bağlı.
+   */
+  tracking: line(30).optional(),
 });
 export type Item = z.infer<typeof itemSchema>;
 
@@ -382,6 +388,13 @@ export const trapSchema = z.object({
    * (bağlantı) geçerlidir.
    */
   almost: z.boolean().default(false),
+  /**
+   * Tarayıcının kayıtlı şifre önerisi (Oltalama Limanı "Sahte kargo maili", 18 Kasım, Murat):
+   * öğrenci şifre yazmaz; şifre kutusunun altında "Kayıtlı şifreyi kullan" çıkar, "Doldur" deyince
+   * noktalar kendiliğinden yazılır, "Giriş yap" ele geçirilmedir. Yazılan bir şey olmadığı için
+   * "gerçek şifreni yazma" uyarısı da çıkmaz. Yalnızca hesap türünde.
+   */
+  autofill: z.boolean().default(false),
 });
 export type Trap = z.infer<typeof trapSchema>;
 
@@ -572,6 +585,42 @@ export const setupSchema = z.object({
 });
 export type Setup = z.infer<typeof setupSchema>;
 
+/**
+ * Takip görevi (Oltalama Limanı "Sahte kargo maili", 20 Kasım): masaüstünde kargo firmasının kendi
+ * uygulaması ayrı bir pencerede durur. Öğrenci açtığı maillerdeki takip numaralarından (öğedeki
+ * `tracking`) birini seçip sorgular. Gerçek gönderinin numarası (`number`) tarayıcıya gitmez;
+ * sorgulayınca sunucu `found` (durum ve adımlar) ya da `missing` söyler. Gerçek numarayı
+ * sorgulamak görevi bitirir.
+ */
+export const trackSchema = z.object({
+  /** Uygulamanın adı ve alt satırı: "Yolda Kargo", "Gönderi takip". */
+  app: line(30),
+  sub: line(40).default(""),
+  number: line(30),
+  found: z.object({
+    title: line(60),
+    text: line(160).default(""),
+    steps: z.array(z.object({ title: line(40), note: line(60).default("") })).max(5).default([]),
+  }),
+  missing: z.object({ title: line(80), text: line(160).default("") }),
+});
+export type Track = z.infer<typeof trackSchema>;
+
+/**
+ * Sesli mesajla açılan görev (T2, "Sahte kargo maili", 18 Kasım, Murat): arama yerine masadaki
+ * telefona görevi verenin sesli mesajı düşer. Telefon Mesajlar'da onunla olan konuşmayı açar:
+ * önceki mesajlar (`history`), sesli mesaj (açılış satırları `lines`, sesleri `voice.lines`),
+ * "Yazıya dök", dinleyince görev kartı ve kabul edince giden cevap (`reply`). Bitişler (iyi,
+ * kaçırdı, kötü) de sesli mesajdır. `later`: odayı bitirince saat ilerler ("Öğleden sonra · 15.40").
+ */
+export const voicemailSchema = z.object({
+  history: z.array(z.object({ from: z.enum(["in", "out", "day"]), text: line(160), time: line(10).default("") })).max(8).default([]),
+  time: line(10),
+  reply: line(60).default(""),
+  later: z.object({ title: line(60), text: line(80).default("") }).optional(),
+});
+export type Voicemail = z.infer<typeof voicemailSchema>;
+
 export const missionSchema = z.object({
   /** Arayanın telefondaki adı: "Annem". */
   caller: line(40),
@@ -690,6 +739,10 @@ export const missionSchema = z.object({
       setup: setupSchema.optional(),
     })
     .optional(),
+  /** Takip görevi (trackSchema). */
+  track: trackSchema.optional(),
+  /** Açılış ve bitişler sesli mesajla (voicemailSchema); yalnızca T2 sahnesinde. */
+  voicemail: voicemailSchema.optional(),
   /** SMS'teki onay kodu: "481 920". Giriş görevinde telefona gelen giriş kodu. */
   code: line(20).default(""),
   /**
@@ -708,6 +761,11 @@ export const missionSchema = z.object({
   /** Kötü bitiş araması (kodu sahte siteye yazınca), ardından alarm. */
   bad: z.array(line(160)).max(4).default([]),
   /**
+   * Odayı bitirdiğinde iş yapılmadıysa (sesli mesajlı odada) görevi verenin mesajı: "Kurye gelmiş
+   * ama kimse kapıyı açmamış." Boşsa doğrudan rapor.
+   */
+  missed: z.array(line(160)).max(4).default([]),
+  /**
    * Arayanın sesi, isteğe bağlı: her altyazı satırının ses dosyası, aynı sırayla (yalnızca sitenin
    * kendi dosyası, /sesler/...). Boş ya da eksik satır yalnızca altyazıyla geçer.
    */
@@ -717,6 +775,7 @@ export const missionSchema = z.object({
       good: z.array(voiceSrc).max(4).default([]),
       goodReported: voiceSrc.default(""),
       bad: z.array(voiceSrc).max(4).default([]),
+      missed: z.array(voiceSrc).max(4).default([]),
     })
     .optional(),
 });
@@ -793,8 +852,8 @@ export function isScenario(template: Template): template is ScenarioTemplate {
  * cevapta gönderilen koddur (eski odalar böyle kalır).
  */
 export function usesTrapPage(content: Pick<ScenarioContent, "trap"> & { mission?: Mission }, template: ScenarioTemplate) {
-  // Kayıt görevinde sahte bağlantı sahte sayfayı açar; mağaza, satış ve giriş görevinde açmaz.
-  if (content.mission) return !!content.mission.signup && template === "INBOX";
+  // Kayıt ve takip görevinde sahte bağlantı sahte sayfayı açar; mağaza, satış ve giriş görevinde açmaz.
+  if (content.mission) return (!!content.mission.signup || !!content.mission.track) && template === "INBOX";
   return template === "INBOX" || content.trap.title.trim().length > 0;
 }
 
@@ -808,13 +867,19 @@ export function opensForm(content: Pick<ScenarioContent, "mission">, item: Pick<
   return !!content.mission?.signup && !!item.link && item.form === true && item.kind === "real";
 }
 
-/** Görevli odanın türü: alış (mağaza), satış, kayıt, giriş ya da kurulum; görevli değilse null. */
-export type MissionMode = "shop" | "sale" | "signup" | "login" | "install";
+/** Görevli odanın türü: alış (mağaza), satış, kayıt, giriş, kurulum ya da takip; görevli değilse null. */
+export type MissionMode = "shop" | "sale" | "signup" | "login" | "install" | "track";
 
-export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown; login?: unknown; install?: unknown } | null }): MissionMode | null {
+export function missionMode(content: { mission?: { sale?: unknown; signup?: unknown; login?: unknown; install?: unknown; track?: unknown } | null }): MissionMode | null {
   const mission = content.mission;
   if (!mission) return null;
-  return mission.sale ? "sale" : mission.signup ? "signup" : mission.login ? "login" : mission.install ? "install" : "shop";
+  return mission.sale ? "sale" : mission.signup ? "signup" : mission.login ? "login" : mission.install ? "install" : mission.track ? "track" : "shop";
+}
+
+/** Takip numaraları aynı mı (boşluk ve büyük-küçük harf fark etmez). */
+export function sameTracking(a: string, b: string) {
+  const norm = (v: string) => v.replace(/\s+/g, "").toLocaleUpperCase("tr");
+  return norm(a).length > 0 && norm(a) === norm(b);
 }
 
 /**

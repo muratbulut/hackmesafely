@@ -27,6 +27,7 @@ import {
   shipOrder,
   startAttempt,
   submitTrap,
+  trackParcel,
 } from "@/lib/lab/actions";
 import type { LabDriver, TrainingDriver } from "./driver";
 
@@ -54,6 +55,7 @@ export function serverDriver(slug: string): LabDriver {
     installUpdate,
     closeAd,
     finishSetup,
+    trackParcel,
     finish: finishAttempt,
   };
 }

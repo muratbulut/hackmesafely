@@ -69,7 +69,12 @@ export type ServerEvent =
   | { type: "wifi_connected"; network: number }
   | { type: "update_installed" }
   | { type: "ad_closed"; item: string }
-  | { type: "setup_finished" };
+  | { type: "setup_finished" }
+  /**
+   * Takip görevi: maildeki takip numarasını kargo uygulamasında sorguladı. found: gerçek gönderinin
+   * numarası mıydı (sunucu yazar; sorgunun sonucu ekranda zaten görünür).
+   */
+  | { type: "parcel_tracked"; item: string; found: boolean };
 
 export type LabEventData = BatchEvent | ServerEvent;
 
@@ -101,6 +106,9 @@ export type SceneState = {
   updated: boolean;
   adsClosed: string[];
   setupFinished: boolean;
+  /** Takip görevi: sorguladığı numaraların öğeleri; gerçek gönderiyi buldu. */
+  tracked: string[];
+  parcelFound: boolean;
   answers: Record<string, number>;
   reviewDone: boolean;
   /**
@@ -141,6 +149,8 @@ export const emptyState = (): SceneState => ({
   updated: false,
   adsClosed: [],
   setupFinished: false,
+  tracked: [],
+  parcelFound: false,
   answers: {},
   reviewDone: false,
   remember: null,
@@ -220,6 +230,13 @@ export function applyEvent(state: SceneState, event: LabEventData): SceneState {
       return { ...state, adsClosed: add(state.adsClosed ?? [], event.item), decisions: state.decisions + 1 };
     case "setup_finished":
       return { ...state, setupFinished: true };
+    case "parcel_tracked":
+      return {
+        ...state,
+        tracked: add(state.tracked ?? [], event.item),
+        parcelFound: !!state.parcelFound || event.found,
+        decisions: (state.tracked ?? []).includes(event.item) ? state.decisions : state.decisions + 1,
+      };
     case "reply_sent":
       return {
         ...state,
@@ -269,6 +286,8 @@ export function taskProgress(
       // Kurulum görevi: oyunu açıp ödevi açınca biter (ödevi yalnızca gerçek oyun açar).
       // Telefon kurulumu: her şey kurulup arayana "Kurdum!" denince biter.
       if (mode === "install") return (state.homework ?? []).length > 0 || !!state.setupFinished;
+      // Takip görevi: gerçek gönderinin numarasını kargo uygulamasında sorgulayınca biter.
+      if (mode === "track") return !!state.parcelFound;
       return codeDecided(state).length > 0;
     }
     return task.id in state.answers;

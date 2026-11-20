@@ -21,8 +21,8 @@ export const adFakeChoices = ["closed", "backedOut", "ignored", "almost"] as con
 export function fakeChoicesFor(content: Pick<ScenarioContent, "mission"> & { trap?: Pick<ScenarioContent["trap"], "almost"> }): readonly FakeOutcome[] {
   if (content.mission?.install?.setup) return adFakeChoices;
   if (content.trap?.almost) return almostFakeChoices;
-  // Satış ve kayıt görevinde "son anda durma" yok: ödeme isteği ya onaylanır ya reddedilir, kayıtta ödeme yok.
-  return content.mission && !content.mission.sale && !content.mission.signup ? missionFakeChoices : fakeChoices;
+  // Satış, kayıt ve takip görevinde "son anda durma" yok: ödeme isteği ya onaylanır ya reddedilir, kayıtta ve takipte ödeme yok.
+  return content.mission && !content.mission.sale && !content.mission.signup && !content.mission.track ? missionFakeChoices : fakeChoices;
 }
 export const realChoices = ["kept", "deleted", "reported"] as const satisfies readonly RealOutcome[];
 
@@ -70,7 +70,7 @@ export function mergeTryPath(content: ScenarioContent, previous: TryPath): TryPa
   return base;
 }
 
-function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | "signup" | "install" | null): LabEventData[] {
+function itemEvents(item: string, outcome: FakeOutcome | RealOutcome, template: ScenarioTemplate, mission: "buy" | "sale" | "signup" | "install" | "track" | null): LabEventData[] {
   const opened: LabEventData = { type: "item_opened", item };
   // Satış görevinde sahte mesaja kanmak bağlantıdaki ödeme isteğini açmaktır, kurulum görevinde
   // mesajdaki eki indirmek (kurmak istemek "bilgi girildi" olur, Az kalsın).
@@ -126,7 +126,17 @@ function adEvents(item: string, outcome: FakeOutcome | RealOutcome): LabEventDat
 /** Seçilen yolu öğrencinin olaylarına, olayları sahne durumuna çevirir. */
 export function stateFromPath(content: ScenarioContent, template: ScenarioTemplate, path: TryPath): SceneState {
   const events: LabEventData[] = [];
-  const mission = content.mission ? (content.mission.sale ? "sale" : content.mission.signup ? "signup" : content.mission.install ? "install" : "buy") : null;
+  const mission = content.mission
+    ? content.mission.sale
+      ? "sale"
+      : content.mission.signup
+        ? "signup"
+        : content.mission.install
+          ? "install"
+          : content.mission.track
+            ? "track"
+            : "buy"
+    : null;
   const setup = content.mission?.install?.setup;
   // Telefon kurulumu: doğru yol önce evin ağına bağlanır, güncellemeyi yükler (mağaza ağı ister).
   if (setup) {
@@ -152,6 +162,11 @@ export function stateFromPath(content: ScenarioContent, template: ScenarioTempla
   const form = content.items.find((i) => i.kind === "real" && i.form);
   if (mission === "signup" && form && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: form.id }, { type: "form_sent", item: form.id });
+  }
+  // Takip görevi: gerçek gönderinin numarasını kargo uygulamasında sorgular.
+  const parcel = content.items.find((i) => i.kind === "real" && i.tracking);
+  if (mission === "track" && parcel && path.missionDone !== false) {
+    events.push({ type: "parcel_tracked", item: parcel.id, found: true });
   }
   if (mission === "buy" && shop && path.missionDone !== false) {
     events.push({ type: "link_clicked", item: shop.id }, { type: "info_entered", item: shop.id }, { type: "code_entered", item: shop.id });
@@ -201,7 +216,7 @@ export function outcomePoints(kind: "fake" | "real", outcome: FakeOutcome | Real
     meta: { name: "", title: "", summary: "", story: "", learn: [], difficulty: "EASY", durationMin: 5 },
     reminders: [],
     items: [item],
-    trap: { url: "", title: "", text: "", ask: "", secret: "", kind: "account", account: "", scene: "", realLife: "", actions: [], almost: outcome === "almost" },
+    trap: { url: "", title: "", text: "", ask: "", secret: "", kind: "account", account: "", scene: "", realLife: "", actions: [], almost: outcome === "almost", autofill: false },
     tasks: [],
     tips: [],
   } satisfies ScenarioContent;

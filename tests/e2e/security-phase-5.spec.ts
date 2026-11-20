@@ -245,7 +245,7 @@ test("özet ve canlı nabızda en çok kaçırılan sahte öğe (lab cevabı) la
   test.setTimeout(180_000);
   const student = await insertUser(`Tuzak Öğrencisi ${stamp()}`);
   try {
-    // Sahte kargo mailinde (sahte öğe "kargo", gönderen "Kargo Takip") sahte maili kaçıran 40 deneme.
+    // Sahte kargo mailinde (sahte öğe "kargo", gönderen "Yolda Kargo") sahte maili kaçıran 40 deneme.
     await withDb(async (client) => {
       const { rows } = await client.query<{ id: string; publishedVersion: number }>(`SELECT "id", "publishedVersion" FROM "Lab" WHERE "slug" = 'sahte-kargo-maili'`);
       const report = JSON.stringify({ status: "hacked", rows: [{ type: "fake", item: "kargo", state: "bad" }] });
@@ -257,7 +257,7 @@ test("özet ve canlı nabızda en çok kaçırılan sahte öğe (lab cevabı) la
         );
       }
     });
-    const answer = "Kargo Takip";
+    const answer = "Yolda Kargo";
 
     // Yönetici (lab izni var) görür: kontrol.
     const adminContext = await browser.newContext();

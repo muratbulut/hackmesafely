@@ -17,6 +17,13 @@ const serverOnly: string[] = [
   kargo.trap.text,
   ...kargo.tasks.flatMap((t: { right?: string; why?: string }) => [t.right ?? "", t.why ?? ""]),
   ...kargo.tips.map((t: { text: string }) => t.text),
+  // Takip görevi: hangi numaranın gerçek olduğu ve sonuçlar, bitişlerin sesli mesajları.
+  kargo.mission.track.found.title,
+  kargo.mission.track.found.text,
+  kargo.mission.track.missing.text,
+  ...kargo.mission.good,
+  ...kargo.mission.bad,
+  ...kargo.mission.missed,
   ...training.cards.flatMap((c: { spots?: { text: string }[]; explain?: string }) => [...(c.spots ?? []).map((s) => s.text), c.explain ?? ""]),
 ].filter((text) => text.trim().length > 0);
 
@@ -64,7 +71,7 @@ test.describe("lab güvenliği", () => {
 
     // İlk sekmede iki mail açılır; olaylar sunucuya yazılana kadar beklenir.
     await openMail(page, "okul", isMobile);
-    await openMail(page, "market", isMobile);
+    await openMail(page, "gonderi", isMobile);
     await expect.poll(async () => (await attemptsOf(email, "sahte-kargo-maili"))[0]?.events.match(/item_opened/g)?.length ?? 0).toBe(2);
 
     // İkinci sekmenin sıra numaraları ilk sekmeninkilerle çakışır. Bağlantı ya hiç açılmaz ya da
@@ -87,7 +94,8 @@ test.describe("lab güvenliği", () => {
 async function openMail(page: Page, id: string, isMobile: boolean) {
   const item = kargo.items.find((i: { id: string }) => i.id === id);
   const app = page.getByTestId("scenario-player");
-  await app.getByRole("button", { name: new RegExp(`^${item.sender}`) }).click();
+  // İki Yolda Kargo maili var: gönderen ve konuyla seçilir.
+  await app.getByRole("button", { name: new RegExp(`^${item.sender}.*${item.subject.replace(/[.*+?^${}()|[\]\\!]/g, "\\$&")}`) }).click();
   await expect(app.getByRole("heading", { name: item.subject })).toBeVisible();
   if (isMobile && id !== "kargo") await page.getByRole("button", { name: "Listeye dön" }).click();
 }
