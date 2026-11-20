@@ -144,8 +144,8 @@ async function playCards(page: Page, list: Card[]) {
       // İlk şıklardan yanlış olanı seçilir: sunucu doğrusunu harfiyle söyler, cevap değişmez.
       const wrong = card.answer === 0 ? 1 : 0;
       await player.getByRole("group", { name: "Cevaplar" }).getByRole("button").nth(wrong).click();
+      // "Önce tahmin" sorusunda yanlış tahmin ayıplanmaz, geri bildirim yumuşaktır.
       const letter = "ABCD"[card.answer as number];
-      // "Önce tahmin" sorusunun geri bildirimi yumuşaktır.
       await expect(shown(player, card.guess ? `İyi tahmin, ama doğrusu ${letter}.` : `Tam değil. Doğrusu ${letter}.`)).toBeVisible();
     }
 
@@ -190,7 +190,7 @@ test.describe("Para Çarşısı eğitimi", () => {
     await page.goto(`/oda/${scenario.slug}/oyna`);
     await page.waitForURL(new RegExp(`/oda/${scenario.slug}$`));
 
-    // İleri eğitim: kart videosu, banka kartı, tıkla-bul, 1 TL testi, dur-sor-kontrol.
+    // İleri eğitim: kart videosu, banka kartı, 1 TL penceresiyle önce tahmin, tıkla-bul, dur-sor-kontrol.
     await page.goto(`/oda/${advanced.slug}/oyna`);
     await expect(player).toBeVisible();
     await playCards(page, advancedCards);

@@ -6,6 +6,7 @@ import type { ClientCard } from "@/lib/lab/client";
 import type { CardIcon } from "@/lib/lab/content";
 import { format, getMessages, rich } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { Phone } from "@/components/device/Phone";
 import { RichLine } from "../scene/parts";
 import { cardIconMap } from "./card-icons";
 import { CardTag, CardTitle, LockHint, Mark, rowTones, toneAt, tones, type Tone } from "./common";
@@ -348,6 +349,13 @@ function BankStage({ step }: { step: number | null }) {
       aria-hidden="true"
       className="relative h-[270px] overflow-hidden rounded-[20px] border border-card bg-[radial-gradient(70%_70%_at_40%_45%,color-mix(in_srgb,var(--art-card-1)_22%,transparent),transparent_70%),var(--surface-deep)] lg:h-[300px]"
     >
+      {/* SMS adımında kart sola kayıp küçülür, telefona yer açar */}
+      <div
+        className={cn(
+          "absolute inset-0 origin-left transition-[transform,opacity] duration-500 ease-[cubic-bezier(.2,.8,.2,1)]",
+          step === 2 ? "scale-[.74] opacity-60 lg:scale-[.78]" : "",
+        )}
+      >
       <div className="absolute top-[38px] left-[calc(50%-170px)] h-[186px] w-[296px] [perspective:900px] [animation:card-float_5s_ease-in-out_infinite] lg:top-[53px] lg:left-[calc(50%-182px)]">
         <div
           className={cn(
@@ -387,24 +395,33 @@ function BankStage({ step }: { step: number | null }) {
           </div>
         ) : null}
       </div>
+      </div>
       {step === 2 ? (
-        <div className="absolute top-3 left-[calc(50%+66px)] h-[236px] w-[132px] rotate-[4deg] rounded-[22px] border-[3px] border-line-strong bg-surface-deep px-2 pt-[22px] pb-2.5 shadow-floating [animation:phone-in_.55s_cubic-bezier(.2,.8,.2,1)_both] lg:top-[27px] lg:left-[calc(50%+54px)]">
-          <span className="absolute top-2 left-[46px] h-[5px] w-[34px] rounded-full bg-line" />
-          <div className="rounded-[12px_12px_12px_4px] bg-card p-2 text-[10.5px] leading-[1.35] text-fg-2 [animation:bubble-in_.45s_cubic-bezier(.2,.8,.2,1)_.35s_both]">
-            <b className="block text-[10px] text-accent-fg">{m.bank}</b>
-            {rich(m.sms, { b: (chunk) => <b className="font-mono text-fg">{chunk}</b> })}
-          </div>
-          <svg width="112" height="56" viewBox="0 0 112 56" className="mt-2.5">
-            <path
-              d="M6 40 C 18 8, 26 8, 30 34 S 44 52, 50 24 S 66 6, 72 32 S 90 44, 106 18"
-              fill="none"
-              className="stroke-warning [stroke-dasharray:220] [stroke-dashoffset:220] [animation:sign-draw_1.1s_ease-out_.9s_both] motion-reduce:[stroke-dashoffset:0]"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-            />
-            <line x1="6" y1="50" x2="106" y2="50" className="stroke-line-strong" strokeWidth="1.5" />
-          </svg>
-          <span className="block text-center text-[10px] font-bold text-warning-fg">{m.signature}</span>
+        // SMS adımı: sitenin tek telefonu (Phone.tsx); kart yana kayar, telefon kutunun içinde kalır.
+        <div className="absolute top-[13px] right-3 [animation:phone-in_.55s_cubic-bezier(.2,.8,.2,1)_both] lg:top-[18px] lg:right-auto lg:left-[calc(50%+44px)]">
+          <Phone className="[--dv-h:244px] lg:[--dv-h:264px]" screenClassName="bg-scene-paper font-sans text-scene-ink">
+            <div className="flex items-center gap-1.5 border-b border-scene-line bg-scene-white px-2 py-1.5">
+              <span className="flex size-5 flex-none items-center justify-center rounded-full bg-scene-blue text-[9px] font-bold text-scene-white">{m.bankInitial}</span>
+              <b className="truncate text-[9px]">{m.bank}</b>
+            </div>
+            <div className="flex flex-1 flex-col px-2 pt-2">
+              <span className="self-center text-[8px] text-scene-ink-muted">{m.smsTime}</span>
+              <div className="mt-1 rounded-[11px_11px_11px_3px] bg-scene-white p-2 text-[10px] leading-[1.35] text-scene-ink-2 shadow-[0_1px_0_var(--scene-line)] [animation:bubble-in_.45s_cubic-bezier(.2,.8,.2,1)_.35s_both]">
+                {rich(m.sms, { b: (chunk) => <b className="font-mono text-scene-ink">{chunk}</b> })}
+              </div>
+              <svg viewBox="0 0 112 56" className="mt-2 w-full">
+                <path
+                  d="M6 40 C 18 8, 26 8, 30 34 S 44 52, 50 24 S 66 6, 72 32 S 90 44, 106 18"
+                  fill="none"
+                  className="stroke-scene-orange [stroke-dasharray:220] [stroke-dashoffset:220] [animation:sign-draw_1.1s_ease-out_.9s_both] motion-reduce:[stroke-dashoffset:0]"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                />
+                <line x1="6" y1="50" x2="106" y2="50" className="stroke-scene-line-strong" strokeWidth="1.5" />
+              </svg>
+              <span className="block text-center text-[10px] font-bold text-scene-orange">{m.signature}</span>
+            </div>
+          </Phone>
         </div>
       ) : null}
     </div>

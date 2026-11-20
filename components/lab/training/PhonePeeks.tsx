@@ -1,8 +1,10 @@
 import { Gift, Lock, LockOpen, TriangleAlert, Wifi } from "lucide-react";
 import { getMessages } from "@/lib/i18n";
+import type { CardIcon } from "@/lib/lab/content";
+import { cardIconMap } from "./card-icons";
 
 type Network = { name: string; locked: boolean };
-type Popup = { site: string; title: string; text: string; button: string };
+type Popup = { site: string; title: string; text: string; button: string; icon?: CardIcon };
 type Form = { site: string; title: string; text: string; fields: string[]; button: string };
 
 /**
@@ -52,6 +54,7 @@ export function WifiPeek({ networks }: { networks: Network[] }) {
 /** Bir sitenin içinde açılan korkutucu pencere: adres çubuğu, uyarı, geri sayım ve düğme. */
 export function PopupPeek({ popup }: { popup: Popup }) {
   const m = getMessages().lab.training.quiz.popup;
+  const Icon = popup.icon ? cardIconMap[popup.icon] : TriangleAlert;
   return (
     <div data-testid="popup-peek" className="overflow-hidden rounded-[20px] border border-card bg-surface-deep px-4 py-5">
       <div className="mx-auto max-w-[360px] overflow-hidden rounded-2xl border border-scene-line-strong bg-scene-paper font-sans text-scene-ink shadow-floating">
@@ -61,7 +64,7 @@ export function PopupPeek({ popup }: { popup: Popup }) {
         </div>
         <div className="p-3">
           <div className="flex flex-col items-center gap-2 rounded-xl border-2 border-scene-red bg-scene-red-soft px-4 py-4 text-center motion-safe:[animation:pop_.35s_.3s_ease-out_both,shake_.5s_.9s_ease-in-out]">
-            <TriangleAlert className="size-8 text-scene-red" strokeWidth={2.2} aria-hidden="true" />
+            <Icon className="size-8 text-scene-red" strokeWidth={2.2} aria-hidden="true" />
             <b className="text-[16px] leading-snug text-scene-red">{popup.title}</b>
             <span className="text-[14px] leading-snug text-scene-ink-2">{popup.text}</span>
             <span className="text-xs text-scene-ink-muted">

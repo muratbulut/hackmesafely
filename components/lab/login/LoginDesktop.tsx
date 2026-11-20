@@ -29,8 +29,11 @@ const firstRect: Record<LoginWinId, Rect> = {
 };
 const MIN_W = 24;
 const MIN_H = 26;
-/** Bu genişlikten dar masaüstünde pencereler hep tam boy açılır (telefon, küçük ekran). */
-const NARROW_PX = 760;
+/**
+ * Bu genişlikten dar masaüstünde pencereler hep tam boy açılır (telefon genişliği). T2'deki monitör
+ * masaüstünde de dar sayılmaz: pencereler orada da sürüklenir, kenardan boyutlanır, büyütülür (20 Kasım, Murat).
+ */
+const NARROW_PX = 440;
 
 const icons: Record<LoginWinId, { Icon: LucideIcon; tone: string }> = {
   browser: { Icon: Globe, tone: "bg-scene-blue" },

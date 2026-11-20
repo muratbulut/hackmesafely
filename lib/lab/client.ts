@@ -205,7 +205,7 @@ function withoutNext(login: NonNullable<Mission["login"]>) {
 export type ClientCard =
   | Extract<Card, { type: "info" }>
   | (Omit<Extract<Card, { type: "clickFind" }>, "spots"> & { spotCount: number })
-  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; wifi: { name: string; locked: boolean }[] | null; popup: { site: string; title: string; text: string; button: string } | null; form: { site: string; title: string; text: string; fields: string[]; button: string } | null; guess: boolean }
+  | { id: string; type: "quiz"; question: string; options: string[]; art: QuizArt | null; link: { text: string; url: string } | null; sms: { from: string; text: string } | null; file: { from: string; text: string; name: string; size: string } | null; permission: { app: string; text: string; icon: CardIcon } | null; wifi: { name: string; locked: boolean }[] | null; popup: { site: string; title: string; text: string; button: string; icon?: CardIcon } | null; form: { site: string; title: string; text: string; fields: string[]; button: string } | null; guess: boolean }
   | {
       id: string;
       type: "video";

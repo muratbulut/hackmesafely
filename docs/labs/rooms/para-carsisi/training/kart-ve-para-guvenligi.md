@@ -30,7 +30,7 @@
 
 ### 1. Video: Ayşegül ve Ayça: bedava elmas (eski 6)
 
-- **Video dosyası:** `/videolar/kartin-onu-arkasi-sms-kodu.mp4` (1:33). Ayça kartın önünü, arkasını ve SMS kodunu anlatıyor; bir oyun "Bedava elmas!" diyerek kartın arkasındaki 3 rakamı istiyor.
+- **Video dosyası:** `/videolar/bedava-elmas.mp4` (1:33; 20 Kasım Şehir Kapısı biçiminde yeniden çizildi, ses aynı). Ayça kartın önünü, arkasını ve SMS kodunu anlatıyor; bir oyun "Bedava elmas!" diyerek kartın arkasındaki 3 rakamı istiyor.
 - **Soru** (64. saniyede video durur): Bir oyun "Bedava elmas!" diyor ve kartın arkasındaki 3 rakamı istiyor. Ne yaparsın?
   - Yazarım, elmas bedava
   - **Yazmam, önce ailemle konuşurum** (doğru)
@@ -52,7 +52,17 @@ Bir banka kartıyla internetten alışveriş yapmak için üç şey yeter: kart�
 - **SMS onay kodu:** İmzadır. Banka, mağaza, öğretmen, arkadaş; kim sorarsa sorsun söylenmez.
 - **Kart ailenin ise:** Velinin izni olmadan hiçbir yere girilmez, "sonra söylerim" de olmaz.
 
-### 3. Tıkla-bul: Bu "hediye" mailindeki 4 şüpheli yeri bul (eski 9)
+### 3. Önce tahmin: oyunda açılan "1 TL öde" penceresi (eski 10; 20 Kasım'da tıkla-buldan öne alındı)
+
+- **Ekran** (`popup`, ikon hediye): site `hediye-kazan.xyz/odul` · başlık "Tebrikler, kulaklık kazandın!" · metin "Hediyeni göndermek için sadece 1 TL doğrulama. Kart bilgilerini gir." · düğme "1 TL öde, hediyemi al" (basılmaz)
+- **Soru:** Oyun oynarken bu pencere açıldı. Bu sayfa aslında ne istiyor?
+- [ ] Sadece 1 TL, başka bir şey değil
+- [x] Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir
+- [ ] Kartın gerçek olup olmadığını kontrol etmek ister
+- [ ] Sonraki alışverişinde sana indirim yapmak ister
+- **Açıklama** (400): 1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart "doğrulamaz".
+
+### 4. Tıkla-bul: Bu "hediye" mailindeki 4 şüpheli yeri bul (eski 9)
 
 - **İpucu satırı** (160): Mailde 4 şüpheli yer var. Bul bakalım.
 - **Mail:**
@@ -73,15 +83,6 @@ Bir banka kartıyla internetten alışveriş yapmak için üç şey yeter: kart�
   2. Yer: 3. paragraf · Açıklama (300): "Ücretsiz ama 1 TL." Bedava bir şey için kart istenmez. 1 TL sadece bahane, asıl istenen kartın kendisi.
   3. Yer: 4. paragraf · Açıklama (300): CVV ve SMS onay kodu bir arada istenmiş. Bu ikisini alan kişi karttan istediği kadar harcama yapabilir.
   4. Yer: 5. paragraf · Açıklama (300): "2 saat içinde" diye acele ettiriyor. Acele, düşünüp birine sormanı engellemek içindir.
-
-### 4. Mini test: "Bedava hediye, sadece 1 TL doğrulama" diyen bir sayfa ne ister aslında? (eski 10)
-
-- [ ] Sadece 1 TL, başka bir şey değil
-- [x] Kartın bütün bilgilerini; sonra çok daha fazlasını çekebilir
-- [ ] Kartın gerçek olup olmadığını kontrol etmek ister
-- [ ] Sonraki alışverişinde sana indirim yapmak ister
-- **Çizim:** oltadaki 1 TL
-- **Açıklama** (400): 1 TL'yi çekmek için de kart numarası, son kullanma tarihi, CVV ve SMS kodu gerekir. Bunları alan kişi 1 TL ile durmaz. Gerçek mağazalar hediye vermek için kart "doğrulamaz".
 
 ### 5. Bilgi: Dur, sor, kontrol et (eski 11)
 
